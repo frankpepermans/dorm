@@ -1,0 +1,25 @@
+{
+  "name":"MutableEntity",
+  "properties":[
+    {
+      "name":"insertedBy",
+      "type":"User",
+      "column":"InsertUser_id"
+    },
+    {
+      "name":"insertedOn",
+      "type":"DateTime",
+      "column":"InsertDate"
+    },
+    {
+      "name":"updatedBy",
+      "type":"User",
+      "column":"UpdateUser_id"
+    },
+    {
+      "name":"updatedOn",
+      "type":"DateTime",
+      "column":"UpdateDate"
+    }
+  ]
+}

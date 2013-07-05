@@ -1,0 +1,22 @@
+{
+  "table":"users",
+  "columns":[
+    {
+      "name":"User_id",
+      "type":"int",
+      "isIdentity":true,
+      "generator":"native",
+      "insert-when":0
+    },
+    {
+      "name":"Name",
+      "type":"String"
+    }
+  ],
+  "rows":[
+    {
+      "User_id":1,
+      "Name":"Administrator"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "name":"User",
+  "extends":"ImmutableEntity",
+  "table":"users",
+  "properties":[
+    {
+      "identity":true,
+      "name":"id",
+      "type":"int",
+      "column":"User_id"
+    },
+    {
+      "name":"name",
+      "type":"String",
+      "column":"Name",
+      "label-field":true
+    }
+  ]
+}

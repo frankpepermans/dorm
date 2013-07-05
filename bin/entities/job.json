@@ -1,0 +1,28 @@
+{
+  "name":"Job",
+  "extends":"MutableEntity",
+  "table":"jobs",
+  "properties":[
+    {
+      "identity":true,
+      "name":"id",
+      "type":"int",
+      "column":"Job_id",
+      "insert-when":0
+    },
+    {
+      "name":"name",
+      "type":"String",
+      "column":"Name",
+      "label-field":true
+    },
+    {
+      "name":"employees",
+      "type":"List<Employee>",
+      "singular-type":"Employee",
+      "link-table":"persons",
+      "fk-column":"Job_id",
+      "inverse-column":"Person_id"
+    }
+  ]
+}

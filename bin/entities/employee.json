@@ -1,0 +1,12 @@
+{
+  "name":"Employee",
+  "extends":"Person",
+  "table":"persons",
+  "properties":[
+    {
+      "name":"job",
+      "type":"Job",
+      "column":"Job_id"
+    }
+  ]
+}
