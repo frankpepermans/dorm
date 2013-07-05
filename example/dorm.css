@@ -1,0 +1,175 @@
+
+html,body {
+  background-color: #fcfcfc;
+  font-family: calibri, arial;
+  font-size: 14px;
+  font-weight: normal;
+  position: fixed;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
+._DartFlexRootContainer {
+  position: fixed;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+._EditableText {
+  border: 0;  
+}
+
+._Header {
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 16px;
+  background: -webkit-linear-gradient(top, #7fb2f0, #4e7ac7);
+  background: -moz-linear-gradient(top, #7fb2f0, #4e7ac7);
+  background: -ms-linear-gradient(top, #7fb2f0, #4e7ac7);
+  background: -o-linear-gradient(top, #7fb2f0, #4e7ac7);
+  vertical-align: middle;
+}
+
+._Footer {
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 16px;
+  background: -webkit-linear-gradient(top, #7fb2f0, #4e7ac7);
+  background: -moz-linear-gradient(top, #7fb2f0, #4e7ac7);
+  background: -ms-linear-gradient(top, #7fb2f0, #4e7ac7);
+  background: -o-linear-gradient(top, #7fb2f0, #4e7ac7);
+  vertical-align: middle;
+}
+
+._Toggle {
+  -webkit-appearance: none;  
+  width: 100%;  
+  background: #ddd;  
+  padding: 3px;  
+  -moz-border-radius: 15px;
+  border-radius: 15px;
+  border: 1px solid #808080; 
+  -webkit-border-radius: 15px;
+  background-image: -webkit-gradient(  
+    linear,  
+    left top,  
+    left bottombottom,  
+    color-stop(0, #000000),  
+    color-stop(1, #222222)
+  );
+}
+
+._Toggle::-webkit-slider-thumb { 
+  -webkit-appearance: none;  
+  width: 50%;
+  height: 30px; 
+  background: #888;  
+  padding: 3px;  
+  -moz-border-radius: 13px;
+  border-radius: 13px;
+  border: 1px solid #808080; 
+  -webkit-border-radius: 13px;
+  background-image: -webkit-gradient(  
+    linear,  
+    left top,  
+    left bottombottom,  
+    color-stop(0, #000000),  
+    color-stop(1, #222222)
+  );
+}  
+ 
+._ListRenderer {
+  -webkit-overflow-scrolling: scroll;
+  border: 1px solid rgb(128, 128, 128);
+  background-color: rgb(255, 255, 255);
+}
+
+._Button {
+  -webkit-transition: color 0.7s ease-in-out;
+  -webkit-transition: background-color 0.7s ease-in-out;
+  -webkit-transition: border-right 0.7s ease-in-out;
+  -webkit-transition: border-top 0.7s ease-in-out;
+  -m-transition: color 0.7s ease-in-out;
+  -m-transition: background-color 0.7s ease-in-out;
+  -m-transition: border-right 0.7s ease-in-out;
+  -m-transition: border-top 0.7s ease-in-out;
+  -o-transition: color 0.7s ease-in-out;
+  -o-transition: background-color 0.7s ease-in-out;
+  -o-transition: border-right 0.7s ease-in-out;
+  -o-transition: border-top 0.7s ease-in-out;
+  -ms-transition: color 0.7s ease-in-out;
+  -ms-transition: background-color 0.7s ease-in-out;
+  -ms-transition: border-right 0.7s ease-in-out;
+  -ms-transition: border-top 0.7s ease-in-out;
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 16px;
+  text-align: left;
+  margin: 0px;
+  padding-left: 5px;
+  display: block;
+  outline: none;
+  background-color: #35478c;
+  border-left: 0px none;
+  border-right: 2px solid #ffffff;
+  border-top: 4px solid #7fb2f0;
+  border-bottom: 0px none;
+}
+
+._Button:hover {
+  color: #35478c;
+  background-color: #7fb2f0;
+  border-top: 4px solid #35478c;
+}
+
+.backButton {
+  -webkit-appearance: none;
+  -m-appearance: none;
+  -o-appearance: none;
+  -ms-appearance: none;
+  background: transparent;
+  border: 0;
+  display:block;
+  background:url(backButton.png) 0 0 no-repeat;
+}
+
+.options {
+  -webkit-appearance: none;
+  -m-appearance: none;
+  -o-appearance: none;
+  -ms-appearance: none;
+  line-height: 0;
+  background: transparent;
+  border: 0;
+  display:block;
+  background:url(gear.png) 0 0 no-repeat;
+}
+
+._ViewStackSlider {
+}
+
+._DataGrid {
+  border: 1px solid #808080;
+  background-color: #cccccc;
+}
+
+._Image {
+  transition: all .5s ease-in;
+}
+
+._DataGridItemRenderer {
+  border-bottom: 1px solid #cccccc;
+}
+
+._DataGridComponent {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
