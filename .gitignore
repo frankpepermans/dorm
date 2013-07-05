@@ -5,6 +5,7 @@
 *.pydevproject
 .project
 .metadata
+packages/
 tmp/
 *.tmp
 *.bak
