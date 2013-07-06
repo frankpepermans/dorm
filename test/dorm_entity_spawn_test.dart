@@ -7,13 +7,14 @@ import 'dart:json';
 main() {
   EntityManager manager = new EntityManager();
   Serializer serializer = new SerializerJson();
-  EntityFactory<TestEntity> factory = new EntityFactory(handleConflictAcceptClient);
   String rawDataA = '[{"id":1,"name":"Test A","?t":"entities.testEntity"}]';
   String rawDataB = '[{"id":2,"name":"Test B","?t":"entities.testEntity"}]';
   
   manager.scan(TestEntity);
   
   test('Simple spawn test', () {
+    EntityFactory<TestEntity> factory = new EntityFactory(handleConflictAcceptClient);
+    
     TestEntity entity = factory.spawn(serializer.incoming(rawDataA)).first;
     TestEntity entityShouldBePointer = factory.spawn(serializer.incoming(rawDataA)).first;
     TestEntity entityShouldNotBePointer = factory.spawn(serializer.incoming(rawDataB)).first;
@@ -47,6 +48,38 @@ main() {
         expect(map[SerializationType.ENTITY_TYPE], 'entities.testEntity');
       }
     );
+  });
+  
+  test('Conflict manager, accept client test', () {
+    EntityFactory<TestEntity> factory = new EntityFactory(handleConflictAcceptClient);
+    TestEntity entity;
+    
+    // first test, after a client change, reload the entity and expect it not to be overwritten
+    entity = factory.spawn(serializer.incoming(rawDataA)).first;
+    
+    entity.name = 'Test C';
+    
+    expect(entity.isDirty(), true);
+    
+    factory.spawn(serializer.incoming(rawDataA)); // reload and accept client
+    
+    expect(entity.name, 'Test C');
+  });
+  
+  test('Conflict manager, accept server test', () {
+    EntityFactory<TestEntity> factory = new EntityFactory(handleConflictAcceptServer);
+    TestEntity entity;
+    
+    // first test, after a client change, reload the entity and expect it not to be overwritten
+    entity = factory.spawn(serializer.incoming(rawDataA)).first;
+    
+    entity.name = 'Test C';
+    
+    expect(entity.isDirty(), true);
+    
+    factory.spawn(serializer.incoming(rawDataA)); // reload and accept server
+    
+    expect(entity.name, 'Test A');
   });
 }
 

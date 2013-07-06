@@ -219,6 +219,7 @@ class EntityManager {
         
         if (!entity._isPointer) {
           entity = _registerSpawnedEntity(
+              entity,
               _existingFromSpawnRegistry(type, key, entity), 
               type, key, onConflict
           );
@@ -237,7 +238,7 @@ class EntityManager {
     return null;
   }
   
-  Entity _registerSpawnedEntity(Entity entity, String type, String key, OnConflictFunction onConflict) {
+  Entity _registerSpawnedEntity(Entity delta, Entity entity, String type, String key, OnConflictFunction onConflict) {
     Map<String, Entity> typeRegistry;
     
     if (!_spawnRegistry.containsKey(type)) {
@@ -252,10 +253,32 @@ class EntityManager {
           throw new DormError('Conflict was detected, but no onConflict method is available');
         }
         
-        ConflictManager conflictManager = onConflict(entity, typeRegistry[key]);
+        ConflictManager conflictManager = onConflict(delta, typeRegistry[key]);
         
         if (conflictManager == ConflictManager.ACCEPT_CLIENT) {
           entity = typeRegistry[key];
+        } else {
+          _ProxyEntry entryA, entryB;
+          int i = entity._scan._proxies.length;
+          int j;
+          
+          while (i > 0) {
+            entryA = entity._scan._proxies[--i];
+            
+            j = delta._scan._proxies.length;
+            
+            while (j > 0) {
+              entryB = delta._scan._proxies[--j];
+              
+              if (entryA.propertySymbol == entryB.propertySymbol) {
+                entryA.proxy._initialValue = entryB.proxy._value;
+                
+                break;
+              }
+            }
+          }
+          
+          entity = delta;
         }
         
         _swapEntries(entity, key);

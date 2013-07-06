@@ -44,9 +44,7 @@ class Proxy<T> {
   
   Proxy._construct(T v, bool m) {
     _defaultValue = v;
-    
     value = v;
-    
     isMutable = m;
   }
   
