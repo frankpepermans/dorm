@@ -6,7 +6,7 @@ class SerializerJson<T> implements Serializer {
   
   factory SerializerJson() => new SerializerJson<String>._contruct();
   
-  dynamic incoming(T data) => parse(data);
+  List<Map<String, dynamic>> incoming(T data) => parse(data);
   
   T outgoing(dynamic data) {
     if (

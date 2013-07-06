@@ -14,7 +14,7 @@ class FetchService extends BaseService {
         entityId:entityId
     );
     
-    return stringify(result.first);
+    return stringify(result);
   }
   
   String ormEntityLoad(String entityName, Map<String, String> where) {

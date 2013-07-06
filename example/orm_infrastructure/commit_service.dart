@@ -10,7 +10,7 @@ class CommitService extends ServiceBase {
     arguments['orm_commit'] = dataToCommit;
     arguments['orm_commit_delete'] = dataToDelete;
     
-    return apply('flush', arguments);
+    return apply('flush', arguments, false);
   }
   
 }

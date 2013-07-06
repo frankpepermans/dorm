@@ -13,7 +13,7 @@ class FetchService extends ServiceBase {
     arguments['entityName'] = entityName;
     arguments['entityId'] = entityId;
     
-    return apply('ormEntityLoadByPK', arguments);
+    return apply('ormEntityLoadByPK', arguments, true);
   }
   
   Future<List<Entity>> ormEntityLoad(
@@ -29,7 +29,7 @@ class FetchService extends ServiceBase {
       arguments['where'] = where;
     }
     
-    return apply('ormEntityLoad', arguments);
+    return apply('ormEntityLoad', arguments, false);
   }
   
 }
