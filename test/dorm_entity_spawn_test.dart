@@ -61,9 +61,10 @@ main() {
     
     expect(entity.isDirty(), true);
     
-    factory.spawn(serializer.incoming(rawDataA)); // reload and accept client
+    TestEntity spawnedEntity = factory.spawn(serializer.incoming(rawDataA)).first; // reload and accept client
     
     expect(entity.name, 'Test C');
+    expect((entity == spawnedEntity), true);
   });
   
   test('Conflict manager, accept server test', () {
@@ -77,9 +78,10 @@ main() {
     
     expect(entity.isDirty(), true);
     
-    factory.spawn(serializer.incoming(rawDataA)); // reload and accept server
+    TestEntity spawnedEntity = factory.spawn(serializer.incoming(rawDataA)).first; // reload and accept server
     
     expect(entity.name, 'Test A');
+    expect((entity == spawnedEntity), true);
   });
 }
 

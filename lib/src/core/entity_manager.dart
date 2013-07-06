@@ -248,16 +248,14 @@ class EntityManager {
     typeRegistry = _spawnRegistry[type];
     
     if (typeRegistry.containsKey(key)) {
-      if (typeRegistry[key].isDirty()) {
+      if (entity.isDirty()) {
         if (onConflict == null) {
           throw new DormError('Conflict was detected, but no onConflict method is available');
         }
         
         ConflictManager conflictManager = onConflict(delta, typeRegistry[key]);
         
-        if (conflictManager == ConflictManager.ACCEPT_CLIENT) {
-          entity = typeRegistry[key];
-        } else {
+        if (conflictManager == ConflictManager.ACCEPT_SERVER) {
           _ProxyEntry entryA, entryB;
           int i = entity._scan._proxies.length;
           int j;
@@ -273,12 +271,12 @@ class EntityManager {
               if (entryA.propertySymbol == entryB.propertySymbol) {
                 entryA.proxy._initialValue = entryB.proxy._value;
                 
+                _proxyRegistry.remove(entryB.proxy);
+                
                 break;
               }
             }
           }
-          
-          entity = delta;
         }
         
         _swapEntries(entity, key);
