@@ -8,7 +8,7 @@ class SerializerJson<T> implements Serializer {
   
   List<Map<String, dynamic>> incoming(T data) => parse(data);
   
-  T outgoing(dynamic data) {
+  String outgoing(dynamic data) {
     if (
         (data is List) ||
         (data is Map)
