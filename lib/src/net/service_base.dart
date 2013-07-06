@@ -15,39 +15,24 @@ class ServiceBase {
     String url = 'http://${host}:$port';
     
     arguments.forEach(
-      (String key, dynamic value) {
-        if (
-            (value is List) ||
-            (value is Map)
-        ) {
-          data.append(key, serializer.outgoing(value));
-        } else {
-          data.append(key, value.toString());
-        }
-      }
+      (String key, dynamic value) => data.append(key, serializer.outgoing(value))
     );
     
     HttpRequest.request(url, method:operation, sendData:data).then(
         (HttpRequest request) {
           if (request.responseText.length > 0) {
+            EntityFactory factory = new EntityFactory(onConflict);
+            
             dynamic result = serializer.incoming(request.responseText);
             
-            EntityManager entityManager = new EntityManager();
-            
-            if (result is List) {
-              List<Entity> resultList = <Entity>[];
-              
-              result.forEach(
-                  (Map<String, dynamic> resultEntry) => resultList.add(
-                      entityManager._spawn(resultEntry, onConflict)
-                  )  
+            if (result is List<Map<String, dynamic>>) {
+              completer.complete(
+                  factory.spawn(result)
               );
-              
-              completer.complete(resultList);
             } else if (result is Map<String, dynamic>) {
-              Entity resultEntity = entityManager._spawn(result, onConflict);
-              
-              completer.complete(resultEntity);
+              completer.complete(
+                  factory.spawn(<Map<String, dynamic>>[result]).first
+              );
             }
           }
         }, onError: (_) {

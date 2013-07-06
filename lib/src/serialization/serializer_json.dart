@@ -8,6 +8,15 @@ class SerializerJson<T> implements Serializer {
   
   dynamic incoming(T data) => parse(data);
   
-  T outgoing(dynamic data) => stringify(data);
+  T outgoing(dynamic data) {
+    if (
+        (data is List) ||
+        (data is Map)
+    ) {
+      return stringify(data);
+    }
+    
+    return data.toString();
+  }
   
 }
