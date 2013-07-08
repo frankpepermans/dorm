@@ -2,19 +2,37 @@ part of dorm;
 
 class EntityFactory<T> {
   
-  EntityManager manager;
-  final OnConflictFunction onConflict;
+  //---------------------------------
+  //
+  // Protected properties
+  //
+  //---------------------------------
   
-  EntityFactory(this.onConflict) {
-    manager = new EntityManager();
+  EntityManager _manager;
+  final OnConflictFunction _onConflict;
+  
+  //---------------------------------
+  //
+  // Constructor
+  //
+  //---------------------------------
+  
+  EntityFactory(this._onConflict) {
+    _manager = new EntityManager();
   }
   
-  List<T> spawn(List<Map<String, dynamic>> rawData) {
+  //---------------------------------
+  //
+  // Public methods
+  //
+  //---------------------------------
+  
+  Iterable<T> spawn(Iterable<Map<String, dynamic>> rawData) {
     List<T> results = <T>[];
     
     rawData.forEach(
         (Map<String, dynamic> rawDataEntry) => results.add(
-            manager._spawn(rawDataEntry, onConflict)
+            _manager._spawn(rawDataEntry, _onConflict)
         )  
     );
     

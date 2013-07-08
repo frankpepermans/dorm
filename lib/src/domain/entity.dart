@@ -79,10 +79,9 @@ abstract class Entity extends ObservableBase implements IExternalizable {
   }
   
   void readExternal(Map<String, dynamic> data, OnConflictFunction onConflict) {
-    EntityManager entityManager = new EntityManager();
+    EntityFactory<Entity> factory = new EntityFactory(onConflict);
     _ProxyEntry entry;
     int i = _scan._proxies.length;
-    List<Entity> entityList;
     dynamic entryValue;
     
     _isPointer = (data.containsKey(SerializationType.POINTER));
@@ -93,19 +92,11 @@ abstract class Entity extends ObservableBase implements IExternalizable {
       entryValue = data[entry.property];
       
       if (entryValue is Map) {
-        entry.proxy._initialValue = entityManager._spawn(entryValue, onConflict);
+        entry.proxy._initialValue = factory.spawn(
+            <Map<String, dynamic>>[entryValue]
+        ).first;
       } else if (entryValue is Iterable) {
-        entityList = <Entity>[];
-        
-        entryValue.forEach(
-            (Map<String, dynamic> listValue) {
-              entityList.add(entityManager._spawn(listValue, onConflict));
-            }
-        );
-        
-        entry.proxy.owner = entityList;
-        
-        entry.proxy._initialValue = entityList;
+        entry.proxy._initialValue = entry.proxy.owner = factory.spawn(entryValue);
       } else {
         entry.proxy._initialValue = entryValue;
       }
@@ -115,6 +106,34 @@ abstract class Entity extends ObservableBase implements IExternalizable {
   void writeExternal(Map<String, dynamic> data) {
     _writeExternalImpl(data, null);
   }
+  
+  String toJson({Map<String, Map<String, dynamic>> convertedEntities}) {
+    Map<String, dynamic> jsonMap = new Map<String, dynamic>();
+    
+    writeExternal(jsonMap);
+    
+    return stringify(jsonMap);
+  }
+  
+  String toString() {
+    List<String> result = <String>[];
+    
+    _scan._proxies.forEach(
+      (_ProxyEntry entry) {
+        if (entry.proxy.isLabelField) {
+          result.add(entry.proxy.value.toString());
+        }
+      }
+    );
+    
+    return result.join(', ');
+  }
+  
+  //---------------------------------
+  //
+  // Library protected methods
+  //
+  //---------------------------------
   
   void _writeExternalImpl(Map<String, dynamic> data, Map<String, Map<String, dynamic>> convertedEntities) {
     data[SerializationType.ENTITY_TYPE] = _scan.qualifiedLocalName;
@@ -138,7 +157,7 @@ abstract class Entity extends ObservableBase implements IExternalizable {
             subEntity._scan._proxies.forEach(
               (_ProxyEntry subEntry) {
                 if (subEntry.proxy.isId) {
-                  pointerMap[subEntry.property] = subEntry.proxy.value;
+                  pointerMap[entry.property] = subEntry.proxy.value;
                 }
               }
             );
@@ -155,7 +174,11 @@ abstract class Entity extends ObservableBase implements IExternalizable {
           entry.proxy.value.forEach(
             (dynamic listEntry) {
               if (listEntry is Entity) {
-                convertedList.add(listEntry.toJson(convertedEntities: convertedEntities));
+                Map<String, dynamic> listEntryMap = new Map<String, dynamic>();
+                
+                listEntry._writeExternalImpl(listEntryMap, convertedEntities);
+                
+                convertedList.add(stringify(listEntryMap));
               } else {
                 convertedList.add(stringify(listEntry));
               }
@@ -168,28 +191,6 @@ abstract class Entity extends ObservableBase implements IExternalizable {
         }
       }
     );
-  }
-  
-  String toJson({Map<String, Map<String, dynamic>> convertedEntities}) {
-    Map<String, dynamic> jsonMap = new Map<String, dynamic>();
-    
-    writeExternal(jsonMap);
-    
-    return stringify(jsonMap);
-  }
-  
-  String toString() {
-    List<String> result = <String>[];
-    
-    _scan._proxies.forEach(
-      (_ProxyEntry entry) {
-        if (entry.proxy.isLabelField) {
-          result.add(entry.proxy.value.toString());
-        }
-      }
-    );
-    
-    return result.join(', ');
   }
   
 }

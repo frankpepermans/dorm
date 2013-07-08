@@ -31,7 +31,7 @@ class CommitService extends BaseService {
                     commitEntryMap.forEach(
                         (String property, dynamic value) {
                           String tableColumn = dbo.getTableColumnForProperty(entityName, property);
-
+                          
                           if (tableColumn != null) {
                             if (value is Map) {
                               tableRow[tableColumn] = value[property];
