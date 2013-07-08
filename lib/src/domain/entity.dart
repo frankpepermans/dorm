@@ -169,7 +169,7 @@ abstract class Entity extends ObservableBase implements IExternalizable {
             subEntity._writeExternalImpl(data[entry.property], convertedEntities);
           }
         } else if (entry.proxy.value is List) {
-          List<String> convertedList = <String>[]; 
+          Iterable<dynamic> convertedList = <dynamic>[]; 
           
           entry.proxy.value.forEach(
             (dynamic listEntry) {
@@ -178,14 +178,14 @@ abstract class Entity extends ObservableBase implements IExternalizable {
                 
                 listEntry._writeExternalImpl(listEntryMap, convertedEntities);
                 
-                convertedList.add(stringify(listEntryMap));
+                convertedList.add(listEntryMap);
               } else {
-                convertedList.add(stringify(listEntry));
+                convertedList.add(listEntry);
               }
             }
           );
           
-          data[entry.property] = stringify(convertedList);
+          data[entry.property] = convertedList;
         } else {
           data[entry.property] = entry.proxy.value;
         }

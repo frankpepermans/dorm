@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:json';
+import 'dart:typed_data';
 import 'package:dorm/dorm_json_mock_server.dart';
 
 void main() {
@@ -12,6 +13,7 @@ void main() {
           (HttpRequest request) {
             HttpBodyHandler.processRequest(request).then(
                 (HttpBody body) {
+                  Map<String, dynamic> data;
                   String responseContent = '';
                   
                   request.response.headers.add(HttpHeaders.CONTENT_TYPE, "application/json");
@@ -19,11 +21,17 @@ void main() {
                   request.response.headers.add("Access-Control-Allow-Methods", "POST, GET, OPTIONS, ormEntityLoadByPK, ormEntityLoad, flush");
                   request.response.headers.add("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
                   
+                  String uintListToString = new String.fromCharCodes(body.body);
+                  
+                  if (uintListToString.length > 0) {
+                    data = parse(uintListToString);
+                  }
+                  
                   switch (request.method) {
                     case 'ormEntityLoadByPK' :
                       responseContent = fetchService.ormEntityLoadByPK(
-                          body.body['entityName'],
-                          int.parse(body.body['entityId'])
+                          data['entityName'],
+                          int.parse(data['entityId'])
                       );
                       
                       break;
@@ -31,12 +39,12 @@ void main() {
                     case 'ormEntityLoad' :
                       Map<String, String> where;
                       
-                      if (body.body.containsKey('where')) {
-                        where = parse(body.body['where']);
+                      if (data.containsKey('where')) {
+                        where = parse(data['where']);
                       }
                       
                       responseContent = fetchService.ormEntityLoad(
-                          body.body['entityName'],
+                          data['entityName'],
                           where
                       );
                       
@@ -44,8 +52,8 @@ void main() {
                       
                     case 'flush' :
                       responseContent = commitService.flush(
-                          parse(body.body['orm_commit']),
-                          parse(body.body['orm_commit_delete'])
+                          data['orm_commit'],
+                          data['orm_commit_delete']
                       );
                       
                       break;

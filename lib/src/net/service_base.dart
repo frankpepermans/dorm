@@ -11,14 +11,9 @@ class ServiceBase {
   
   Future apply(String operation, Map<String, dynamic> arguments, bool isUniqueResult) {
     Completer completer = new Completer();
-    FormData data = new FormData();
     String url = 'http://${host}:$port';
     
-    arguments.forEach(
-      (String key, dynamic value) => data.append(key, serializer.outgoing(value))
-    );
-    
-    HttpRequest.request(url, method:operation, sendData:data).then(
+    HttpRequest.request(url, method:operation, sendData:serializer.outgoing(arguments)).then(
         (HttpRequest request) {
           if (request.responseText.length > 0) {
             EntityFactory<Entity> factory = new EntityFactory(onConflict);
