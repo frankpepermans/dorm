@@ -1,6 +1,6 @@
 part of dorm;
 
-abstract class Entity extends ObservableBase {
+abstract class Entity extends ObservableBase implements IExternalizable {
   
   EntityManager _manager;
   Map _source;
@@ -78,16 +78,52 @@ abstract class Entity extends ObservableBase {
     return false;
   }
   
-  String toJson({Map<String, Map<String, dynamic>> convertedEntities}) {
-    Map<String, dynamic> jsonMap = new Map<String, dynamic>();
+  void readExternal(Map<String, dynamic> data, OnConflictFunction onConflict) {
+    EntityManager entityManager = new EntityManager();
+    _ProxyEntry entry;
+    int i = _scan._proxies.length;
+    List<Entity> entityList;
+    dynamic entryValue;
     
-    jsonMap[SerializationType.ENTITY_TYPE] = _scan.qualifiedLocalName;
+    _isPointer = (data.containsKey(SerializationType.POINTER));
+    
+    while (i > 0) {
+      entry = _scan._proxies[--i];
+      
+      entryValue = data[entry.property];
+      
+      if (entryValue is Map) {
+        entry.proxy._initialValue = entityManager._spawn(entryValue, onConflict);
+      } else if (entryValue is Iterable) {
+        entityList = <Entity>[];
+        
+        entryValue.forEach(
+            (Map<String, dynamic> listValue) {
+              entityList.add(entityManager._spawn(listValue, onConflict));
+            }
+        );
+        
+        entry.proxy.owner = entityList;
+        
+        entry.proxy._initialValue = entityList;
+      } else {
+        entry.proxy._initialValue = entryValue;
+      }
+    }
+  }
+  
+  void writeExternal(Map<String, dynamic> data) {
+    _writeExternalImpl(data, null);
+  }
+  
+  void _writeExternalImpl(Map<String, dynamic> data, Map<String, Map<String, dynamic>> convertedEntities) {
+    data[SerializationType.ENTITY_TYPE] = _scan.qualifiedLocalName;
     
     if (convertedEntities == null) {
       convertedEntities = new Map<String, Map<String, dynamic>>();
     }
     
-    convertedEntities[_scan.key] = jsonMap;
+    convertedEntities[_scan.key] = data;
     
     _scan._proxies.forEach(
       (_ProxyEntry entry) {
@@ -107,9 +143,11 @@ abstract class Entity extends ObservableBase {
               }
             );
             
-            jsonMap[entry.property] = pointerMap;
+            data[entry.property] = pointerMap;
           } else {
-            jsonMap[entry.property] = subEntity.toJson(convertedEntities: convertedEntities);
+            data[entry.property] = new Map<String, dynamic>();
+            
+            subEntity._writeExternalImpl(data[entry.property], convertedEntities);
           }
         } else if (entry.proxy.value is List) {
           List<String> convertedList = <String>[]; 
@@ -124,12 +162,18 @@ abstract class Entity extends ObservableBase {
             }
           );
           
-          jsonMap[entry.property] = stringify(convertedList);
+          data[entry.property] = stringify(convertedList);
         } else {
-          jsonMap[entry.property] = entry.proxy.value;
+          data[entry.property] = entry.proxy.value;
         }
       }
     );
+  }
+  
+  String toJson({Map<String, Map<String, dynamic>> convertedEntities}) {
+    Map<String, dynamic> jsonMap = new Map<String, dynamic>();
+    
+    writeExternal(jsonMap);
     
     return stringify(jsonMap);
   }

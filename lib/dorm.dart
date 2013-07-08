@@ -20,6 +20,7 @@ part 'src/domain/meta.dart';
 
 part 'src/net/service_base.dart';
 
+part 'src/serialization/externalizable.dart';
 part 'src/serialization/serialization_type.dart';
 part 'src/serialization/serializer.dart';
 part 'src/serialization/serializer_json.dart';

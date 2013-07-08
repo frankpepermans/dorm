@@ -22,7 +22,7 @@ main() {
     entityShouldNotBePointer.cyclicReference = entity;
     entity.cyclicReference = entityShouldNotBePointer;
     
-    String outgoing = serializer.outgoing(<Entity>[entity]);
+    String outgoing = serializer.outgoing(<Entity>[entity, entityShouldNotBePointer]);
     List<String> outgoingToComplexData = parse(outgoing);
     
     expect(entity.id, 1);

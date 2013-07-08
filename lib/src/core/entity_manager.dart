@@ -110,7 +110,7 @@ class EntityManager {
               scan.addProxy(
                   property.property, 
                   symbol, 
-                  property.propertySymbol, 
+                  property.propertySymbol,
                   mirror
               );
             }
@@ -165,13 +165,9 @@ class EntityManager {
     final Symbol typeSymbol = new Symbol(type);
     EntityScan scan;
     Entity entity, returningEntity;
-    ConflictManager conflictManager;
     MethodMirror methodMirror;
-    List<Entity> entityList;
-    _ProxyEntry entry;
     String key;
-    int i, j;
-    dynamic entryValue;
+    int i;
     
     if (onConflict == null) {
       onConflict = _handleConflictAcceptClient;
@@ -187,33 +183,7 @@ class EntityManager {
         
         entity = scan.classMirror.newInstance(methodMirror.constructorName, []).reflectee;
         
-        entity._isPointer = (rawData.containsKey(SerializationType.POINTER));
-        
-        j = entity._scan._proxies.length;
-        
-        while (j > 0) {
-          entry = entity._scan._proxies[--j];
-          
-          entryValue = rawData[entry.property];
-          
-          if (entryValue is Map) {
-            entry.proxy._initialValue = _spawn(entryValue, onConflict);
-          } else if (entryValue is Iterable) {
-            entityList = <Entity>[];
-            
-            entryValue.forEach(
-                (Map<String, dynamic> listValue) {
-                  entityList.add(_spawn(listValue, onConflict));
-                }
-            );
-            
-            entry.proxy.owner = entityList;
-            
-            entry.proxy._initialValue = entityList;
-          } else {
-            entry.proxy._initialValue = entryValue;
-          }
-        }
+        entity.readExternal(rawData, onConflict);
         
         key = _buildKey(entity);
         
