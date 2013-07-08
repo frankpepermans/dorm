@@ -25,8 +25,6 @@ class Proxy<T> {
     
     if (newValue != _value) {
       _value = newValue;
-      
-      isDirty = (newValue != _defaultValue);
     }
   }
   
@@ -36,7 +34,6 @@ class Proxy<T> {
   bool isId = false;
   bool isTransient = false;
   bool isMutable = true;
-  bool isDirty = false;
   bool isNullable = true;
   bool isLabelField = false;
   

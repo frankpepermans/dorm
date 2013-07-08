@@ -238,7 +238,7 @@ class EntityManager {
     return null;
   }
   
-  Entity _registerSpawnedEntity(Entity delta, Entity entity, String type, String key, OnConflictFunction onConflict) {
+  Entity _registerSpawnedEntity(Entity spawnee, Entity existingEntity, String type, String key, OnConflictFunction onConflict) {
     Map<String, Entity> typeRegistry;
     
     if (!_spawnRegistry.containsKey(type)) {
@@ -247,29 +247,29 @@ class EntityManager {
     
     typeRegistry = _spawnRegistry[type];
     
-    if (typeRegistry.containsKey(key)) {
-      if (entity.isDirty()) {
+    if (spawnee != existingEntity) {
+      if (existingEntity.isDirty()) {
         if (onConflict == null) {
           throw new DormError('Conflict was detected, but no onConflict method is available');
         }
         
-        ConflictManager conflictManager = onConflict(delta, typeRegistry[key]);
-        
+        ConflictManager conflictManager = onConflict(spawnee, typeRegistry[key]);
+      
         if (conflictManager == ConflictManager.ACCEPT_SERVER) {
           _ProxyEntry entryA, entryB;
-          int i = entity._scan._proxies.length;
+          int i = existingEntity._scan._proxies.length;
           int j;
           
           while (i > 0) {
-            entryA = entity._scan._proxies[--i];
+            entryA = existingEntity._scan._proxies[--i];
             
-            j = delta._scan._proxies.length;
+            j = spawnee._scan._proxies.length;
             
             while (j > 0) {
-              entryB = delta._scan._proxies[--j];
+              entryB = spawnee._scan._proxies[--j];
               
               if (entryA.propertySymbol == entryB.propertySymbol) {
-                entryA.proxy._initialValue = entryB.proxy._value;
+                entryA.proxy._initialValue = existingEntity.notifyPropertyChange(entryA.proxy.propertySymbol, entryA.proxy._value, entryB.proxy._value);
                 
                 _proxyRegistry.remove(entryB.proxy);
                 
@@ -278,16 +278,16 @@ class EntityManager {
             }
           }
         }
-        
-        _swapEntries(entity, key);
       }
+      
+      _swapEntries(existingEntity, key);
     }
     
-    typeRegistry[key] = entity;
+    typeRegistry[key] = existingEntity;
     
-    _swapPointers(entity, key);
+    _swapPointers(existingEntity, key);
     
-    return entity;
+    return existingEntity;
   }
   
   void _swapPointers(Entity actualEntity, String key) {

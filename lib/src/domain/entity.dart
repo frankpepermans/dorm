@@ -70,7 +70,7 @@ abstract class Entity extends ObservableBase {
     while (i > 0) {
       entry = _scan._proxies[--i];
       
-      if (entry.proxy.isDirty) {
+      if (entry.proxy._value != entry.proxy._defaultValue) {
         return true;
       }
     }
@@ -94,7 +94,7 @@ abstract class Entity extends ObservableBase {
         if (entry.proxy.value is Entity) {
           Entity subEntity = entry.proxy.value;
           
-          if (convertedEntities.containsKey(_scan.key)) {
+          if (convertedEntities.containsKey(subEntity._scan.key)) {
             Map<String, dynamic> pointerMap = new Map<String, dynamic>();
             
             pointerMap[SerializationType.POINTER] = true;
@@ -102,7 +102,7 @@ abstract class Entity extends ObservableBase {
             subEntity._scan._proxies.forEach(
               (_ProxyEntry subEntry) {
                 if (subEntry.proxy.isId) {
-                  pointerMap[entry.property] = subEntry.proxy.value;
+                  pointerMap[subEntry.property] = subEntry.proxy.value;
                 }
               }
             );

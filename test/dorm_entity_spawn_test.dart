@@ -65,6 +65,7 @@ main() {
     
     expect(entity.name, 'Test C');
     expect((entity == spawnedEntity), true);
+    expect(entity.isDirty(), true);
   });
   
   test('Conflict manager, accept server test', () {
@@ -82,6 +83,7 @@ main() {
     
     expect(entity.name, 'Test A');
     expect((entity == spawnedEntity), true);
+    expect(entity.isDirty(), false);
   });
 }
 
@@ -137,7 +139,7 @@ class TestEntity extends Entity {
   // cyclicReference
   //---------------------------------
 
-  @Property(CYCLIC_REFERENCE_SYMBOL, 'name')
+  @Property(CYCLIC_REFERENCE_SYMBOL, 'cyclicReference')
   Proxy<TestEntity> _cyclicReference;
 
   static const String CYCLIC_REFERENCE = 'cyclicReference';
