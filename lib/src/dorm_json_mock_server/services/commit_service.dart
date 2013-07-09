@@ -34,7 +34,7 @@ class CommitService extends BaseService {
                           
                           if (tableColumn != null) {
                             if (value is Map) {
-                              tableRow[tableColumn] = value[property];
+                              tableRow[tableColumn] = value[dbo.getPrimaryKeyField(entityName, false)];
                             } else {
                               tableRow[tableColumn] = value;
                             }

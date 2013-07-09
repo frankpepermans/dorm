@@ -152,11 +152,12 @@ abstract class Entity extends ObservableBase implements IExternalizable {
             Map<String, dynamic> pointerMap = new Map<String, dynamic>();
             
             pointerMap[SerializationType.POINTER] = true;
+            pointerMap[SerializationType.ENTITY_TYPE] = subEntity._scan.qualifiedLocalName;
             
             subEntity._scan._proxies.forEach(
               (_ProxyEntry subEntry) {
                 if (subEntry.proxy.isId) {
-                  pointerMap[entry.property] = subEntry.proxy.value;
+                  pointerMap[subEntry.property] = subEntry.proxy.value;
                 }
               }
             );
