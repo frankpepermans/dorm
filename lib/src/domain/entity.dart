@@ -3,6 +3,7 @@ part of dorm;
 abstract class Entity extends ObservableBase implements IExternalizable {
   
   EntityManager _manager;
+  InstanceMirror _mirror;
   Map _source;
   EntityScan _scan;
   bool _isPointer;
@@ -53,9 +54,7 @@ abstract class Entity extends ObservableBase implements IExternalizable {
   //
   //-----------------------------------
   
-  Entity() {
-    _manager = new EntityManager().._initialize(this);
-  }
+  Entity();
   
   //-----------------------------------
   //

@@ -85,6 +85,22 @@ main() {
     expect((entity == spawnedEntity), true);
     expect(entity.isDirty(), false);
   });
+  
+  test('Speed test', () {
+    EntityFactory<TestEntity> factory = new EntityFactory(handleConflictAcceptServer);
+    int i = 1000;
+    DateTime time = new DateTime.now();
+    
+    while (i > 0) {
+      String json = '[{"id":${--i},"name":"Speed test","?t":"entities.testEntity"}]';
+      
+      factory.spawn(serializer.incoming(rawDataA)).first;
+    }
+    
+    int duration = time.millisecondsSinceEpoch - new DateTime.now().millisecondsSinceEpoch;
+    
+    print('completed in $duration ms');
+  });
 }
 
 ConflictManager handleConflictAcceptClient(Entity serverEntity, Entity clientEntity) {

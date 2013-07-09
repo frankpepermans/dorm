@@ -165,6 +165,7 @@ class EntityManager {
     final Symbol typeSymbol = new Symbol(type);
     EntityScan scan;
     Entity entity, returningEntity;
+    InstanceMirror instanceMirror;
     MethodMirror methodMirror;
     String key;
     int i;
@@ -181,7 +182,14 @@ class EntityManager {
       if (scan.qualifiedName == typeSymbol) {
         methodMirror = scan.classMirror.constructors[scan.classMirror.simpleName];
         
-        entity = scan.classMirror.newInstance(methodMirror.constructorName, []).reflectee;
+        instanceMirror = scan.classMirror.newInstance(methodMirror.constructorName, []);
+        
+        entity = instanceMirror.reflectee;
+        entity._mirror = instanceMirror;
+        entity._manager = this;
+        entity._scan = _getScanForInstance(entity);
+        
+        _initialize(entity);
         
         entity.readExternal(rawData, onConflict);
         
@@ -261,53 +269,63 @@ class EntityManager {
   }
   
   void _swapPointers(Entity actualEntity, String key) {
-    _proxyRegistry.forEach(
-        (Proxy proxy) {
-          if (proxy.owner != null) {
-            proxy.owner.forEach(
-                (dynamic entry) {
-                  if (
-                      (entry.runtimeType == actualEntity.runtimeType) && 
-                      entry._isPointer &&
-                      (_buildKey(entry) == key)
-                  ) {
-                    proxy.owner[proxy.owner.indexOf(entry)] = actualEntity;
-                  }
-                }
-            );
-          } else if (
-              (proxy._value.runtimeType == actualEntity.runtimeType) && 
-              proxy._value._isPointer &&
-              (_buildKey(proxy._value) == key)
-          ) {
-            proxy._initialValue = actualEntity;
-          }
-        }
-    );
+    Proxy proxy;
+    int i = _proxyRegistry.length;
+    
+    while (i > 0) {
+      proxy = _proxyRegistry[--i];
+      
+      if (proxy.owner != null) {
+        proxy.owner.forEach(
+            (dynamic entry) {
+              if (
+                  (entry is Entity) &&
+                  entry._isPointer &&
+                  (entry.runtimeType == actualEntity.runtimeType) && 
+                  (_buildKey(entry) == key)
+              ) {
+                proxy.owner[proxy.owner.indexOf(entry)] = actualEntity;
+              }
+            }
+        );
+      } else if (
+          (proxy._value is Entity) &&
+          proxy._value._isPointer &&
+          (proxy._value.runtimeType == actualEntity.runtimeType) &&
+          (_buildKey(proxy._value) == key)
+      ) {
+        proxy._initialValue = actualEntity;
+      }
+    }
   }
   
   void _swapEntries(Entity actualEntity, String key) {
-    _proxyRegistry.forEach(
-        (Proxy proxy) {
-          if (proxy.owner != null) {
-            proxy.owner.forEach(
-                (dynamic entry) {
-                  if (
-                      (entry.runtimeType == actualEntity.runtimeType) && 
-                      (_buildKey(entry) == key)
-                  ) {
-                    proxy.owner[proxy.owner.indexOf(entry)] = actualEntity;
-                  }
-                }
-            );
-          } else if (
-              (proxy._value.runtimeType == actualEntity.runtimeType) && 
-              (_buildKey(proxy._value) == key)
-          ) {
-            proxy._initialValue = actualEntity;
-          }
-        }
-    );
+    Proxy proxy;
+    int i = _proxyRegistry.length;
+    
+    while (i > 0) {
+      proxy = _proxyRegistry[--i];
+      
+      if (proxy.owner != null) {
+        proxy.owner.forEach(
+            (dynamic entry) {
+              if (
+                  (entry is Entity) &&
+                  (entry.runtimeType == actualEntity.runtimeType) && 
+                  (_buildKey(entry) == key)
+              ) {
+                proxy.owner[proxy.owner.indexOf(entry)] = actualEntity;
+              }
+            }
+        );
+      } else if (
+          (proxy._value is Entity) &&
+          (proxy._value.runtimeType == actualEntity.runtimeType) && 
+          (_buildKey(proxy._value) == key)
+      ) {
+        proxy._initialValue = actualEntity;
+      }
+    }
   }
   
   Entity _existingFromSpawnRegistry(String type, String key, Entity entity) {
@@ -371,10 +389,6 @@ class EntityManager {
   }
   
   void _initialize(Entity entity) {
-    InstanceMirror instanceMirror = reflect(entity);
-    
-    entity._scan = _getScanForInstance(entity);
-    
     entity._scan._proxies.forEach(
       (_ProxyEntry entry) {
         Proxy proxy = new Proxy._construct(null, true);
@@ -407,7 +421,7 @@ class EntityManager {
         
         _proxyRegistry.add(proxy);
         
-        instanceMirror.setField(entry.symbol, proxy);
+        entity._mirror.setField(entry.symbol, proxy);
       }
     );
   }

@@ -17,6 +17,8 @@ void createDomainFile(List<String> classes, List<String> entityClassNames) {
   File domainFile = new File('../example/orm_domain/orm_domain.dart');
   
   contents += 'library orm_domain;\r\r';
+  contents += "@MirrorsUsed(symbols: '${entityClassNames.join(',')}', override: '*')\r";
+  contents += "import 'dart:mirrors';\r";
   contents += "import 'package:dorm/dorm.dart';\r\r";
   
   classes.forEach(
