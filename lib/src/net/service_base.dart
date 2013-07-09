@@ -11,7 +11,7 @@ class ServiceBase {
   
   Future apply(String operation, Map<String, dynamic> arguments, bool isUniqueResult) {
     Completer completer = new Completer();
-    print(serializer.outgoing(arguments));
+    
     HttpRequest.request(
         'http://${host}:$port', 
         method:operation, 
