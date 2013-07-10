@@ -29,14 +29,12 @@ class EntityFactory<T> {
   
   List<T> spawn(List<Map<String, dynamic>> rawData) {
     List<T> results = <T>[];
-    Map<String, dynamic> rawDataEntry;
+    Function spawner = _manager._spawn;
     int i = rawData.length;
     
     while (i > 0) {
-      rawDataEntry = rawData[--i];
-      
       results.add(
-          _manager._spawn(rawDataEntry, _onConflict)
+          spawner(rawData[--i], _onConflict)
       );
     }
     
