@@ -185,6 +185,7 @@ class EntityManager {
         instanceMirror = scan.classMirror.newInstance(methodMirror.constructorName, []);
         
         entity = instanceMirror.reflectee;
+        entity._uid = entity.hashCode;
         entity._mirror = instanceMirror;
         entity._manager = this;
         entity._scan = _getScanForInstance(entity);
