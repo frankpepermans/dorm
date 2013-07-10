@@ -281,7 +281,7 @@ class EntityManager {
               if (
                   (entry is Entity) &&
                   entry._isPointer &&
-                  (entry.runtimeType == actualEntity.runtimeType) && 
+                  (entry._mirror == actualEntity._mirror) && 
                   (_buildKey(entry) == key)
               ) {
                 proxy.owner[proxy.owner.indexOf(entry)] = actualEntity;
@@ -291,7 +291,7 @@ class EntityManager {
       } else if (
           (proxy._value is Entity) &&
           proxy._value._isPointer &&
-          (proxy._value.runtimeType == actualEntity.runtimeType) &&
+          (proxy._value._mirror == actualEntity._mirror) &&
           (_buildKey(proxy._value) == key)
       ) {
         proxy._initialValue = actualEntity;
@@ -311,7 +311,7 @@ class EntityManager {
             (dynamic entry) {
               if (
                   (entry is Entity) &&
-                  (entry.runtimeType == actualEntity.runtimeType) && 
+                  (entry._mirror == actualEntity._mirror) && 
                   (_buildKey(entry) == key)
               ) {
                 proxy.owner[proxy.owner.indexOf(entry)] = actualEntity;
@@ -320,7 +320,7 @@ class EntityManager {
         );
       } else if (
           (proxy._value is Entity) &&
-          (proxy._value.runtimeType == actualEntity.runtimeType) && 
+          (proxy._value._mirror == actualEntity._mirror) && 
           (_buildKey(proxy._value) == key)
       ) {
         proxy._initialValue = actualEntity;
