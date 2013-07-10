@@ -16,10 +16,11 @@ abstract class Entity extends ObservableBase implements IExternalizable {
   
   dynamic operator [](String propertyName) {
     _ProxyEntry entry;
-    int i = _scan._proxies.length;
+    List<_ProxyEntry> proxies = _scan._proxies;
+    int i = proxies.length;
     
     while (i > 0) {
-      entry = _scan._proxies[--i];
+      entry = proxies[--i];
       
       if (entry.property == propertyName) {
         return entry.proxy.value;
@@ -31,10 +32,11 @@ abstract class Entity extends ObservableBase implements IExternalizable {
   
   void operator []=(String propertyName, dynamic propertyValue) {
     _ProxyEntry entry;
-    int i = _scan._proxies.length;
+    List<_ProxyEntry> proxies = _scan._proxies;
+    int i = proxies.length;
     
     while (i > 0) {
-      entry = _scan._proxies[--i];
+      entry = proxies[--i];
       
       if (entry.property == propertyName) {
         entry.proxy.value = notifyPropertyChange(
@@ -63,19 +65,21 @@ abstract class Entity extends ObservableBase implements IExternalizable {
   //-----------------------------------
   
   void validate() {
-    int i = _scan._proxies.length;
+    List<_ProxyEntry> proxies = _scan._proxies;
+    int i = proxies.length;
     
     while (i > 0) {
-      _scan._proxies[--i].proxy.validate();
+      proxies[--i].proxy.validate();
     }
   }
   
   bool isDirty() {
     _ProxyEntry entry;
-    int i = _scan._proxies.length;
+    List<_ProxyEntry> proxies = _scan._proxies;
+    int i = proxies.length;
     
     while (i > 0) {
-      entry = _scan._proxies[--i];
+      entry = proxies[--i];
       
       if (entry.proxy._value != entry.proxy._defaultValue) {
         return true;
@@ -88,13 +92,14 @@ abstract class Entity extends ObservableBase implements IExternalizable {
   void readExternal(Map<String, dynamic> data, OnConflictFunction onConflict) {
     EntityFactory<Entity> factory = new EntityFactory(onConflict);
     _ProxyEntry entry;
-    int i = _scan._proxies.length;
+    List<_ProxyEntry> proxies = _scan._proxies;
+    int i = proxies.length;
     dynamic entryValue;
     
     _isPointer = (data.containsKey(SerializationType.POINTER));
     
     while (i > 0) {
-      entry = _scan._proxies[--i];
+      entry = proxies[--i];
       
       entryValue = data[entry.property];
       

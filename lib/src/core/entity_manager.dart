@@ -217,7 +217,12 @@ class EntityManager {
   }
   
   Entity _registerSpawnedEntity(Entity spawnee, Entity existingEntity, String type, String key, OnConflictFunction onConflict) {
+    ConflictManager conflictManager;
     Map<String, Entity> typeRegistry;
+    List<_ProxyEntry> entryProxies;
+    List<_ProxyEntry> spawneeProxies;
+    _ProxyEntry entryA, entryB;
+    int i, j;
     
     if (!_spawnRegistry.containsKey(type)) {
       _spawnRegistry[type] = new Map<String, Entity>();
@@ -231,20 +236,23 @@ class EntityManager {
           throw new DormError('Conflict was detected, but no onConflict method is available');
         }
         
-        ConflictManager conflictManager = onConflict(spawnee, typeRegistry[key]);
+        conflictManager = onConflict(spawnee, typeRegistry[key]);
       
         if (conflictManager == ConflictManager.ACCEPT_SERVER) {
-          _ProxyEntry entryA, entryB;
-          int i = existingEntity._scan._proxies.length;
-          int j;
+          entryProxies = existingEntity._scan._proxies;
+          
+          
+          i = entryProxies.length;
           
           while (i > 0) {
-            entryA = existingEntity._scan._proxies[--i];
+            entryA = entryProxies[--i];
             
-            j = spawnee._scan._proxies.length;
+            spawneeProxies = spawnee._scan._proxies;
+            
+            j = spawneeProxies.length;
             
             while (j > 0) {
-              entryB = spawnee._scan._proxies[--j];
+              entryB = spawneeProxies[--j];
               
               if (entryA.propertySymbol == entryB.propertySymbol) {
                 entryA.proxy._initialValue = existingEntity.notifyPropertyChange(entryA.proxy.propertySymbol, entryA.proxy._value, entryB.proxy._value);
@@ -389,41 +397,55 @@ class EntityManager {
   }
   
   void _initialize(Entity entity) {
-    entity._scan._proxies.forEach(
-      (_ProxyEntry entry) {
-        Proxy proxy = new Proxy._construct(null, true);
+    _ProxyEntry entry;
+    Proxy proxy;
+    InstanceMirror metadata;
+    List<InstanceMirror> instanceMirrors;
+    List<_ProxyEntry> proxyEntryList = entity._scan._proxies;
+    dynamic reflectee;
+    int i = proxyEntryList.length;
+    int j;
+    
+    while (i > 0) {
+      entry = proxyEntryList[--i];
+      
+      proxy = new Proxy._construct(null, true)
+      ..property = entry.property
+      ..propertySymbol = entry.propertySymbol;
+      
+      instanceMirrors = entry.mirror.metadata;
+      
+      j = instanceMirrors.length;
+      
+      while (j > 0) {
+        metadata = instanceMirrors[--j];
         
-        proxy.property = entry.property;
-        proxy.propertySymbol = entry.propertySymbol;
+        reflectee = metadata.reflectee;
         
-        entry.mirror.metadata.forEach(
-            (InstanceMirror metadata) {
-              if (metadata.reflectee is Id) {
-                proxy.isId = true;
-              } else if (metadata.reflectee is Transient) {
-                proxy.isTransient = true;
-              } else if (metadata.reflectee is NotNullable) {
-                proxy.isNullable = false;
-              } else if (metadata.reflectee is DefaultValue) {
-                proxy._initialValue = (metadata.reflectee as DefaultValue).value;
-              } else if (metadata.reflectee is LabelField) {
-                proxy.isLabelField = true;
-              } else if (
-                  !entity._scan.isMutableEntity ||
-                  (metadata.reflectee is Immutable)
-                ) {
-                proxy.isMutable = false;
-              }
-            }
-        );
-        
-        entry.proxy = proxy;
-        
-        _proxyRegistry.add(proxy);
-        
-        entity._mirror.setField(entry.symbol, proxy);
+        if (reflectee is Id) {
+          proxy.isId = true;
+        } else if (reflectee is Transient) {
+          proxy.isTransient = true;
+        } else if (reflectee is NotNullable) {
+          proxy.isNullable = false;
+        } else if (reflectee is DefaultValue) {
+          proxy._initialValue = (reflectee as DefaultValue).value;
+        } else if (reflectee is LabelField) {
+          proxy.isLabelField = true;
+        } else if (
+            !entity._scan.isMutableEntity ||
+            (reflectee is Immutable)
+        ) {
+          proxy.isMutable = false;
+        }
       }
-    );
+      
+      entry.proxy = proxy;
+      
+      _proxyRegistry.add(proxy);
+      
+      entity._mirror.setField(entry.symbol, proxy);
+    }
   }
   
   ConflictManager _handleConflictAcceptClient(Entity serverEntity, Entity clientEntity) {
