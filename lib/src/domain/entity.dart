@@ -93,6 +93,7 @@ abstract class Entity extends ObservableBase implements IExternalizable {
     EntityFactory<Entity> factory = new EntityFactory(onConflict);
     _ProxyEntry entry;
     List<_ProxyEntry> proxies = _scan._proxies;
+    Iterable<Map<String, dynamic>> spawnList = new List<Map<String, dynamic>>(1);
     int i = proxies.length;
     dynamic entryValue;
     
@@ -104,9 +105,9 @@ abstract class Entity extends ObservableBase implements IExternalizable {
       entryValue = data[entry.property];
       
       if (entryValue is Map) {
-        entry.proxy._initialValue = factory.spawn(
-            <Map<String, dynamic>>[entryValue]
-        ).first;
+        spawnList[0] = entryValue;
+        
+        entry.proxy._initialValue = factory.spawn(spawnList).first;
       } else if (entryValue is Iterable) {
         entry.proxy._initialValue = entry.proxy.owner = factory.spawn(entryValue);
       } else {
