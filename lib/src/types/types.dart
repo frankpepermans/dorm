@@ -11,22 +11,7 @@ class Proxy<T> {
   }
   
   T get value => _value;
-  set value(T newValue) {
-    if (!isMutable) {
-      throw new DormError('$property is immutable');
-    }
-    
-    if (
-      !isNullable &&
-      (newValue == null)
-    ) {
-      throw new DormError('$property is not nullable');
-    }
-    
-    if (newValue != _value) {
-      _value = newValue;
-    }
-  }
+  set value(T newValue) => _value = newValue;
   
   String property;
   Symbol propertySymbol;
@@ -43,6 +28,19 @@ class Proxy<T> {
     _defaultValue = v;
     value = v;
     isMutable = m;
+  }
+  
+  void validate() {
+    if (!isMutable) {
+      throw new DormError('$property is immutable');
+    }
+    
+    if (
+      !isNullable &&
+      (_value == null)
+    ) {
+      throw new DormError('$property is not nullable');
+    }
   }
   
 }

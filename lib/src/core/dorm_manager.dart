@@ -49,6 +49,14 @@ class DormManager {
     
     _flushInternal();
     
+    _queue.forEach(
+        (Entity entity) => entity.validate()
+    );
+    
+    _deleteQueue.forEach(
+        (Entity entity) => entity.validate()
+    );
+    
     return new DormManagerCommitStructure(queueRecursive, deleteQueueRecursive);
   }
   

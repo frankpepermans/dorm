@@ -62,6 +62,14 @@ abstract class Entity extends ObservableBase implements IExternalizable {
   //
   //-----------------------------------
   
+  void validate() {
+    int i = _scan._proxies.length;
+    
+    while (i > 0) {
+      _scan._proxies[--i].proxy.validate();
+    }
+  }
+  
   bool isDirty() {
     _ProxyEntry entry;
     int i = _scan._proxies.length;
