@@ -40,10 +40,7 @@ main() {
         Map<String, dynamic> map = parse(entry);
         
         expect(map.containsKey('id'), true);
-        
-        if (!map.containsKey(SerializationType.POINTER)) {
-          expect(map.containsKey('name'), true);
-        }
+        expect(map.containsKey(SerializationType.UID), true);
         
         expect(map[SerializationType.ENTITY_TYPE], 'entities.testEntity');
       }

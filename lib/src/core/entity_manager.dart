@@ -232,7 +232,7 @@ class EntityManager {
     typeRegistry = _spawnRegistry[type];
     
     if (spawnee != existingEntity) {
-      if (existingEntity.isDirty()) {
+      //if (existingEntity.isDirty()) {
         if (onConflict == null) {
           throw new DormError('Conflict was detected, but no onConflict method is available');
         }
@@ -241,7 +241,6 @@ class EntityManager {
       
         if (conflictManager == ConflictManager.ACCEPT_SERVER) {
           entryProxies = existingEntity._scan._proxies;
-          
           
           i = entryProxies.length;
           
@@ -264,7 +263,7 @@ class EntityManager {
               }
             }
           }
-        }
+        //}
       }
       
       _swapEntries(existingEntity, key);
@@ -290,7 +289,7 @@ class EntityManager {
               if (
                   (entry is Entity) &&
                   entry._isPointer &&
-                  (entry._mirror == actualEntity._mirror) && 
+                  (entry._scan.qualifiedLocalName == actualEntity._scan.qualifiedLocalName) && 
                   (_buildKey(entry) == key)
               ) {
                 proxy.owner[proxy.owner.indexOf(entry)] = actualEntity;
@@ -300,7 +299,7 @@ class EntityManager {
       } else if (
           (proxy._value is Entity) &&
           proxy._value._isPointer &&
-          (proxy._value._mirror == actualEntity._mirror) &&
+          (proxy._value._scan.qualifiedLocalName == actualEntity._scan.qualifiedLocalName) &&
           (_buildKey(proxy._value) == key)
       ) {
         proxy._initialValue = actualEntity;

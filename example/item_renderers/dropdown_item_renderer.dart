@@ -23,6 +23,20 @@ class DropdownItemRenderer extends ItemRenderer {
   // Public properties
   //
   //---------------------------------
+  
+  //---------------------------------
+  // data
+  //---------------------------------
+
+  set data(dynamic value) {
+    if (value is Entity) {
+      value.changes.listen(
+        (_) => invalidateData() 
+      );
+    }
+    
+    super.data = value;
+  }
 
   //---------------------------------
   //

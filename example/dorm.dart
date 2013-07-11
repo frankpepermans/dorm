@@ -71,22 +71,29 @@ void init() {
                      ..headerData = { 'label' : Person.ID, 'property' : Person.ID }
                      ..field = Person.ID
                      ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
-                     ..columnItemRendererFactory = new ClassFactory(constructorMethod: LabelItemRenderer.construct),
+                     ..columnItemRendererFactory = new ClassFactory(constructorMethod: EmployeeIdItemRenderer.construct),
 
                      new DataGridColumn()
                      ..width=280
-                     ..headerData = { 'label' : Person.NAME, 'property' : Person.NAME }
+                     ..headerData = { 'label' : 'employee.${Person.NAME}', 'property' : Person.NAME }
                      ..field = Person.NAME
                      ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
-                     ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct),
+                     ..columnItemRendererFactory = new ClassFactory(constructorMethod: EmployeeNameItemRenderer.construct),
 
                      new DataGridColumn()
-                     ..percentWidth=100.0
-                     ..headerData = { 'label' : Employee.JOB, 'property' : Employee.JOB }
+                     ..width=280
+                     ..headerData = { 'label' : 'employee.${Employee.JOB}', 'property' : Employee.JOB }
                      ..field = Employee.JOB
                      ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
-                     ..columnItemRendererFactory = new ClassFactory(constructorMethod: DropdownItemRenderer.construct)
-                     ]
+                     ..columnItemRendererFactory = new ClassFactory(constructorMethod: DropdownItemRenderer.construct),
+                     
+                     new DataGridColumn()
+                     ..percentWidth=100.0
+                     ..headerData = { 'label' : 'employee.job.employees (cyclic)', 'property' : Employee.JOB }
+                     ..field = Employee.JOB
+                     ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
+                     ..columnItemRendererFactory = new ClassFactory(constructorMethod: RelatedEmployeesItemRenderer.construct)
+            ]
         )
         ..dataProvider=new ListCollection(source: resultList);
         
