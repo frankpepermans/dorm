@@ -16,6 +16,7 @@ final Serializer serializer = new SerializerJson<String>();
 
 FetchService fetchService;
 CommitService commitService;
+FetchService postCommitFetchService;
 
 ConflictManager handleConflictAcceptClient(Entity serverEntity, Entity clientEntity) {
   return ConflictManager.ACCEPT_CLIENT;
@@ -38,6 +39,7 @@ void main() {
 void init() {
   fetchService = new FetchService(url, port, serializer, handleConflictAcceptClient);
   commitService = new CommitService(url, port, serializer, handleConflictAcceptServer);
+  postCommitFetchService = new FetchService(url, port, serializer, handleConflictAcceptServer);
   
   fetchService.ormEntityLoad('Employee').then(
       (List<Entity> resultList) {
@@ -111,6 +113,8 @@ void init() {
               commitService.flush(structure.dataToCommit, structure.dataToDelete).then(
                   (List<Entity> response) {
                     commitResultText.text = 'commit completed!';
+                    
+                    postCommitFetchService.ormEntityLoad('Job');
                     
                     Timer timer = new Timer(
                         const Duration(seconds: 10),
