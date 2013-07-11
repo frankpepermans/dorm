@@ -37,7 +37,7 @@ void main() {
 
 void init() {
   fetchService = new FetchService(url, port, serializer, handleConflictAcceptClient);
-  commitService = new CommitService(url, port, serializer, handleConflictAcceptClient);
+  commitService = new CommitService(url, port, serializer, handleConflictAcceptServer);
   
   fetchService.ormEntityLoad('Employee').then(
       (List<Entity> resultList) {
@@ -102,7 +102,7 @@ void init() {
               DormManagerCommitStructure structure = dormManager.getCommitStructure();
               
               commitService.flush(structure.dataToCommit, structure.dataToDelete).then(
-                  (_) {
+                  (List<Entity> response) {
                     commitResultText.text = 'commit completed!';
                     
                     Timer timer = new Timer(

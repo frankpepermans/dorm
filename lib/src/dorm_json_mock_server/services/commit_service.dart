@@ -7,6 +7,8 @@ class CommitService extends BaseService {
   CommitService() : super();
   
   String flush(List<String> dataToCommit, List<String> dataToDelete) {
+    List<Map<String, dynamic>> response = <Map<String, dynamic>>[];
+    
     dbo.resetCache();
     
     dataToCommit.forEach(
@@ -50,10 +52,17 @@ class CommitService extends BaseService {
           File tableFile = new File('../bin/dbo/dbo_${tableName}.json');
           
           tableFile.writeAsStringSync(stringify(table), mode:FileMode.WRITE, encoding:Encoding.UTF_8);
+          
+          response.add(
+              dbo.ormEntityLoad(
+                  entityName, 
+                  entityId:pkValue
+              ).first    
+          );
         }
     );
     
-    return stringify([]);
+    return stringify(response);
   }
   
 }
