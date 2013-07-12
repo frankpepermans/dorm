@@ -4,11 +4,11 @@ packages:
   analyzer_experimental:
     description: analyzer_experimental
     source: hosted
-    version: "0.5.20"
+    version: "0.6.3+1"
   args:
     description: args
     source: hosted
-    version: "0.5.20"
+    version: "0.6.3+1"
   browser:
     description: browser
     source: hosted
@@ -20,7 +20,7 @@ packages:
   dart_flex:
     description: dart_flex
     source: hosted
-    version: "0.4.5"
+    version: "0.4.7"
   html5lib:
     description: html5lib
     source: hosted
@@ -28,23 +28,23 @@ packages:
   logging:
     description: logging
     source: hosted
-    version: "0.5.20"
-  mdv_observe:
-    description: mdv_observe
-    source: hosted
-    version: "0.5.20"
+    version: "0.6.3+1"
   meta:
     description: meta
     source: hosted
     version: "0.5.20"
+  observe:
+    description: observe
+    source: hosted
+    version: "0.6.3+1"
   pathos:
     description: pathos
     source: hosted
-    version: "0.5.20"
+    version: "0.6.3+1"
   source_maps:
     description: source_maps
     source: hosted
-    version: "0.5.20"
+    version: "0.6.3+2"
   unittest:
     description: unittest
     source: hosted
@@ -52,4 +52,4 @@ packages:
   web_ui:
     description: web_ui
     source: hosted
-    version: "0.4.13+2"
+    version: "0.4.14"

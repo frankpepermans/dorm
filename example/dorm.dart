@@ -4,7 +4,7 @@ import 'dart:typed_data';
 
 import 'package:dart_flex/dart_flex.dart';
 import 'package:dorm/dorm.dart';
-import 'package:mdv_observe/mdv_observe.dart';
+import 'package:observe/observe.dart';
 
 import 'item_renderers/item_renderers.dart';
 import 'orm_domain/orm_domain.dart';

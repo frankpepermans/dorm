@@ -6,7 +6,7 @@ import 'dart:core';
 import 'dart:html';
 import 'dart:json';
 
-import 'package:mdv_observe/mdv_observe.dart';
+import 'package:observe/observe.dart';
 
 part 'src/core/conflict_manager.dart';
 part 'src/core/dorm_error.dart';

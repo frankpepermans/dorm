@@ -1,6 +1,6 @@
 part of dorm;
 
-class DormError implements Error {
+class DormError extends Error {
   
   final String message;
 

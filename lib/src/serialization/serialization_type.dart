@@ -4,6 +4,6 @@ abstract class SerializationType {
   
   static const String ENTITY_TYPE = '?t';
   static const String POINTER = '?p';
-  static const String UID = '?id';
+  static const String UID = '?=';
   
 }

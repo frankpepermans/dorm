@@ -72,7 +72,9 @@ class LazyReference<T> {
       );
     } else {
       // obtain value and complete
-      _handler().then(
+      Future future = _handler() as Future;
+      
+      future.then(
           (T value) {
             _internalValue = value;
             
