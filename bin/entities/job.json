@@ -18,7 +18,7 @@
     },
     {
       "name":"employees",
-      "type":"List<Employee>",
+      "type":"ObservableList<Employee>",
       "singular-type":"Employee",
       "link-table":"persons",
       "fk-column":"Job_id",

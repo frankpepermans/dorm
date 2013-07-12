@@ -8,7 +8,7 @@ class EntityFactory<T> {
   //
   //---------------------------------
   
-  EntityManager _manager;
+  EntityAssembler _assembler;
   final OnConflictFunction _onConflict;
   
   //---------------------------------
@@ -18,7 +18,7 @@ class EntityFactory<T> {
   //---------------------------------
   
   EntityFactory(this._onConflict) {
-    _manager = new EntityManager();
+    _assembler = new EntityAssembler();
   }
   
   //---------------------------------
@@ -29,7 +29,7 @@ class EntityFactory<T> {
   
   Iterable<T> spawn(Iterable<Map<String, dynamic>> rawData) {
     List<T> results = new List<T>(rawData.length);
-    Function spawner = _manager._spawn;
+    Function spawner = _assembler._assemble;
     int index = 0;
     
     rawData.forEach(

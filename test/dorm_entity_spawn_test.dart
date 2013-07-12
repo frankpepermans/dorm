@@ -5,12 +5,12 @@ import 'package:dorm/dorm.dart';
 import 'dart:json';
 
 main() {
-  EntityManager manager = new EntityManager();
+  EntityAssembler assembler = new EntityAssembler();
   Serializer serializer = new SerializerJson();
   String rawDataA = '[{"id":1,"name":"Test A","?t":"entities.testEntity"}]';
   String rawDataB = '[{"id":2,"name":"Test B","?t":"entities.testEntity"}]';
   
-  manager.scan(TestEntity);
+  assembler.scan(TestEntity);
   
   test('Simple spawn test', () {
     EntityFactory<TestEntity> factory = new EntityFactory(handleConflictAcceptClient);

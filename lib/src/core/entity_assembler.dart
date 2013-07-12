@@ -1,6 +1,6 @@
 part of dorm;
 
-class EntityManager {
+class EntityAssembler {
   
   //---------------------------------
   //
@@ -18,7 +18,7 @@ class EntityManager {
   //
   //---------------------------------
   
-  EntityManager._construct();
+  EntityAssembler._construct();
   
   //---------------------------------
   //
@@ -26,11 +26,11 @@ class EntityManager {
   //
   //---------------------------------
   
-  static EntityManager _instance;
+  static EntityAssembler _instance;
 
-  factory EntityManager() {
+  factory EntityAssembler() {
     if (_instance == null) {
-      _instance = new EntityManager._construct();
+      _instance = new EntityAssembler._construct();
     }
 
     return _instance;
@@ -160,7 +160,7 @@ class EntityManager {
     return entity._scan.key;
   }
   
-  Entity _spawn(Map<String, dynamic> rawData, OnConflictFunction onConflict) {
+  Entity _assemble(Map<String, dynamic> rawData, OnConflictFunction onConflict) {
     final String type = rawData[SerializationType.ENTITY_TYPE];
     final Symbol typeSymbol = new Symbol(type);
     EntityScan scan;
@@ -187,7 +187,6 @@ class EntityManager {
         entity = instanceMirror.reflectee;
         entity._uid = entity.hashCode;
         entity._mirror = instanceMirror;
-        entity._manager = this;
         entity._scan = _getScanForInstance(entity);
         
         _initialize(entity);
@@ -274,15 +273,6 @@ class EntityManager {
     return existingEntity;
   }
   
-  bool _areEqualByKey(dynamic instance, Entity compareEntity, String key) {
-    return (
-        (instance is Entity) &&
-        instance._isPointer &&
-        (instance._scan.qualifiedLocalName == compareEntity._scan.qualifiedLocalName) && 
-        (_buildKey(instance) == key)
-    );
-  }
-  
   void _swapPointers(Entity actualEntity, String key) {
     Proxy proxy;
     int i = _proxyRegistry.length;
@@ -344,29 +334,6 @@ class EntityManager {
     
     return entity;
   }
-  
-  /*String _keyBuilder(_ProxyEntry entry) {
-    String key;
-    
-    if (entry.proxy.value is Entity) {
-      List<String> idList = <String>[];
-      Entity entity = entry.proxy.value;
-      
-      entity._scan._proxies.forEach(
-          (_ProxyEntry entry) {
-            if (entry.proxy.isId) {
-              idList.add('${entry.property}?${entry.proxy.value}');
-            }
-          }
-      );
-      
-      key = idList.join('??');
-    } else {
-      key = '${entry.property}?${entry.proxy.value}';
-    }
-    
-    return key;
-  }*/
   
   List<Type> _reflectedTypes = new List<Type>();
   
@@ -435,6 +402,22 @@ class EntityManager {
       
       entity._mirror.setField(entry.symbol, proxy);
     }
+  }
+  
+  bool _areEqualByKey(dynamic instance, Entity compareEntity, String key) {
+    Entity entity;
+    
+    if (instance is Entity) {
+      entity = instance as Entity;
+      
+      return (
+          entity._isPointer &&
+          (entity._scan.qualifiedLocalName == compareEntity._scan.qualifiedLocalName) && 
+          (_buildKey(entity) == key)
+      );
+    }
+    
+    return false;
   }
   
   ConflictManager _handleConflictAcceptClient(Entity serverEntity, Entity clientEntity) {

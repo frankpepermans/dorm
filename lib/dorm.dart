@@ -10,7 +10,7 @@ import 'package:observe/observe.dart';
 
 part 'src/core/conflict_manager.dart';
 part 'src/core/dorm_error.dart';
-part 'src/core/entity_manager.dart';
+part 'src/core/entity_assembler.dart';
 part 'src/core/entity_factory.dart';
 part 'src/core/dorm_manager.dart';
 part 'src/core/entity_scan.dart';

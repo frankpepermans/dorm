@@ -19,7 +19,8 @@ void createDomainFile(List<String> classes, List<String> entityClassNames) {
   contents += 'library orm_domain;\r\r';
   contents += "@MirrorsUsed(symbols: '${entityClassNames.join(',')}', override: '*')\r";
   contents += "import 'dart:mirrors';\r";
-  contents += "import 'package:dorm/dorm.dart';\r\r";
+  contents += "import 'package:dorm/dorm.dart';\r";
+  contents += "import 'package:observe/observe.dart';\r\r";
   
   classes.forEach(
     (String className) => contents += "part '${className}.dart';\r" 
@@ -28,10 +29,10 @@ void createDomainFile(List<String> classes, List<String> entityClassNames) {
   contents += '\r';
   
   contents += 'void ormInitialize() {\r';
-  contents += '\tEntityManager entityManager = new EntityManager();\r\r';
+  contents += '\tEntityAssembler assembler = new EntityAssembler();\r\r';
   
   entityClassNames.forEach(
-    (String entityClassName) => contents += '\tentityManager.scan(${entityClassName});\r'    
+    (String entityClassName) => contents += '\tassembler.scan(${entityClassName});\r'    
   );
   
   contents += '}\r';

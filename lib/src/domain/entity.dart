@@ -2,7 +2,6 @@ part of dorm;
 
 abstract class Entity extends ObservableBase implements IExternalizable {
   
-  EntityManager _manager;
   InstanceMirror _mirror;
   Map _source;
   EntityScan _scan;
@@ -113,7 +112,7 @@ abstract class Entity extends ObservableBase implements IExternalizable {
         
         proxy._initialValue = factory.spawn(spawnList).first;
       } else if (entryValue is Iterable) {
-        proxy._initialValue = proxy.owner = factory.spawn(entryValue);
+        proxy._initialValue = proxy.owner = new ObservableList.from(factory.spawn(entryValue));
       } else {
         proxy._initialValue = entryValue;
       }
