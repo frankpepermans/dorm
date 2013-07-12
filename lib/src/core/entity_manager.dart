@@ -232,38 +232,36 @@ class EntityManager {
     typeRegistry = _spawnRegistry[type];
     
     if (spawnee != existingEntity) {
-      //if (existingEntity.isDirty()) {
-        if (onConflict == null) {
-          throw new DormError('Conflict was detected, but no onConflict method is available');
-        }
-        
-        conflictManager = onConflict(spawnee, typeRegistry[key]);
+      if (onConflict == null) {
+        throw new DormError('Conflict was detected, but no onConflict method is available');
+      }
       
-        if (conflictManager == ConflictManager.ACCEPT_SERVER) {
-          entryProxies = existingEntity._scan._proxies;
+      conflictManager = onConflict(spawnee, typeRegistry[key]);
+      
+      if (conflictManager == ConflictManager.ACCEPT_SERVER) {
+        entryProxies = existingEntity._scan._proxies;
+        
+        i = entryProxies.length;
+        
+        while (i > 0) {
+          entryA = entryProxies[--i];
           
-          i = entryProxies.length;
+          spawneeProxies = spawnee._scan._proxies;
           
-          while (i > 0) {
-            entryA = entryProxies[--i];
+          j = spawneeProxies.length;
+          
+          while (j > 0) {
+            entryB = spawneeProxies[--j];
             
-            spawneeProxies = spawnee._scan._proxies;
-            
-            j = spawneeProxies.length;
-            
-            while (j > 0) {
-              entryB = spawneeProxies[--j];
+            if (entryA.propertySymbol == entryB.propertySymbol) {
+              entryA.proxy._initialValue = existingEntity.notifyPropertyChange(entryA.proxy.propertySymbol, entryA.proxy._value, entryB.proxy._value);
               
-              if (entryA.propertySymbol == entryB.propertySymbol) {
-                entryA.proxy._initialValue = existingEntity.notifyPropertyChange(entryA.proxy.propertySymbol, entryA.proxy._value, entryB.proxy._value);
-                
-                _proxyRegistry.remove(entryB.proxy);
-                
-                break;
-              }
+              _proxyRegistry.remove(entryB.proxy);
+              
+              break;
             }
           }
-        //}
+        }
       }
       
       _swapEntries(existingEntity, key);
@@ -276,6 +274,15 @@ class EntityManager {
     return existingEntity;
   }
   
+  bool _areEqualByKey(dynamic instance, Entity compareEntity, String key) {
+    return (
+        (instance is Entity) &&
+        instance._isPointer &&
+        (instance._scan.qualifiedLocalName == compareEntity._scan.qualifiedLocalName) && 
+        (_buildKey(instance) == key)
+    );
+  }
+  
   void _swapPointers(Entity actualEntity, String key) {
     Proxy proxy;
     int i = _proxyRegistry.length;
@@ -286,22 +293,12 @@ class EntityManager {
       if (proxy.owner != null) {
         proxy.owner.forEach(
             (dynamic entry) {
-              if (
-                  (entry is Entity) &&
-                  entry._isPointer &&
-                  (entry._scan.qualifiedLocalName == actualEntity._scan.qualifiedLocalName) && 
-                  (_buildKey(entry) == key)
-              ) {
+              if (_areEqualByKey(entry, actualEntity, key)) {
                 proxy.owner[proxy.owner.indexOf(entry)] = actualEntity;
               }
             }
         );
-      } else if (
-          (proxy._value is Entity) &&
-          proxy._value._isPointer &&
-          (proxy._value._scan.qualifiedLocalName == actualEntity._scan.qualifiedLocalName) &&
-          (_buildKey(proxy._value) == key)
-      ) {
+      } else if (_areEqualByKey(proxy._value, actualEntity, key)) {
         proxy._initialValue = actualEntity;
       }
     }
@@ -317,20 +314,12 @@ class EntityManager {
       if (proxy.owner != null) {
         proxy.owner.forEach(
             (dynamic entry) {
-              if (
-                  (entry is Entity) &&
-                  (entry._mirror == actualEntity._mirror) && 
-                  (_buildKey(entry) == key)
-              ) {
+              if (_areEqualByKey(entry, actualEntity, key)) {
                 proxy.owner[proxy.owner.indexOf(entry)] = actualEntity;
               }
             }
         );
-      } else if (
-          (proxy._value is Entity) &&
-          (proxy._value._mirror == actualEntity._mirror) && 
-          (_buildKey(proxy._value) == key)
-      ) {
+      } else if (_areEqualByKey(proxy._value, actualEntity, key)) {
         proxy._initialValue = actualEntity;
       }
     }

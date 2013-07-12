@@ -99,7 +99,7 @@ abstract class Entity extends ObservableBase implements IExternalizable {
     int i = proxies.length;
     dynamic entryValue;
     
-    _isPointer = (data.containsKey(SerializationType.POINTER));
+    _isPointer = data.containsKey(SerializationType.POINTER);
     
     while (i > 0) {
       entry = proxies[--i];
