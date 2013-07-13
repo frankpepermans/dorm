@@ -84,14 +84,23 @@ main() {
   });
   
   test('Speed test', () {
+    List<String> jsonList = <String>[];
     EntityFactory<TestEntity> factory = new EntityFactory(handleConflictAcceptServer);
     int i = 1000;
-    DateTime time = new DateTime.now();
+    DateTime time;
     
     while (i > 0) {
       String json = '[{"id":${--i},"name":"Speed test","?t":"entities.testEntity"}]';
       
-      factory.spawn(serializer.incoming(rawDataA)).first;
+      jsonList.add(json);
+    }
+    
+    i = 1000;
+    
+    time = new DateTime.now();
+    
+    while (i > 0) {
+      factory.spawn(serializer.incoming(jsonList[--i])).first;
     }
     
     int duration = time.millisecondsSinceEpoch - new DateTime.now().millisecondsSinceEpoch;

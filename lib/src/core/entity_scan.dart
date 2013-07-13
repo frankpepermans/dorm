@@ -2,40 +2,112 @@ part of dorm;
 
 class EntityScan {
   
-  EntityScan();
+  //---------------------------------
+  //
+  // Private properties
+  //
+  //---------------------------------
   
   EntityScan _original;
   
+  List<_ProxyEntry> _proxies = new List<_ProxyEntry>();
+  List<_ProxyEntry> _identityProxies = new List<_ProxyEntry>();
+  
+  Type entityType;
+  Symbol qualifiedName;
+  String qualifiedLocalName, _key;
+  ClassMirror classMirror;
+  bool isMutableEntity = true;
+  
+  static String _keyEntryStart = new String.fromCharCode(2);
+  static String _keyEntryEnd = new String.fromCharCode(2);
+  
+  //---------------------------------
+  //
+  // Public properties
+  //
+  //---------------------------------
+  
+  //---------------------------------
+  // key
+  //---------------------------------
+  
+  String get key {
+    StringBuffer buffer = new StringBuffer();
+    _ProxyEntry entry;
+    int i = _identityProxies.length;
+    
+    while (i > 0) {
+      entry = _identityProxies[--i];
+      
+      buffer.writeAll(<String>[_keyEntryStart, entry.property, _keyEntryEnd, _keyEntryStart, entry.proxy.value.toString(), _keyEntryEnd]);
+    }
+    
+    return buffer.toString();
+  }
+  
+  //---------------------------------
+  //
+  // Constructor
+  //
+  //---------------------------------
+  
+  EntityScan();
+  
   EntityScan.fromScan(EntityScan original) {
+    List<_ProxyEntry> originalProxies = original._proxies;
+    List<_ProxyEntry> originalIdentityProxies = original._identityProxies;
+    _ProxyEntry otherEntry;
+    _ProxyEntry clonedEntry;
+    int i = originalProxies.length;
+    
     this._original = original;
     
     this.entityType = original.entityType;
     this.qualifiedName = original.qualifiedName;
     this.qualifiedLocalName = original.qualifiedLocalName;
     this.classMirror = original.classMirror;
-    this.key = original.key;
     this.isMutableEntity = original.isMutableEntity;
     
-    original._proxies.forEach(
-      (_ProxyEntry otherEntry) =>  this._proxies.add(otherEntry.clone(otherEntry))
-    );
+    while (i > 0) {
+      otherEntry = originalProxies[--i];
+      
+      clonedEntry = otherEntry.clone();
+      
+      this._proxies.add(clonedEntry);
+      
+      if (originalIdentityProxies.contains(otherEntry)) {
+        this._identityProxies.add(clonedEntry);
+      }
+    }
   }
   
-  List<_ProxyEntry> _proxies = new List<_ProxyEntry>();
+  //---------------------------------
+  //
+  // Public methods
+  //
+  //---------------------------------
   
-  Type entityType;
-  Symbol qualifiedName;
-  String qualifiedLocalName;
-  ClassMirror classMirror;
-  String key;
-  bool isMutableEntity = true;
-  
-  void addProxy(String property, Symbol symbol, Symbol propertySymbol, VariableMirror mirror) {
+  void addProxy(String property, Symbol symbol, bool isIdentity, Symbol propertySymbol, VariableMirror mirror) {
     _ProxyEntry entry = new _ProxyEntry(property, symbol, propertySymbol, mirror);
     
     _proxies.add(entry);
+    
+    if (isIdentity) {
+      _identityProxies.add(entry);
+    }
   }
 }
+
+//---------------------------------
+//
+// Private classes
+//
+//---------------------------------
+
+//---------------------------------
+// _ProxyEntry
+//---------------------------------
 
 class _ProxyEntry {
   
@@ -48,8 +120,8 @@ class _ProxyEntry {
   
   _ProxyEntry(this.property, this.symbol, this.propertySymbol, this.mirror);
   
-  _ProxyEntry clone(_ProxyEntry value) {
-    return new _ProxyEntry(value.property, value.symbol, value.propertySymbol, value.mirror);
+  _ProxyEntry clone() {
+    return new _ProxyEntry(property, symbol, propertySymbol, mirror);
   }
   
 }

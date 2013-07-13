@@ -46,7 +46,8 @@ class EntityAssembler {
     const Symbol entitySymbol = const Symbol('dorm.Entity');
     EntityScan scan = _getExistingScan(forType);
     InstanceMirror instanceMirror;
-    int i;
+    bool isIdentity;
+    int i, j;
     
     if(scan != null) {
       return scan;
@@ -107,9 +108,22 @@ class EntityAssembler {
             if (instanceMirror.reflectee is Property) {
               property = instanceMirror.reflectee as Property;
               
+              isIdentity = false;
+              
+              j = mirror.metadata.length;
+              
+              while (j > 0) {
+                if (mirror.metadata[--j].reflectee is Id) {
+                  isIdentity = true;
+                  
+                  break;
+                }
+              }
+              
               scan.addProxy(
                   property.property, 
-                  symbol, 
+                  symbol,
+                  isIdentity,
                   property.propertySymbol,
                   mirror
               );
@@ -138,26 +152,6 @@ class EntityAssembler {
     }
     
     throw new DormError('Scan for entity not found');
-  }
-  
-  String _buildKey(Entity entity) {
-    if (entity._scan.key != null) {
-      return entity._scan.key;
-    }
-    
-    List<String> idList = <String>[];
-    
-    entity._scan._proxies.forEach(
-        (_ProxyEntry entry) {
-          if (entry.proxy.isId) {
-            idList.add('${entry.property}?${entry.proxy.value}');
-          }
-        }
-    );
-    
-    entity._scan.key = idList.join('??');
-    
-    return entity._scan.key;
   }
   
   Entity _assemble(Map<String, dynamic> rawData, OnConflictFunction onConflict) {
@@ -193,7 +187,7 @@ class EntityAssembler {
         
         entity.readExternal(rawData, onConflict);
         
-        key = _buildKey(entity);
+        key = entity._scan.key;
         
         if (!entity._isPointer) {
           entity = _registerSpawnedEntity(
@@ -413,7 +407,7 @@ class EntityAssembler {
       return (
           entity._isPointer &&
           (entity._scan.qualifiedLocalName == compareEntity._scan.qualifiedLocalName) && 
-          (_buildKey(entity) == key)
+          (entity._scan.key == key)
       );
     }
     
