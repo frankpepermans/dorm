@@ -2,7 +2,6 @@ part of dorm;
 
 abstract class Entity extends ObservableBase implements IExternalizable {
   
-  InstanceMirror _mirror;
   Map _source;
   EntityScan _scan;
   bool _isPointer;

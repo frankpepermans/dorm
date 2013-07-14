@@ -17,6 +17,7 @@ file:///C:/dart/dart-sdk/lib/_internal/lib/isolate_patch.dart
 file:///C:/dart/dart-sdk/lib/_internal/lib/js_array.dart
 file:///C:/dart/dart-sdk/lib/_internal/lib/js_helper.dart
 file:///C:/dart/dart-sdk/lib/_internal/lib/js_mirrors.dart
+file:///C:/dart/dart-sdk/lib/_internal/lib/js_names.dart
 file:///C:/dart/dart-sdk/lib/_internal/lib/js_number.dart
 file:///C:/dart/dart-sdk/lib/_internal/lib/js_rti.dart
 file:///C:/dart/dart-sdk/lib/_internal/lib/js_string.dart
@@ -28,6 +29,7 @@ file:///C:/dart/dart-sdk/lib/_internal/lib/regexp_helper.dart
 file:///C:/dart/dart-sdk/lib/_internal/lib/string_helper.dart
 file:///C:/dart/dart-sdk/lib/async/async.dart
 file:///C:/dart/dart-sdk/lib/async/async_error.dart
+file:///C:/dart/dart-sdk/lib/async/broadcast_stream_controller.dart
 file:///C:/dart/dart-sdk/lib/async/deferred_load.dart
 file:///C:/dart/dart-sdk/lib/async/event_loop.dart
 file:///C:/dart/dart-sdk/lib/async/future.dart
@@ -88,6 +90,7 @@ file:///C:/dart/dart-sdk/lib/html/html_common/css_class_set.dart
 file:///C:/dart/dart-sdk/lib/html/html_common/device.dart
 file:///C:/dart/dart-sdk/lib/html/html_common/filtered_element_list.dart
 file:///C:/dart/dart-sdk/lib/html/html_common/html_common_dart2js.dart
+file:///C:/dart/dart-sdk/lib/html/html_common/jenkins_smi_hash.dart
 file:///C:/dart/dart-sdk/lib/html/html_common/lists.dart
 file:///C:/dart/dart-sdk/lib/html/html_common/metadata.dart
 file:///C:/dart/dart-sdk/lib/indexed_db/dart2js/indexed_db_dart2js.dart
@@ -96,7 +99,6 @@ file:///C:/dart/dart-sdk/lib/isolate/isolate_stream.dart
 file:///C:/dart/dart-sdk/lib/json/json.dart
 file:///C:/dart/dart-sdk/lib/math/math.dart
 file:///C:/dart/dart-sdk/lib/math/random.dart
-file:///C:/dart/dart-sdk/lib/mdv_observe_impl/mdv_observe_impl.dart
 file:///C:/dart/dart-sdk/lib/mirrors/mirrors.dart
 file:///C:/dart/dart-sdk/lib/svg/dart2js/svg_dart2js.dart
 file:///C:/dart/dart-sdk/lib/typed_data/dart2js/typed_data_dart2js.dart
@@ -113,8 +115,8 @@ file:///C:/work/production/igindo/dart/dorm/test/packages/dorm/dorm.dart
 file:///C:/work/production/igindo/dart/dorm/test/packages/dorm/src/core/conflict_manager.dart
 file:///C:/work/production/igindo/dart/dorm/test/packages/dorm/src/core/dorm_error.dart
 file:///C:/work/production/igindo/dart/dorm/test/packages/dorm/src/core/dorm_manager.dart
+file:///C:/work/production/igindo/dart/dorm/test/packages/dorm/src/core/entity_assembler.dart
 file:///C:/work/production/igindo/dart/dorm/test/packages/dorm/src/core/entity_factory.dart
-file:///C:/work/production/igindo/dart/dorm/test/packages/dorm/src/core/entity_manager.dart
 file:///C:/work/production/igindo/dart/dorm/test/packages/dorm/src/core/entity_scan.dart
 file:///C:/work/production/igindo/dart/dorm/test/packages/dorm/src/domain/entity.dart
 file:///C:/work/production/igindo/dart/dorm/test/packages/dorm/src/domain/meta.dart
@@ -124,10 +126,12 @@ file:///C:/work/production/igindo/dart/dorm/test/packages/dorm/src/serialization
 file:///C:/work/production/igindo/dart/dorm/test/packages/dorm/src/serialization/serializer.dart
 file:///C:/work/production/igindo/dart/dorm/test/packages/dorm/src/serialization/serializer_json.dart
 file:///C:/work/production/igindo/dart/dorm/test/packages/dorm/src/types/types.dart
-file:///C:/work/production/igindo/dart/dorm/test/packages/mdv_observe/mdv_observe.dart
-file:///C:/work/production/igindo/dart/dorm/test/packages/mdv_observe/src/observable_box.dart
-file:///C:/work/production/igindo/dart/dorm/test/packages/mdv_observe/src/observable_list.dart
-file:///C:/work/production/igindo/dart/dorm/test/packages/mdv_observe/src/observable_map.dart
+file:///C:/work/production/igindo/dart/dorm/test/packages/observe/observe.dart
+file:///C:/work/production/igindo/dart/dorm/test/packages/observe/src/compound_binding.dart
+file:///C:/work/production/igindo/dart/dorm/test/packages/observe/src/observable_box.dart
+file:///C:/work/production/igindo/dart/dorm/test/packages/observe/src/observable_list.dart
+file:///C:/work/production/igindo/dart/dorm/test/packages/observe/src/observable_map.dart
+file:///C:/work/production/igindo/dart/dorm/test/packages/observe/src/path_observer.dart
 file:///C:/work/production/igindo/dart/dorm/test/packages/unittest/matcher.dart
 file:///C:/work/production/igindo/dart/dorm/test/packages/unittest/src/basematcher.dart
 file:///C:/work/production/igindo/dart/dorm/test/packages/unittest/src/config.dart

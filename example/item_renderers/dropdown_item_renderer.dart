@@ -11,7 +11,7 @@ class DropdownItemRenderer extends ItemRenderer {
   ComboBox _comboBox;
   
   static FetchService fetchService;
-  static ListCollection jobs;
+  static ObservableList jobs;
   static Future<List<Entity>> jobsAsync;
   
   final String url = '127.0.0.1';
@@ -80,9 +80,13 @@ class DropdownItemRenderer extends ItemRenderer {
     } else if (jobsAsync != null) {
       jobsAsync.then(
           (List<Entity> entities) {
-            jobs = new ListCollection(source: entities);
+            jobs = new ObservableList.from(entities);
             
             _comboBox.dataProvider = jobs;
+            
+            jobs.changes.listen(
+              (List<ChangeRecord> changes) => invalidateData()  
+            );
             
             invalidateData();
           }  
@@ -94,9 +98,13 @@ class DropdownItemRenderer extends ItemRenderer {
       
       jobsAsync.then(
           (List<Entity> entities) {
-            jobs = new ListCollection(source: entities);
+            jobs = new ObservableList.from(entities);
             
             _comboBox.dataProvider = jobs;
+            
+            jobs.changes.listen(
+                (List<ChangeRecord> changes) => invalidateData()  
+            );
             
             invalidateData();
           }

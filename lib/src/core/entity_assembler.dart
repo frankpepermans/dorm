@@ -11,6 +11,7 @@ class EntityAssembler {
   List<EntityScan> _entityScans = <EntityScan>[];
   List<Proxy> _proxyRegistry = <Proxy>[];
   Map<String, Map<String, Entity>> _spawnRegistry = new Map<String, Map<String, Entity>>();
+  int _proxyCount = 0;
   
   //---------------------------------
   //
@@ -178,14 +179,7 @@ class EntityAssembler {
         
         instanceMirror = scan.classMirror.newInstance(methodMirror.constructorName, []);
         
-        entity = instanceMirror.reflectee;
-        entity._uid = entity.hashCode;
-        entity._mirror = instanceMirror;
-        entity._scan = _getScanForInstance(entity);
-        
-        _initialize(entity);
-        
-        entity.readExternal(rawData, onConflict);
+        entity = _toEntity(instanceMirror, rawData, onConflict);
         
         key = entity._scan.key;
         
@@ -199,6 +193,10 @@ class EntityAssembler {
           returningEntity = entity;
         } else {
           returningEntity = _existingFromSpawnRegistry(type, key, entity);
+          
+          if (returningEntity._isPointer) {
+            _proxyCount++;
+          }
         }
         
         return returningEntity;
@@ -268,6 +266,10 @@ class EntityAssembler {
   }
   
   void _swapPointers(Entity actualEntity, String key) {
+    if (_proxyCount == 0) {
+      return;
+    }
+    
     Proxy proxy;
     int i = _proxyRegistry.length;
     
@@ -278,11 +280,15 @@ class EntityAssembler {
         proxy.owner.forEach(
             (dynamic entry) {
               if (_areEqualByKey(entry, actualEntity, key)) {
+                _proxyCount--;
+                
                 proxy.owner[proxy.owner.indexOf(entry)] = actualEntity;
               }
             }
         );
       } else if (_areEqualByKey(proxy._value, actualEntity, key)) {
+        _proxyCount--;
+        
         proxy._initialValue = actualEntity;
       }
     }
@@ -346,11 +352,16 @@ class EntityAssembler {
     return null;
   }
   
-  void _initialize(Entity entity) {
+  Entity _toEntity(InstanceMirror instanceMirror, Map<String, dynamic> rawData, OnConflictFunction onConflict) {
+    Entity entity = instanceMirror.reflectee;
     _ProxyEntry entry;
     Proxy proxy;
     InstanceMirror metadata;
     List<InstanceMirror> instanceMirrors;
+    
+    entity._uid = entity.hashCode;
+    entity._scan = _getScanForInstance(entity);
+    
     List<_ProxyEntry> proxyEntryList = entity._scan._proxies;
     dynamic reflectee;
     int i = proxyEntryList.length;
@@ -394,8 +405,12 @@ class EntityAssembler {
       
       _proxyRegistry.add(proxy);
       
-      entity._mirror.setField(entry.symbol, proxy);
+      instanceMirror.setField(entry.symbol, proxy);
     }
+    
+    entity.readExternal(rawData, onConflict);
+    
+    return entity;
   }
   
   bool _areEqualByKey(dynamic instance, Entity compareEntity, String key) {

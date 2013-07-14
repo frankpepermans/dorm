@@ -20,13 +20,17 @@ packages:
   dart_flex:
     description: dart_flex
     source: hosted
-    version: "0.4.7"
+    version: "0.4.9"
   html5lib:
     description: html5lib
     source: hosted
     version: "0.4.3"
   logging:
     description: logging
+    source: hosted
+    version: "0.6.3+1"
+  mdv:
+    description: mdv
     source: hosted
     version: "0.6.3+1"
   meta:
@@ -41,6 +45,18 @@ packages:
     description: pathos
     source: hosted
     version: "0.6.3+1"
+  polymer:
+    description: polymer
+    source: hosted
+    version: "0.5.0+1"
+  serialization:
+    description: serialization
+    source: hosted
+    version: "0.6.3+1"
+  shadow_dom:
+    description: shadow_dom
+    source: hosted
+    version: "0.6.3+2"
   source_maps:
     description: source_maps
     source: hosted
@@ -49,7 +65,3 @@ packages:
     description: unittest
     source: hosted
     version: "0.5.20"
-  web_ui:
-    description: web_ui
-    source: hosted
-    version: "0.4.14"

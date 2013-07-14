@@ -66,21 +66,21 @@ void init() {
         ..rowHeight=60
         ..columnSpacing=0
         ..rowSpacing=0
-        ..columns = new ListCollection(
-            source: [
+        ..columns = new ObservableList.from(
+                  [
                      new DataGridColumn()
                      ..width = 80
                      ..headerData = { 'label' : Person.ID, 'property' : Person.ID }
                      ..field = Person.ID
                      ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
-                     ..columnItemRendererFactory = new ClassFactory(constructorMethod: EmployeeIdItemRenderer.construct),
+                     ..columnItemRendererFactory = new ClassFactory(constructorMethod: LabelItemRenderer.construct),
 
                      new DataGridColumn()
                      ..width=280
                      ..headerData = { 'label' : 'employee.${Person.NAME}', 'property' : Person.NAME }
                      ..field = Person.NAME
                      ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
-                     ..columnItemRendererFactory = new ClassFactory(constructorMethod: EmployeeNameItemRenderer.construct),
+                     ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct),
 
                      new DataGridColumn()
                      ..width=280
@@ -97,7 +97,7 @@ void init() {
                      ..columnItemRendererFactory = new ClassFactory(constructorMethod: RelatedEmployeesItemRenderer.construct)
             ]
         )
-        ..dataProvider=new ListCollection(source: resultList);
+        ..dataProvider=new ObservableList.from(resultList);
         
         commitButton.observeEventType(
             'buttonClick', 
