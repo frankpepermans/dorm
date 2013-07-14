@@ -16,7 +16,7 @@ class FetchService extends ServiceBase {
     return apply('ormEntityLoadByPK', arguments, true);
   }
   
-  Future<List<Entity>> ormEntityLoad(
+  Future<ObservableList<Entity>> ormEntityLoad(
       String entityName, {
         Map<String, dynamic> where
       }

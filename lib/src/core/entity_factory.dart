@@ -27,13 +27,13 @@ class EntityFactory<T> {
   //
   //---------------------------------
   
-  Iterable<T> spawn(Iterable<Map<String, dynamic>> rawData) {
-    List<T> results = new List<T>(rawData.length);
+  ObservableList<T> spawn(Iterable<Map<String, dynamic>> rawData) {
+    ObservableList<T> results = new ObservableList<T>();
     Function spawner = _assembler._assemble;
     int index = 0;
     
     rawData.forEach(
-        (Map<String, dynamic> rawDataEntry) => results[index++] = spawner(rawDataEntry, _onConflict) 
+        (Map<String, dynamic> rawDataEntry) => results.add(spawner(rawDataEntry, _onConflict))
     );
     
     return results;

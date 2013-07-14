@@ -23,20 +23,6 @@ class DropdownItemRenderer extends ItemRenderer {
   // Public properties
   //
   //---------------------------------
-  
-  //---------------------------------
-  // data
-  //---------------------------------
-
-  set data(dynamic value) {
-    if (value is Entity) {
-      value.changes.listen(
-        (_) => invalidateData() 
-      );
-    }
-    
-    super.data = value;
-  }
 
   //---------------------------------
   //
@@ -73,14 +59,26 @@ class DropdownItemRenderer extends ItemRenderer {
   }
   
   void loadJobs() {
+    bool loadAsync = false;
+    
     if (jobs != null) {
       _comboBox.dataProvider = jobs;
       
       invalidateData();
     } else if (jobsAsync != null) {
+      loadAsync = true;
+    } else {
+      fetchService = new FetchService(url, port, serializer, handleConflictAcceptClient);
+      
+      jobsAsync = fetchService.ormEntityLoad('Job');
+      
+      loadAsync = true;
+    }
+    
+    if (loadAsync) {
       jobsAsync.then(
           (List<Entity> entities) {
-            jobs = new ObservableList.from(entities);
+            jobs = entities;
             
             _comboBox.dataProvider = jobs;
             
@@ -90,24 +88,6 @@ class DropdownItemRenderer extends ItemRenderer {
             
             invalidateData();
           }  
-      );
-    } else {
-      fetchService = new FetchService(url, port, serializer, handleConflictAcceptClient);
-      
-      jobsAsync = fetchService.ormEntityLoad('Job');
-      
-      jobsAsync.then(
-          (List<Entity> entities) {
-            jobs = new ObservableList.from(entities);
-            
-            _comboBox.dataProvider = jobs;
-            
-            jobs.changes.listen(
-                (List<ChangeRecord> changes) => invalidateData()  
-            );
-            
-            invalidateData();
-          }
       );
     }
   }

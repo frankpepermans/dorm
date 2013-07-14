@@ -42,7 +42,7 @@ void init() {
   postCommitFetchService = new FetchService(url, port, serializer, handleConflictAcceptServer);
   
   fetchService.ormEntityLoad('Employee').then(
-      (List<Entity> resultList) {
+      (ObservableList<Entity> resultList) {
         DartFlexRootContainer rootContainer = new DartFlexRootContainer(elementId: '#dynamic_content')
         ..layout=new VerticalLayout();
         
@@ -97,7 +97,7 @@ void init() {
                      ..columnItemRendererFactory = new ClassFactory(constructorMethod: RelatedEmployeesItemRenderer.construct)
             ]
         )
-        ..dataProvider=new ObservableList.from(resultList);
+        ..dataProvider = resultList;
         
         commitButton.observeEventType(
             'buttonClick', 

@@ -22,7 +22,7 @@ class ServiceBase {
             EntityFactory<Entity> factory = new EntityFactory(onConflict);
             
             List<Map<String, dynamic>> result = serializer.incoming(request.responseText);
-            List<Entity> spawned = factory.spawn(result);
+            ObservableList<Entity> spawned = factory.spawn(result);
             
             completer.complete(isUniqueResult ? spawned.first : spawned);
           }
