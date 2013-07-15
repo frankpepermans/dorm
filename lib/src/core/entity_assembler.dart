@@ -9,7 +9,7 @@ class EntityAssembler {
   //---------------------------------
   
   List<EntityScan> _entityScans = <EntityScan>[];
-  List<Proxy> _proxyRegistry = <Proxy>[];
+  List<DormProxy> _proxyRegistry = <DormProxy>[];
   Map<String, Map<String, Entity>> _spawnRegistry = new Map<String, Map<String, Entity>>();
   int _proxyCount = 0;
   
@@ -270,7 +270,7 @@ class EntityAssembler {
       return;
     }
     
-    Proxy proxy;
+    DormProxy proxy;
     int i = _proxyRegistry.length;
     
     while (i > 0) {
@@ -295,7 +295,7 @@ class EntityAssembler {
   }
   
   void _swapEntries(Entity actualEntity, String key) {
-    Proxy proxy;
+    DormProxy proxy;
     int i = _proxyRegistry.length;
     
     while (i > 0) {
@@ -355,7 +355,7 @@ class EntityAssembler {
   Entity _toEntity(InstanceMirror instanceMirror, Map<String, dynamic> rawData, OnConflictFunction onConflict) {
     Entity entity = instanceMirror.reflectee;
     _ProxyEntry entry;
-    Proxy proxy;
+    DormProxy proxy;
     InstanceMirror metadata;
     List<InstanceMirror> instanceMirrors;
     
@@ -370,7 +370,7 @@ class EntityAssembler {
     while (i > 0) {
       entry = proxyEntryList[--i];
       
-      proxy = new Proxy._construct(null, true)
+      proxy = new DormProxy()
       ..property = entry.property
       ..propertySymbol = entry.propertySymbol;
       

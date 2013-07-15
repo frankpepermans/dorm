@@ -135,7 +135,7 @@ class TestEntity extends Entity {
   @NotNullable()
   @DefaultValue(0)
   @Immutable()
-  Proxy<int> _id;
+  DormProxy<int> _id;
 
   static const String ID = 'id';
   static const Symbol ID_SYMBOL = const Symbol('orm_domain.TestEntity.id');
@@ -149,7 +149,7 @@ class TestEntity extends Entity {
 
   @Property(NAME_SYMBOL, 'name')
   @LabelField()
-  Proxy<String> _name;
+  DormProxy<String> _name;
 
   static const String NAME = 'name';
   static const Symbol NAME_SYMBOL = const Symbol('orm_domain.TestEntity.name');
@@ -162,7 +162,7 @@ class TestEntity extends Entity {
   //---------------------------------
 
   @Property(CYCLIC_REFERENCE_SYMBOL, 'cyclicReference')
-  Proxy<TestEntity> _cyclicReference;
+  DormProxy<TestEntity> _cyclicReference;
 
   static const String CYCLIC_REFERENCE = 'cyclicReference';
   static const Symbol CYCLIC_REFERENCE_SYMBOL = const Symbol('orm_domain.TestEntity.cyclicReference');

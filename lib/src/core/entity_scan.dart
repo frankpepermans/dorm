@@ -116,7 +116,7 @@ class _ProxyEntry {
   final Symbol propertySymbol;
   final VariableMirror mirror;
   
-  Proxy proxy;
+  DormProxy proxy;
   
   _ProxyEntry(this.property, this.symbol, this.propertySymbol, this.mirror);
   

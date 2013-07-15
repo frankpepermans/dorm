@@ -93,7 +93,7 @@ abstract class Entity extends ObservableBase implements IExternalizable {
     _ProxyEntry entry;
     List<_ProxyEntry> proxies = _scan._proxies;
     Iterable<Map<String, dynamic>> spawnList = new List<Map<String, dynamic>>(1);
-    Proxy proxy;
+    DormProxy proxy;
     int i = proxies.length;
     dynamic entryValue;
     
