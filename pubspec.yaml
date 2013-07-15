@@ -1,5 +1,5 @@
 name: dorm
-version: 0.2.4
+version: 0.2.5
 author: Frank Pepermans <frank@igindo.com>
 description: "Dorm is an ORM mapping on the client, the goal is to hook it up with\
   \ existing server-side ORM solutions (Hibernate, EntityFramework, ...)\r\n\r\nThe\
@@ -9,8 +9,8 @@ description: "Dorm is an ORM mapping on the client, the goal is to hook it up wi
 homepage: https://github.com/frankpepermans/dorm
 documentation: http://igindo.com/?page_id=115
 dependencies:
-  browser: any
-  dart_flex: 0.4.9
   observe: any
 dev_dependencies:
+  browser: any
+  dart_flex: 0.4.9
   unittest: any
