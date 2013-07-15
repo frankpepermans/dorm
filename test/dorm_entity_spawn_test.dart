@@ -135,13 +135,13 @@ class TestEntity extends Entity {
   @NotNullable()
   @DefaultValue(0)
   @Immutable()
-  DormProxy<int> _id;
+  DormProxy<int> idProxy;
 
   static const String ID = 'id';
   static const Symbol ID_SYMBOL = const Symbol('orm_domain.TestEntity.id');
 
-  int get id => _id.value;
-  set id(int value) => _id.value = notifyPropertyChange(ID_SYMBOL, _id.value, value);
+  int get id => idProxy.value;
+  set id(int value) => idProxy.value = notifyPropertyChange(ID_SYMBOL, idProxy.value, value);
 
   //---------------------------------
   // name
@@ -149,26 +149,26 @@ class TestEntity extends Entity {
 
   @Property(NAME_SYMBOL, 'name')
   @LabelField()
-  DormProxy<String> _name;
+  DormProxy<String> nameProxy;
 
   static const String NAME = 'name';
   static const Symbol NAME_SYMBOL = const Symbol('orm_domain.TestEntity.name');
 
-  String get name => _name.value;
-  set name(String value) => _name.value = notifyPropertyChange(NAME_SYMBOL, _name.value, value);
+  String get name => nameProxy.value;
+  set name(String value) => nameProxy.value = notifyPropertyChange(NAME_SYMBOL, nameProxy.value, value);
   
   //---------------------------------
   // cyclicReference
   //---------------------------------
 
   @Property(CYCLIC_REFERENCE_SYMBOL, 'cyclicReference')
-  DormProxy<TestEntity> _cyclicReference;
+  DormProxy<TestEntity> cyclicReferenceProxy;
 
   static const String CYCLIC_REFERENCE = 'cyclicReference';
   static const Symbol CYCLIC_REFERENCE_SYMBOL = const Symbol('orm_domain.TestEntity.cyclicReference');
 
-  TestEntity get cyclicReference => _cyclicReference.value;
-  set cyclicReference(TestEntity value) => _cyclicReference.value = notifyPropertyChange(CYCLIC_REFERENCE_SYMBOL, _cyclicReference.value, value);
+  TestEntity get cyclicReference => cyclicReferenceProxy.value;
+  set cyclicReference(TestEntity value) => cyclicReferenceProxy.value = notifyPropertyChange(CYCLIC_REFERENCE_SYMBOL, cyclicReferenceProxy.value, value);
 
   //---------------------------------
   //

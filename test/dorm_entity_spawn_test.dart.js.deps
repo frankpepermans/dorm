@@ -115,6 +115,7 @@ file:///C:/work/production/igindo/dart/dorm/test/packages/dorm/dorm.dart
 file:///C:/work/production/igindo/dart/dorm/test/packages/dorm/src/core/conflict_manager.dart
 file:///C:/work/production/igindo/dart/dorm/test/packages/dorm/src/core/dorm_error.dart
 file:///C:/work/production/igindo/dart/dorm/test/packages/dorm/src/core/dorm_manager.dart
+file:///C:/work/production/igindo/dart/dorm/test/packages/dorm/src/core/dorm_proxy.dart
 file:///C:/work/production/igindo/dart/dorm/test/packages/dorm/src/core/entity_assembler.dart
 file:///C:/work/production/igindo/dart/dorm/test/packages/dorm/src/core/entity_factory.dart
 file:///C:/work/production/igindo/dart/dorm/test/packages/dorm/src/core/entity_scan.dart
@@ -125,7 +126,6 @@ file:///C:/work/production/igindo/dart/dorm/test/packages/dorm/src/serialization
 file:///C:/work/production/igindo/dart/dorm/test/packages/dorm/src/serialization/serialization_type.dart
 file:///C:/work/production/igindo/dart/dorm/test/packages/dorm/src/serialization/serializer.dart
 file:///C:/work/production/igindo/dart/dorm/test/packages/dorm/src/serialization/serializer_json.dart
-file:///C:/work/production/igindo/dart/dorm/test/packages/dorm/src/types/types.dart
 file:///C:/work/production/igindo/dart/dorm/test/packages/observe/observe.dart
 file:///C:/work/production/igindo/dart/dorm/test/packages/observe/src/compound_binding.dart
 file:///C:/work/production/igindo/dart/dorm/test/packages/observe/src/observable_box.dart

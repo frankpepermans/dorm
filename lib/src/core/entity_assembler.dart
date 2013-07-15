@@ -120,7 +120,7 @@ class EntityAssembler {
                   break;
                 }
               }
-              
+              print(symbol);
               scan.addProxy(
                   property.property, 
                   symbol,
@@ -357,7 +357,7 @@ class EntityAssembler {
     _ProxyEntry entry;
     DormProxy proxy;
     InstanceMirror metadata;
-    List<InstanceMirror> instanceMirrors;
+    List<InstanceMirror> metaMirrors;
     
     entity._uid = entity.hashCode;
     entity._scan = _getScanForInstance(entity);
@@ -374,12 +374,12 @@ class EntityAssembler {
       ..property = entry.property
       ..propertySymbol = entry.propertySymbol;
       
-      instanceMirrors = entry.mirror.metadata;
+      metaMirrors = entry.mirror.metadata;
       
-      j = instanceMirrors.length;
+      j = metaMirrors.length;
       
       while (j > 0) {
-        metadata = instanceMirrors[--j];
+        metadata = metaMirrors[--j];
         
         reflectee = metadata.reflectee;
         

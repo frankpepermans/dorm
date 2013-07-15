@@ -12,7 +12,7 @@ packages:
   browser:
     description: browser
     source: hosted
-    version: "0.5.20"
+    version: "0.6.3+1"
   csslib:
     description: csslib
     source: hosted
@@ -36,7 +36,7 @@ packages:
   meta:
     description: meta
     source: hosted
-    version: "0.5.20"
+    version: "0.6.3+1"
   observe:
     description: observe
     source: hosted
@@ -60,8 +60,8 @@ packages:
   source_maps:
     description: source_maps
     source: hosted
-    version: "0.6.3+2"
+    version: "0.6.3+3"
   unittest:
     description: unittest
     source: hosted
-    version: "0.5.20"
+    version: "0.6.3+1"
