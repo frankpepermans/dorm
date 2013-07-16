@@ -5,21 +5,16 @@ class MetadataCache {
   List<PropertyMetadataCache> propertyMetadataCacheList = <PropertyMetadataCache>[];
   
   PropertyMetadataCache obtainTagForProperty(String property) {
-    PropertyMetadataCache propertyMetadataCache;
-    
-    Iterable<PropertyMetadataCache> result = propertyMetadataCacheList.where(
-      (PropertyMetadataCache entry) => (entry.property == property)    
+    return propertyMetadataCacheList.firstWhere(
+      (PropertyMetadataCache entry) => (entry.property == property),
+      orElse: () {
+        PropertyMetadataCache entry = new PropertyMetadataCache(property);
+        
+        propertyMetadataCacheList.add(entry);
+        
+        return entry;
+      }
     );
-    
-    if (result.length == 1) {
-      propertyMetadataCache = result.first;
-    } else {
-      propertyMetadataCache = new PropertyMetadataCache(property);
-      
-      propertyMetadataCacheList.add(propertyMetadataCache);
-    }
-    
-    return propertyMetadataCache;
   }
   
   void registerTagForProperty(String property, dynamic reflectee) {
