@@ -14,6 +14,8 @@ class EntityScan {
   List<_ProxyEntry> _identityProxies = new List<_ProxyEntry>();
   
   Type entityType;
+  String ref;
+  Function contructorMethod;
   Symbol qualifiedName;
   String qualifiedLocalName, _key;
   ClassMirror classMirror;
@@ -64,6 +66,8 @@ class EntityScan {
     this._original = original;
     
     this.entityType = original.entityType;
+    this.ref = original.ref;
+    this.contructorMethod = original.contructorMethod;
     this.qualifiedName = original.qualifiedName;
     this.qualifiedLocalName = original.qualifiedLocalName;
     this.classMirror = original.classMirror;

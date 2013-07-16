@@ -10,7 +10,7 @@ main() {
   String rawDataA = '[{"id":1,"name":"Test A","?t":"entities.testEntity"}]';
   String rawDataB = '[{"id":2,"name":"Test B","?t":"entities.testEntity"}]';
   
-  assembler.scan(TestEntity);
+  assembler.scan(TestEntity, 'entities.testEntity', TestEntity.construct);
   
   test('Simple spawn test', () {
     EntityFactory<TestEntity> factory = new EntityFactory(handleConflictAcceptClient);
@@ -177,5 +177,9 @@ class TestEntity extends Entity {
   //---------------------------------
 
   TestEntity() : super();
+  
+  static TestEntity construct() {
+    return new TestEntity();
+  }
 
 }

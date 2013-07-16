@@ -43,7 +43,7 @@ class EntityAssembler {
   //
   //---------------------------------
   
-  EntityScan scan(Type forType) {
+  EntityScan scan(Type forType, String ref, Function constructorMethod) {
     const Symbol entitySymbol = const Symbol('dorm.Entity');
     EntityScan scan = _getExistingScan(forType);
     InstanceMirror instanceMirror;
@@ -57,6 +57,8 @@ class EntityAssembler {
     scan = new EntityScan();
     
     scan.entityType = forType;
+    scan.ref = ref;
+    scan.contructorMethod = constructorMethod;
     
     Property property;
     ClassMirror classMirror = reflectClass(forType);
@@ -120,7 +122,7 @@ class EntityAssembler {
                   break;
                 }
               }
-              print(symbol);
+              
               scan.addProxy(
                   property.property, 
                   symbol,
@@ -174,7 +176,7 @@ class EntityAssembler {
     while (i > 0) {
       scan = _entityScans[--i];
       
-      if (scan.qualifiedName == typeSymbol) {
+      if (scan.ref == type) {
         methodMirror = scan.classMirror.constructors[scan.classMirror.simpleName];
         
         instanceMirror = scan.classMirror.newInstance(methodMirror.constructorName, []);

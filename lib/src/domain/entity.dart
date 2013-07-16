@@ -51,14 +51,6 @@ abstract class Entity extends ObservableBase implements IExternalizable {
   
   //-----------------------------------
   //
-  // Constructor
-  //
-  //-----------------------------------
-  
-  Entity();
-  
-  //-----------------------------------
-  //
   // Public methods
   //
   //-----------------------------------
