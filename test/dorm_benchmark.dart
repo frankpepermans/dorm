@@ -1,6 +1,5 @@
 library dorm_entity_spawn_test;
 
-import 'package:unittest/unittest.dart';
 import 'package:dorm/dorm.dart';
 import 'dart:async';
 import 'dart:json';
@@ -12,85 +11,7 @@ main() {
   
   assembler.scan(TestEntity, 'entities.testEntity', TestEntity.construct);
   
-  new Timer(new Duration(seconds:1), _afterWarmup);
-}
-
-_afterWarmup() {
-  String rawDataA = '[{"id":1,"name":"Test A","?t":"entities.testEntity"}]';
-  String rawDataB = '[{"id":2,"name":"Test B","?t":"entities.testEntity"}]';
-  
-  test('Simple spawn test', () {
-    EntityFactory<TestEntity> factory = new EntityFactory(handleConflictAcceptClient);
-    
-    TestEntity entity = factory.spawn(serializer.incoming(rawDataA)).first;
-    TestEntity entityShouldBePointer = factory.spawn(serializer.incoming(rawDataA)).first;
-    TestEntity entityShouldNotBePointer = factory.spawn(serializer.incoming(rawDataB)).first;
-    
-    entityShouldNotBePointer.cyclicReference = entity;
-    entity.cyclicReference = entityShouldNotBePointer;
-    
-    String outgoing = serializer.outgoing(<Entity>[entity, entityShouldNotBePointer]);
-    List<String> outgoingToComplexData = parse(outgoing);
-    
-    expect(entity.id, 1);
-    expect(entity.name, 'Test A');
-    expect(entityShouldBePointer.id, 1);
-    expect(entityShouldBePointer.name, 'Test A');
-    expect(entityShouldNotBePointer.id, 2);
-    expect(entityShouldNotBePointer.name, 'Test B');
-    expect((entity == entityShouldBePointer), true);
-    expect((entity != entityShouldNotBePointer), true);
-    expect((outgoing.length > 0), true);
-    
-    outgoingToComplexData.forEach(
-      (String entry) {
-        Map<String, dynamic> map = parse(entry);
-        
-        expect(map.containsKey('id'), true);
-        expect(map.containsKey(SerializationType.UID), true);
-        
-        expect(map[SerializationType.ENTITY_TYPE], 'entities.testEntity');
-      }
-    );
-  });
-  
-  test('Conflict manager, accept client test', () {
-    EntityFactory<TestEntity> factory = new EntityFactory(handleConflictAcceptClient);
-    TestEntity entity;
-    
-    // first test, after a client change, reload the entity and expect it not to be overwritten
-    entity = factory.spawn(serializer.incoming(rawDataA)).first;
-    
-    entity.name = 'Test C';
-    
-    expect(entity.isDirty(), true);
-    
-    TestEntity spawnedEntity = factory.spawn(serializer.incoming(rawDataA)).first; // reload and accept client
-    
-    expect(entity.name, 'Test C');
-    expect((entity == spawnedEntity), true);
-    expect(entity.isDirty(), true);
-  });
-  
-  test('Conflict manager, accept server test', () {
-    EntityFactory<TestEntity> factory = new EntityFactory(handleConflictAcceptServer);
-    TestEntity entity;
-    
-    // first test, after a client change, reload the entity and expect it not to be overwritten
-    entity = factory.spawn(serializer.incoming(rawDataA)).first;
-    
-    entity.name = 'Test C';
-    
-    expect(entity.isDirty(), true);
-    
-    TestEntity spawnedEntity = factory.spawn(serializer.incoming(rawDataA)).first; // reload and accept server
-    
-    expect(entity.name, 'Test A');
-    expect((entity == spawnedEntity), true);
-    expect(entity.isDirty(), false);
-  });
-  
-  test('Speed test', _runBenchmark);
+  _runBenchmark();
 }
 
 void _runBenchmark() {
@@ -112,7 +33,7 @@ void _runBenchmark() {
   
   print('completed in ${stopwatch.elapsedMilliseconds} ms');
   
-  new Timer(new Duration(seconds:1), _runBenchmark);
+  new Timer(new Duration(milliseconds:1), _runBenchmark);
 }
 
 ConflictManager handleConflictAcceptClient(Entity serverEntity, Entity clientEntity) {
@@ -241,7 +162,7 @@ class TestEntity extends TestEntitySuperClass {
     
     assembler.registerProxies(
       this,
-      <DormProxy>[_name, _cyclicReference]
+      <DormProxy>[_name, _cyclicReference]    
     );
   }
   

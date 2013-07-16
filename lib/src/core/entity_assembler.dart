@@ -198,14 +198,6 @@ class EntityAssembler {
         returningEntity = _existingFromSpawnRegistry(refClassName, key, entity);
         
         if (!entity._isPointer) {
-          if (entity != returningEntity) {
-            j = entity._proxies.length;
-            
-            while (j > 0) {
-              _proxyRegistry.remove(entity._proxies[--j]);
-            }
-          }
-          
           entity = _registerSpawnedEntity(
               entity,
               returningEntity, 
@@ -277,6 +269,14 @@ class EntityAssembler {
               break;
             }
           }
+        }
+      } else if (conflictManager == ConflictManager.ACCEPT_CLIENT) {
+        spawneeProxies = spawnee._scan._proxies;
+        
+        i = spawneeProxies.length;
+        
+        while (i > 0) {
+          _proxyRegistry.remove(spawneeProxies[--i].proxy);
         }
       }
       
