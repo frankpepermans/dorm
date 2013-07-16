@@ -331,10 +331,10 @@ class EntityAssembler {
   
   Entity _existingFromSpawnRegistry(String refClassName, _ProxyKey key, Entity entity) {
     Entity registeredEntity;
-    EntityScan scan = entity._scan;
+    Function equalsBasedOnRefAndKey = entity._scan.equalsBasedOnRefAndKey;
     
     registeredEntity = _getSpawnRegistryForRefClassName(refClassName).entities.firstWhere(
-        (Entity lookup) => scan.equalsBasedOnRefAndKey(lookup._scan),
+        (Entity lookup) => equalsBasedOnRefAndKey(lookup._scan),
         orElse: () => null
     );
     
