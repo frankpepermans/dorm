@@ -2,15 +2,22 @@ library dorm_entity_spawn_test;
 
 import 'package:unittest/unittest.dart';
 import 'package:dorm/dorm.dart';
+import 'dart:async';
 import 'dart:json';
+
+Serializer serializer = new SerializerJson();
 
 main() {
   EntityAssembler assembler = new EntityAssembler();
-  Serializer serializer = new SerializerJson();
-  String rawDataA = '[{"id":1,"name":"Test A","?t":"entities.testEntity"}]';
-  String rawDataB = '[{"id":2,"name":"Test B","?t":"entities.testEntity"}]';
   
   assembler.scan(TestEntity, 'entities.testEntity', TestEntity.construct);
+  
+  new Timer(new Duration(seconds:1), _afterWarmup);
+}
+
+_afterWarmup() {
+  String rawDataA = '[{"id":1,"name":"Test A","?t":"entities.testEntity"}]';
+  String rawDataB = '[{"id":2,"name":"Test B","?t":"entities.testEntity"}]';
   
   test('Simple spawn test', () {
     EntityFactory<TestEntity> factory = new EntityFactory(handleConflictAcceptClient);
@@ -83,31 +90,35 @@ main() {
     expect(entity.isDirty(), false);
   });
   
-  test('Speed test', () {
-    List<List<Map<String, dynamic>>> jsonList = <List<Map<String, dynamic>>>[];
-    EntityFactory<TestEntity> factory = new EntityFactory(handleConflictAcceptServer);
-    int loopCount = 1000;
-    int i = loopCount;
-    DateTime time;
+  test('Speed test', _runBenchmark);
+}
+
+void _runBenchmark() {
+  List<List<Map<String, dynamic>>> jsonList = <List<Map<String, dynamic>>>[];
+  EntityFactory<TestEntity> factory = new EntityFactory(handleConflictAcceptClient);
+  int loopCount = 1000;
+  int i = loopCount;
+  DateTime time;
+  
+  while (i > 0) {
+    List<Map<String, dynamic>> json = serializer.incoming('[{"id":${--i},"name":"Speed test","?t":"entities.testEntity"}]');
     
-    while (i > 0) {
-      List<Map<String, dynamic>> json = serializer.incoming('[{"id":${--i},"name":"Speed test","?t":"entities.testEntity"}]');
-      
-      jsonList.add(json);
-    }
-    
-    i = loopCount;
-    
-    time = new DateTime.now();
-    
-    while (i > 0) {
-      factory.spawn(jsonList[--i]).first;
-    }
-    
-    int duration = time.millisecondsSinceEpoch - new DateTime.now().millisecondsSinceEpoch;
-    
-    print('completed in $duration ms');
-  });
+    jsonList.add(json);
+  }
+  
+  i = loopCount;
+  
+  Stopwatch stopwatch = new Stopwatch()..start();
+  
+  while (i > 0) {
+    factory.spawn(jsonList[--i]).first;
+  }
+  
+  stopwatch.stop();
+  
+  print('completed in ${stopwatch.elapsedMilliseconds} ms');
+  
+  new Timer(new Duration(seconds:1), _runBenchmark);
 }
 
 ConflictManager handleConflictAcceptClient(Entity serverEntity, Entity clientEntity) {
@@ -118,8 +129,8 @@ ConflictManager handleConflictAcceptServer(Entity serverEntity, Entity clientEnt
   return ConflictManager.ACCEPT_SERVER;
 }
 
-@Ref('entities.testEntity')
-class TestEntity extends Entity {
+@Ref('entities.testEntitySuperClass')
+class TestEntitySuperClass extends Entity {
 
   //---------------------------------
   //
@@ -131,7 +142,7 @@ class TestEntity extends Entity {
   // refClassName
   //---------------------------------
 
-  String get refClassName => 'entities.testEntity';
+  String get refClassName => 'entities.testEntitySuperClass';
 
   //---------------------------------
   // id
@@ -149,6 +160,48 @@ class TestEntity extends Entity {
 
   int get id => _id.value;
   set id(int value) => _id.value = notifyPropertyChange(ID_SYMBOL, _id.value, value);
+
+  //---------------------------------
+  //
+  // Constructor
+  //
+  //---------------------------------
+
+  TestEntitySuperClass() : super() {
+    EntityAssembler assembler = new EntityAssembler();
+    
+    _id = new DormProxy()
+    ..property = 'id'
+    ..propertySymbol = ID_SYMBOL;
+    
+    usedProxies.addAll(
+        assembler.registerProxies(
+            this,
+            <DormProxy>[_id]    
+        )    
+    );
+  }
+  
+  static TestEntitySuperClass construct() {
+    return new TestEntitySuperClass();
+  }
+
+}
+
+@Ref('entities.testEntity')
+class TestEntity extends TestEntitySuperClass {
+
+  //---------------------------------
+  //
+  // Public properties
+  //
+  //---------------------------------
+  
+  //---------------------------------
+  // refClassName
+  //---------------------------------
+
+  String get refClassName => 'entities.testEntity';
 
   //---------------------------------
   // name
@@ -186,10 +239,6 @@ class TestEntity extends Entity {
   TestEntity() : super() {
     EntityAssembler assembler = new EntityAssembler();
     
-    _id = new DormProxy()
-    ..property = 'id'
-    ..propertySymbol = ID_SYMBOL;
-    
     _name = new DormProxy()
     ..property = 'name'
     ..propertySymbol = NAME_SYMBOL;
@@ -198,9 +247,11 @@ class TestEntity extends Entity {
     ..property = 'cyclicReference'
     ..propertySymbol = CYCLIC_REFERENCE_SYMBOL;
     
-    assembler.registerProxies(
-      this,
-      <DormProxy>[_id, _name, _cyclicReference]    
+    usedProxies.addAll(
+      assembler.registerProxies(
+        this,
+        <DormProxy>[_name, _cyclicReference]    
+      )
     );
   }
   

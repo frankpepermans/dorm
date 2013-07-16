@@ -109,7 +109,8 @@ class EntityAssembler {
     return scan;
   }
   
-  void registerProxies(Entity entity, List<DormProxy> proxies) {
+  List<DormProxy> registerProxies(Entity entity, List<DormProxy> proxies) {
+    List<DormProxy> proxiesAdded = <DormProxy>[];
     _ProxyEntry entry;
     DormProxy proxy;
     
@@ -145,12 +146,16 @@ class EntityAssembler {
           
           entry.proxy = proxy;
           
+          proxiesAdded.add(proxy);
+          
           _proxyRegistry.add(proxy);
           
           break;
         }
       }
     }
+    
+    return proxiesAdded;
   }
   
   //---------------------------------
@@ -170,7 +175,7 @@ class EntityAssembler {
   }
   
   Entity _assemble(Map<String, dynamic> rawData, OnConflictFunction onConflict) {
-    final String type = rawData[SerializationType.ENTITY_TYPE];
+    final String refClassName = rawData[SerializationType.ENTITY_TYPE];
     EntityScan scan;
     Entity entity, returningEntity;
     String key;
@@ -185,22 +190,30 @@ class EntityAssembler {
     while (i > 0) {
       scan = _entityScans[--i];
       
-      if (scan.refClassName == type) {
+      if (scan.refClassName == refClassName) {
         entity = scan.contructorMethod()
         ..readExternal(rawData, onConflict);
         
         key = entity._scan.key;
         
         if (!entity._isPointer) {
+          returningEntity = _existingFromSpawnRegistry(refClassName, key, entity);
+          
+          if (entity != returningEntity) {
+            _proxyRegistry.removeWhere(
+              (DormProxy proxy) => entity.usedProxies.contains(proxy)    
+            );
+          }
+          
           entity = _registerSpawnedEntity(
               entity,
-              _existingFromSpawnRegistry(type, key, entity), 
-              type, key, onConflict
+              returningEntity, 
+              refClassName, key, onConflict
           );
           
           returningEntity = entity;
         } else {
-          returningEntity = _existingFromSpawnRegistry(type, key, entity);
+          returningEntity = _existingFromSpawnRegistry(refClassName, key, entity);
           
           if (returningEntity._isPointer) {
             _proxyCount++;
