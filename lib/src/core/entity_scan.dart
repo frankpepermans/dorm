@@ -19,9 +19,6 @@ class EntityScan {
   String refClassName, _key;
   bool isMutableEntity = true;
   
-  static String _keyEntryStart = new String.fromCharCode(2);
-  static String _keyEntryEnd = new String.fromCharCode(2);
-  
   //---------------------------------
   //
   // Public properties
@@ -108,10 +105,10 @@ class EntityScan {
     }
   }
   
-  bool equalsBasedOnRefAndKey(EntityScan otherScan, {_ProxyKey otherKey}) {
+  bool equalsBasedOnRefAndKey(EntityScan otherScan) {
     return(
         (refClassName == otherScan.refClassName) && 
-        (key == ((otherKey == null) ? otherScan.key : otherKey))
+        key.equals(otherScan.key)
     );
   }
 }
