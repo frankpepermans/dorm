@@ -58,9 +58,7 @@ class EntityAssembler {
     scan = new EntityScan();
     
     scan.entityType = forType;
-    scan.ref = ref;
     scan.contructorMethod = constructorMethod;
-    scan.metadataCache = new MetadataCache();
     
     Property property;
     ClassMirror classMirror = reflectClass(forType);
@@ -69,8 +67,7 @@ class EntityAssembler {
     classMirror.metadata.forEach(
         (InstanceMirror metadata) {
           if (metadata.reflectee is Ref) {
-            scan.qualifiedName = new Symbol((metadata.reflectee as Ref).path);
-            scan.qualifiedLocalName = (metadata.reflectee as Ref).path;
+            scan.refClassName = (metadata.reflectee as Ref).path;
           }
         }
     );
@@ -110,13 +107,7 @@ class EntityAssembler {
                 }
               }
               
-              scan.addProxy(
-                  property.property, 
-                  symbol,
-                  isIdentity,
-                  property.propertySymbol,
-                  mirror
-              );
+              scan.addProxy(property, isIdentity);
             }
           }
         }
@@ -190,7 +181,6 @@ class EntityAssembler {
   
   Entity _assemble(Map<String, dynamic> rawData, OnConflictFunction onConflict) {
     final String type = rawData[SerializationType.ENTITY_TYPE];
-    final Symbol typeSymbol = new Symbol(type);
     EntityScan scan;
     Entity entity, returningEntity;
     String key;
@@ -205,10 +195,9 @@ class EntityAssembler {
     while (i > 0) {
       scan = _entityScans[--i];
       
-      if (scan.ref == type) {
-        entity = scan.contructorMethod();
-        
-        entity.readExternal(rawData, onConflict);
+      if (scan.refClassName == type) {
+        entity = scan.contructorMethod()
+        ..readExternal(rawData, onConflict);
         
         key = entity._scan.key;
         
@@ -389,7 +378,7 @@ class EntityAssembler {
       
       return (
           entity._isPointer &&
-          (entity._scan.qualifiedLocalName == compareEntity._scan.qualifiedLocalName) && 
+          (entity._scan.refClassName == compareEntity._scan.refClassName) && 
           (entity._scan.key == key)
       );
     }

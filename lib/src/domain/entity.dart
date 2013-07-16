@@ -143,7 +143,7 @@ abstract class Entity extends ObservableBase implements IExternalizable {
   //---------------------------------
   
   void _writeExternalImpl(Map<String, dynamic> data, Map<int, Map<String, dynamic>> convertedEntities) {
-    data[SerializationType.ENTITY_TYPE] = _scan.qualifiedLocalName;
+    data[SerializationType.ENTITY_TYPE] = _scan.refClassName;
     data[SerializationType.UID] = _uid;
     
     if (convertedEntities == null) {
@@ -165,7 +165,7 @@ abstract class Entity extends ObservableBase implements IExternalizable {
               Map<String, dynamic> pointerMap = new Map<String, dynamic>();
               
               pointerMap[SerializationType.POINTER] = subEntity._uid;
-              pointerMap[SerializationType.ENTITY_TYPE] = subEntity._scan.qualifiedLocalName;
+              pointerMap[SerializationType.ENTITY_TYPE] = subEntity._scan.refClassName;
               
               subEntity._scan._proxies.forEach(
                   (_ProxyEntry subEntry) {

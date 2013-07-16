@@ -15,11 +15,9 @@ class EntityScan {
   List<_ProxyEntry> _identityProxies = new List<_ProxyEntry>();
   
   Type entityType;
-  String ref;
   Function contructorMethod;
   MetadataCache metadataCache;
-  Symbol qualifiedName;
-  String qualifiedLocalName, _key;
+  String refClassName, _key;
   bool isMutableEntity = true;
   
   static String _keyEntryStart = new String.fromCharCode(2);
@@ -55,7 +53,9 @@ class EntityScan {
   //
   //---------------------------------
   
-  EntityScan();
+  EntityScan() {
+    metadataCache = new MetadataCache();
+  }
   
   EntityScan.fromScan(EntityScan original, Entity entity) {
     List<_ProxyEntry> originalProxies = original._proxies;
@@ -68,11 +68,9 @@ class EntityScan {
     this.entity = entity;
     
     this.entityType = original.entityType;
-    this.ref = original.ref;
     this.contructorMethod = original.contructorMethod;
     this.metadataCache = original.metadataCache;
-    this.qualifiedName = original.qualifiedName;
-    this.qualifiedLocalName = original.qualifiedLocalName;
+    this.refClassName = original.refClassName;
     this.isMutableEntity = original.isMutableEntity;
     
     while (i > 0) {
@@ -94,8 +92,8 @@ class EntityScan {
   //
   //---------------------------------
   
-  void addProxy(String property, Symbol symbol, bool isIdentity, Symbol propertySymbol, VariableMirror mirror) {
-    _ProxyEntry entry = new _ProxyEntry(property, symbol, propertySymbol, mirror);
+  void addProxy(Property property, bool isIdentity) {
+    _ProxyEntry entry = new _ProxyEntry(property.property, property.propertySymbol);
     
     _proxies.add(entry);
     
@@ -118,16 +116,14 @@ class EntityScan {
 class _ProxyEntry {
   
   final String property;
-  final Symbol symbol;
   final Symbol propertySymbol;
-  final VariableMirror mirror;
   
   DormProxy proxy;
   
-  _ProxyEntry(this.property, this.symbol, this.propertySymbol, this.mirror);
+  _ProxyEntry(this.property, this.propertySymbol);
   
   _ProxyEntry clone() {
-    return new _ProxyEntry(property, symbol, propertySymbol, mirror);
+    return new _ProxyEntry(property, propertySymbol);
   }
   
 }
