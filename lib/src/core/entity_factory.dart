@@ -30,7 +30,6 @@ class EntityFactory<T> {
   ObservableList<T> spawn(Iterable<Map<String, dynamic>> rawData) {
     ObservableList<T> results = new ObservableList<T>();
     Function spawner = _assembler._assemble;
-    int index = 0;
     
     rawData.forEach(
         (Map<String, dynamic> rawDataEntry) => results.add(spawner(rawDataEntry, _onConflict))

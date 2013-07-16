@@ -10,7 +10,7 @@ class EntityAssembler {
   
   List<EntityScan> _entityScans = <EntityScan>[];
   List<DormProxy> _proxyRegistry = <DormProxy>[];
-  Map<String, Map<String, Entity>> _spawnRegistry = new Map<String, Map<String, Entity>>();
+  List<SpawnEntry> _spawnRegistry = <SpawnEntry>[];
   int _proxyCount = 0;
   
   //---------------------------------
@@ -191,8 +191,10 @@ class EntityAssembler {
       scan = _entityScans[--i];
       
       if (scan.refClassName == refClassName) {
-        entity = scan.contructorMethod()
-        ..readExternal(rawData, onConflict);
+        entity = scan.contructorMethod();
+        
+        entity.readExternal(rawData, onConflict);
+        entity.changes.listen(entity._identityKeyListener);
         
         key = entity._scan.key;
         
@@ -225,26 +227,33 @@ class EntityAssembler {
     return null;
   }
   
-  Entity _registerSpawnedEntity(Entity spawnee, Entity existingEntity, String type, String key, OnConflictFunction onConflict) {
+  Entity _registerSpawnedEntity(Entity spawnee, Entity existingEntity, String refClassName, String key, OnConflictFunction onConflict) {
     ConflictManager conflictManager;
-    Map<String, Entity> typeRegistry;
     List<_ProxyEntry> entryProxies;
     List<_ProxyEntry> spawneeProxies;
     _ProxyEntry entryA, entryB;
     int i, j;
     
-    if (!_spawnRegistry.containsKey(type)) {
-      _spawnRegistry[type] = new Map<String, Entity>();
-    }
-    
-    typeRegistry = _spawnRegistry[type];
+    SpawnEntry entry = _spawnRegistry.firstWhere(
+      (SpawnEntry registryEntry) => (registryEntry.refClassName == refClassName),
+      orElse: () {
+        SpawnEntry registryEntry = new SpawnEntry(refClassName);
+        
+        _spawnRegistry.add(registryEntry);
+        
+        return registryEntry;
+      }
+    );
     
     if (spawnee != existingEntity) {
       if (onConflict == null) {
         throw new DormError('Conflict was detected, but no onConflict method is available');
       }
       
-      conflictManager = onConflict(spawnee, typeRegistry[key]);
+      conflictManager = onConflict(
+          spawnee, 
+          existingEntity
+      );
       
       if (conflictManager == ConflictManager.ACCEPT_SERVER) {
         entryProxies = existingEntity._scan._proxies;
@@ -275,7 +284,9 @@ class EntityAssembler {
       _swapEntries(existingEntity, key);
     }
     
-    typeRegistry[key] = existingEntity;
+    if (!entry.entities.contains(existingEntity)) {
+      entry.entities.add(existingEntity);
+    }
     
     _swapPointers(existingEntity, key);
     
@@ -332,21 +343,30 @@ class EntityAssembler {
     }
   }
   
-  Entity _existingFromSpawnRegistry(String type, String key, Entity entity) {
-    Map<String, Entity> typeRegistry;
+  Entity _existingFromSpawnRegistry(String refClassName, String key, Entity entity) {
+    Entity registeredEntity;
     
-    if (!_spawnRegistry.containsKey(type)) {
-      _spawnRegistry[type] = new Map<String, Entity>();
-    }
+    SpawnEntry entry = _spawnRegistry.firstWhere(
+        (SpawnEntry registryEntry) => (registryEntry.refClassName == refClassName),
+        orElse: () {
+          SpawnEntry registryEntry = new SpawnEntry(refClassName);
+          
+          _spawnRegistry.add(registryEntry);
+          
+          return registryEntry;
+        }
+    );
     
-    typeRegistry = _spawnRegistry[type];
+    registeredEntity = entry.entities.firstWhere(
+        (Entity lookup) => (lookup._scan.key == key),
+        orElse: () => null
+    );
     
-    if (typeRegistry.containsKey(key)) {
-      Entity registeredEntity = typeRegistry[key];
-      
-      if (!registeredEntity._isPointer) {
-        return registeredEntity;
-      }
+    if (
+        (registeredEntity != null) &&
+        !registeredEntity._isPointer
+    ) {
+      return registeredEntity;
     }
     
     return entity;
@@ -375,8 +395,7 @@ class EntityAssembler {
       
       return (
           entity._isPointer &&
-          (entity._scan.refClassName == compareEntity._scan.refClassName) && 
-          (entity._scan.key == key)
+          entity._scan.equalsBasedOnRefAndKey(compareEntity._scan)
       );
     }
     
@@ -386,4 +405,13 @@ class EntityAssembler {
   ConflictManager _handleConflictAcceptClient(Entity serverEntity, Entity clientEntity) {
     return ConflictManager.ACCEPT_CLIENT;
   }
+}
+
+class SpawnEntry {
+  
+  final String refClassName;
+  final List<Entity> entities = <Entity>[];
+  
+  SpawnEntry(this.refClassName);
+  
 }

@@ -156,6 +156,26 @@ abstract class Entity extends ObservableBase implements IExternalizable {
   //
   //---------------------------------
   
+  void _identityKeyListener(List<ChangeRecord> changes) {
+    changes.forEach(
+        (ChangeRecord change) {
+          if (change is PropertyChangeRecord) {
+            _ProxyEntry result = _scan._identityProxies.firstWhere(
+                (_ProxyEntry entry) => (entry.proxy.propertySymbol == change.field),
+                orElse: () => null
+            );
+            
+            if (
+                (result != null) &&
+                result.proxy.isId
+            ) {
+              _scan._cachedKey = null;
+            }
+          }
+        }
+    );
+  }
+  
   void _writeExternalImpl(Map<String, dynamic> data, Map<int, Map<String, dynamic>> convertedEntities) {
     data[SerializationType.ENTITY_TYPE] = _scan.refClassName;
     data[SerializationType.UID] = _uid;

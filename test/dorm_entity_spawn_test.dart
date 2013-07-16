@@ -94,25 +94,19 @@ _afterWarmup() {
 }
 
 void _runBenchmark() {
-  List<List<Map<String, dynamic>>> jsonList = <List<Map<String, dynamic>>>[];
-  EntityFactory<TestEntity> factory = new EntityFactory(handleConflictAcceptServer);
+  EntityFactory<TestEntity> factory = new EntityFactory(handleConflictAcceptClient);
+  List<String> jsonRaw = <String>[];
   int loopCount = 1000;
   int i = loopCount;
   DateTime time;
   
   while (i > 0) {
-    List<Map<String, dynamic>> json = serializer.incoming('[{"id":${--i},"name":"Speed test","?t":"entities.testEntity"}]');
-    
-    jsonList.add(json);
+    jsonRaw.add('{"id":${--i},"name":"Speed test","?t":"entities.testEntity"}');
   }
-  
-  i = loopCount;
   
   Stopwatch stopwatch = new Stopwatch()..start();
   
-  while (i > 0) {
-    factory.spawn(jsonList[--i]).first;
-  }
+  factory.spawn(serializer.incoming('[' + jsonRaw.join(',') + ']'));
   
   stopwatch.stop();
   

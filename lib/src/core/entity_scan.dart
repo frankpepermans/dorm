@@ -32,7 +32,13 @@ class EntityScan {
   // key
   //---------------------------------
   
+  String _cachedKey;
+  
   String get key {
+    if (_cachedKey != null) {
+      return _cachedKey;
+    }
+    
     StringBuffer buffer = new StringBuffer();
     _ProxyEntry entry;
     int i = _identityProxies.length;
@@ -40,10 +46,12 @@ class EntityScan {
     while (i > 0) {
       entry = _identityProxies[--i];
       
-      buffer.writeAll(<String>[_keyEntryStart, entry.property, _keyEntryEnd, _keyEntryStart, entry.proxy.value.toString(), _keyEntryEnd]);
+      buffer.writeAll(<String>[_keyEntryStart, entry.property, _keyEntryEnd, _keyEntryStart, entry.proxy._value.toString(), _keyEntryEnd]);
     }
     
-    return buffer.toString();
+    _cachedKey = buffer.toString();
+    
+    return _cachedKey;
   }
   
   //---------------------------------
@@ -98,6 +106,15 @@ class EntityScan {
     if (isIdentity) {
       _identityProxies.add(entry);
     }
+  }
+  
+  bool equalsBasedOnRefAndKey(EntityScan otherScan, {String key}) {
+    String otherKey = (key == null) ? otherScan.key : key;
+    
+    return(
+        (refClassName == otherScan.refClassName) && 
+        (key == otherKey)
+    );
   }
 }
 
