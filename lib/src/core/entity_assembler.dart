@@ -55,11 +55,9 @@ class EntityAssembler {
     ..refClassName = refClassName
     ..contructorMethod = constructorMethod;
     
-    Property property;
     ClassMirror classMirror = reflectClass(forType);
-    Map<Symbol, Mirror> members = new Map<Symbol, Mirror>();
     
-    members.addAll(classMirror.members);
+    Map<Symbol, Mirror> members = new Map<Symbol, Mirror>.from(classMirror.members);
     
     classMirror = classMirror.superclass;
     
@@ -73,6 +71,7 @@ class EntityAssembler {
       (Symbol symbol, Mirror mirror) {
         if (mirror is VariableMirror) {
           InstanceMirror instanceMirror;
+          Property property;
           int i = mirror.metadata.length;
           int j;
           bool isIdentity;
