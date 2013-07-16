@@ -262,7 +262,7 @@ class EntityAssembler {
           while (j > 0) {
             entryB = spawneeProxies[--j];
             
-            if (entryA.propertySymbol == entryB.propertySymbol) {
+            if (entryA.property == entryB.property) {
               entryA.proxy._initialValue = existingEntity.notifyPropertyChange(entryA.proxy.propertySymbol, entryA.proxy._value, entryB.proxy._value);
               
               _proxyRegistry.remove(entryB.proxy);

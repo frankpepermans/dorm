@@ -93,7 +93,7 @@ class EntityScan {
   //---------------------------------
   
   void addProxy(Property property, bool isIdentity) {
-    _ProxyEntry entry = new _ProxyEntry(property.property, property.propertySymbol);
+    _ProxyEntry entry = new _ProxyEntry(property.property);
     
     _proxies.add(entry);
     
@@ -116,14 +116,13 @@ class EntityScan {
 class _ProxyEntry {
   
   final String property;
-  final Symbol propertySymbol;
   
   DormProxy proxy;
   
-  _ProxyEntry(this.property, this.propertySymbol);
+  _ProxyEntry(this.property);
   
   _ProxyEntry clone() {
-    return new _ProxyEntry(property, propertySymbol);
+    return new _ProxyEntry(property);
   }
   
 }
