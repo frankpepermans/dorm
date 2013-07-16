@@ -150,7 +150,7 @@ class TestEntitySuperClass extends Entity {
   DormProxy<int> _id;
 
   static const String ID = 'id';
-  static const Symbol ID_SYMBOL = const Symbol('orm_domain.TestEntity.id');
+  static const Symbol ID_SYMBOL = const Symbol('orm_domain.TestEntitySuperClass.id');
 
   int get id => _id.value;
   set id(int value) => _id.value = notifyPropertyChange(ID_SYMBOL, _id.value, value);
@@ -168,11 +168,9 @@ class TestEntitySuperClass extends Entity {
     ..property = 'id'
     ..propertySymbol = ID_SYMBOL;
     
-    usedProxies.addAll(
-        assembler.registerProxies(
-            this,
-            <DormProxy>[_id]    
-        )    
+    assembler.registerProxies(
+        this,
+        <DormProxy>[_id]    
     );
   }
   
@@ -241,11 +239,9 @@ class TestEntity extends TestEntitySuperClass {
     ..property = 'cyclicReference'
     ..propertySymbol = CYCLIC_REFERENCE_SYMBOL;
     
-    usedProxies.addAll(
-      assembler.registerProxies(
-        this,
-        <DormProxy>[_name, _cyclicReference]    
-      )
+    assembler.registerProxies(
+      this,
+      <DormProxy>[_name, _cyclicReference]    
     );
   }
   

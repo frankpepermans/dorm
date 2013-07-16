@@ -2,8 +2,7 @@ part of dorm;
 
 abstract class Entity extends ObservableBase implements IExternalizable {
   
-  List<DormProxy> usedProxies = <DormProxy>[];
-  
+  List<DormProxy> _proxies = <DormProxy>[];
   Map _source;
   EntityScan _scan;
   bool _isPointer;

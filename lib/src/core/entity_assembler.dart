@@ -11,6 +11,7 @@ class EntityAssembler {
   final List<EntityScan> _entityScans = <EntityScan>[];
   final List<DormProxy> _proxyRegistry = <DormProxy>[];
   final List<SpawnEntry> _spawnRegistry = <SpawnEntry>[];
+  
   int _proxyCount = 0;
   
   //---------------------------------
@@ -109,14 +110,12 @@ class EntityAssembler {
     return scan;
   }
   
-  List<DormProxy> registerProxies(Entity entity, List<DormProxy> proxies) {
-    List<DormProxy> proxiesAdded = <DormProxy>[];
+  void registerProxies(Entity entity, List<DormProxy> proxies) {
     _ProxyEntry entry;
     DormProxy proxy;
     
-    entity._uid = entity.hashCode;
-    
-    if (entity._scan == null) {
+    if (entity._uid == null) {
+      entity._uid = entity.hashCode;
       entity._scan = _getScanForInstance(entity);
     }
     
@@ -146,7 +145,7 @@ class EntityAssembler {
           
           entry.proxy = proxy;
           
-          proxiesAdded.add(proxy);
+          entity._proxies.add(proxy);
           
           _proxyRegistry.add(proxy);
           
@@ -154,8 +153,6 @@ class EntityAssembler {
         }
       }
     }
-    
-    return proxiesAdded;
   }
   
   //---------------------------------
@@ -202,10 +199,10 @@ class EntityAssembler {
         
         if (!entity._isPointer) {
           if (entity != returningEntity) {
-            j = entity.usedProxies.length;
+            j = entity._proxies.length;
             
             while (j > 0) {
-              _proxyRegistry.remove(entity.usedProxies[--j]);
+              _proxyRegistry.remove(entity._proxies[--j]);
             }
           }
           
