@@ -333,7 +333,7 @@ class EntityAssembler {
     Entity registeredEntity;
     
     registeredEntity = _getSpawnRegistryForRefClassName(refClassName).entities.firstWhere(
-        (Entity lookup) => (lookup._scan.key.equals(key)),
+        (Entity lookup) => (lookup._scan.key == key),
         orElse: () => null
     );
     

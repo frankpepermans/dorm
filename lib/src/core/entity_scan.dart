@@ -111,7 +111,7 @@ class EntityScan {
   bool equalsBasedOnRefAndKey(EntityScan otherScan, {_ProxyKey otherKey}) {
     return(
         (refClassName == otherScan.refClassName) && 
-        (key.equals((otherKey == null) ? otherScan.key : otherKey))
+        (key == ((otherKey == null) ? otherScan.key : otherKey))
     );
   }
 }
