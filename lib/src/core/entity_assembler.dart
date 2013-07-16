@@ -8,9 +8,9 @@ class EntityAssembler {
   //
   //---------------------------------
   
-  List<EntityScan> _entityScans = <EntityScan>[];
-  List<DormProxy> _proxyRegistry = <DormProxy>[];
-  List<SpawnEntry> _spawnRegistry = <SpawnEntry>[];
+  final List<EntityScan> _entityScans = <EntityScan>[];
+  final List<DormProxy> _proxyRegistry = <DormProxy>[];
+  final List<SpawnEntry> _spawnRegistry = <SpawnEntry>[];
   int _proxyCount = 0;
   
   //---------------------------------
@@ -179,7 +179,7 @@ class EntityAssembler {
     EntityScan scan;
     Entity entity, returningEntity;
     String key;
-    int i;
+    int i, j;
     
     if (onConflict == null) {
       onConflict = _handleConflictAcceptClient;
@@ -202,9 +202,11 @@ class EntityAssembler {
         
         if (!entity._isPointer) {
           if (entity != returningEntity) {
-            _proxyRegistry.removeWhere(
-              (DormProxy proxy) => entity.usedProxies.contains(proxy)    
-            );
+            j = entity.usedProxies.length;
+            
+            while (j > 0) {
+              _proxyRegistry.remove(entity.usedProxies[--j]);
+            }
           }
           
           entity = _registerSpawnedEntity(

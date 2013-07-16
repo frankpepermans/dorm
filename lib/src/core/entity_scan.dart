@@ -108,8 +108,8 @@ class EntityScan {
     }
   }
   
-  bool equalsBasedOnRefAndKey(EntityScan otherScan, {String key}) {
-    String otherKey = (key == null) ? otherScan.key : key;
+  bool equalsBasedOnRefAndKey(EntityScan otherScan, {String compareKey}) {
+    String otherKey = (compareKey == null) ? otherScan.key : compareKey;
     
     return(
         (refClassName == otherScan.refClassName) && 
