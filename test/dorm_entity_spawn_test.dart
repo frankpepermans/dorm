@@ -126,6 +126,12 @@ class TestEntity extends Entity {
   // Public properties
   //
   //---------------------------------
+  
+  //---------------------------------
+  // refClassName
+  //---------------------------------
+
+  String get refClassName => 'entities.testEntity';
 
   //---------------------------------
   // id

@@ -51,6 +51,18 @@ abstract class Entity extends ObservableBase implements IExternalizable {
   
   //-----------------------------------
   //
+  // Public properties
+  //
+  //-----------------------------------
+  
+  //-----------------------------------
+  // refClassName
+  //-----------------------------------
+  
+  String get refClassName => null;
+  
+  //-----------------------------------
+  //
   // Public methods
   //
   //-----------------------------------

@@ -43,34 +43,21 @@ class EntityAssembler {
   //
   //---------------------------------
   
-  EntityScan scan(Type forType, String ref, Function constructorMethod) {
+  EntityScan scan(Type forType, String refClassName, Function constructorMethod) {
     const Symbol entitySymbol = const Symbol('dorm.Entity');
-    EntityScan scan = _getExistingScan(forType);
-    InstanceMirror instanceMirror;
-    bool isIdentity;
-    int i, j;
-    dynamic metatag;
+    EntityScan scan = _getExistingScan(refClassName);
     
     if(scan != null) {
       return scan;
     }
     
-    scan = new EntityScan();
-    
-    scan.entityType = forType;
-    scan.contructorMethod = constructorMethod;
+    scan = new EntityScan()
+    ..refClassName = refClassName
+    ..contructorMethod = constructorMethod;
     
     Property property;
     ClassMirror classMirror = reflectClass(forType);
     Map<Symbol, Mirror> members = new Map<Symbol, Mirror>();
-    
-    classMirror.metadata.forEach(
-        (InstanceMirror metadata) {
-          if (metadata.reflectee is Ref) {
-            scan.refClassName = (metadata.reflectee as Ref).path;
-          }
-        }
-    );
     
     members.addAll(classMirror.members);
     
@@ -85,7 +72,11 @@ class EntityAssembler {
     members.forEach(
       (Symbol symbol, Mirror mirror) {
         if (mirror is VariableMirror) {
-          i = mirror.metadata.length;
+          InstanceMirror instanceMirror;
+          int i = mirror.metadata.length;
+          int j;
+          bool isIdentity;
+          dynamic metatag;
           
           while (i > 0) {
             instanceMirror = mirror.metadata[--i];
@@ -170,7 +161,7 @@ class EntityAssembler {
   //---------------------------------
   
   EntityScan _getScanForInstance(Entity entity) {
-    EntityScan scan = _getExistingScan(entity.runtimeType);
+    EntityScan scan = _getExistingScan(entity.refClassName);
     
     if(scan != null) {
       return new EntityScan.fromScan(scan, entity);
@@ -355,14 +346,14 @@ class EntityAssembler {
   
   List<Type> _reflectedTypes = new List<Type>();
   
-  EntityScan _getExistingScan(Type forType) {
+  EntityScan _getExistingScan(String refClassName) {
     EntityScan scan;
     int i = _entityScans.length;
     
     while (i > 0) {
       scan = _entityScans[--i];
       
-      if (scan.entityType == forType) {
+      if (scan.refClassName == refClassName) {
         return scan;
       }
     }

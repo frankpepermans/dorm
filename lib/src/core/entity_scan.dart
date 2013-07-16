@@ -14,7 +14,6 @@ class EntityScan {
   List<_ProxyEntry> _proxies = new List<_ProxyEntry>();
   List<_ProxyEntry> _identityProxies = new List<_ProxyEntry>();
   
-  Type entityType;
   Function contructorMethod;
   MetadataCache metadataCache;
   String refClassName, _key;
@@ -67,7 +66,6 @@ class EntityScan {
     this._original = original;
     this.entity = entity;
     
-    this.entityType = original.entityType;
     this.contructorMethod = original.contructorMethod;
     this.metadataCache = original.metadataCache;
     this.refClassName = original.refClassName;
