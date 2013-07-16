@@ -175,7 +175,6 @@ class EntityAssembler {
     final String refClassName = rawData[SerializationType.ENTITY_TYPE];
     EntityScan scan;
     Entity entity, returningEntity;
-    String key;
     int i, j;
     
     if (onConflict == null) {
@@ -193,15 +192,13 @@ class EntityAssembler {
         entity.readExternal(rawData, onConflict);
         entity.changes.listen(entity._identityKeyListener);
         
-        key = entity._scan.key;
-        
-        returningEntity = _existingFromSpawnRegistry(refClassName, key, entity);
+        returningEntity = _existingFromSpawnRegistry(refClassName, entity._scan.key, entity);
         
         if (!entity._isPointer) {
           entity = _registerSpawnedEntity(
               entity,
               returningEntity, 
-              refClassName, key, onConflict
+              refClassName, onConflict
           );
           
           returningEntity = entity;
@@ -218,23 +215,13 @@ class EntityAssembler {
     return null;
   }
   
-  Entity _registerSpawnedEntity(Entity spawnee, Entity existingEntity, String refClassName, String key, OnConflictFunction onConflict) {
+  Entity _registerSpawnedEntity(Entity spawnee, Entity existingEntity, String refClassName, OnConflictFunction onConflict) {
     ConflictManager conflictManager;
     List<_ProxyEntry> entryProxies;
     List<_ProxyEntry> spawneeProxies;
+    SpawnEntry entry = _getSpawnRegistryForRefClassName(refClassName);
     _ProxyEntry entryA, entryB;
     int i, j;
-    
-    SpawnEntry entry = _spawnRegistry.firstWhere(
-      (SpawnEntry registryEntry) => (registryEntry.refClassName == refClassName),
-      orElse: () {
-        SpawnEntry registryEntry = new SpawnEntry(refClassName);
-        
-        _spawnRegistry.add(registryEntry);
-        
-        return registryEntry;
-      }
-    );
     
     if (spawnee != existingEntity) {
       if (onConflict == null) {
@@ -280,19 +267,19 @@ class EntityAssembler {
         }
       }
       
-      _swapEntries(existingEntity, key);
+      _swapEntries(existingEntity);
     }
     
     if (!entry.entities.contains(existingEntity)) {
       entry.entities.add(existingEntity);
     }
     
-    _swapPointers(existingEntity, key);
+    _swapPointers(existingEntity);
     
     return existingEntity;
   }
   
-  void _swapPointers(Entity actualEntity, String key) {
+  void _swapPointers(Entity actualEntity) {
     if (_proxyCount == 0) {
       return;
     }
@@ -306,14 +293,14 @@ class EntityAssembler {
       if (proxy.owner != null) {
         proxy.owner.forEach(
             (dynamic entry) {
-              if (_areEqualByKey(entry, actualEntity, key)) {
+              if (_areEqualByKey(entry, actualEntity)) {
                 _proxyCount--;
                 
                 proxy.owner[proxy.owner.indexOf(entry)] = actualEntity;
               }
             }
         );
-      } else if (_areEqualByKey(proxy._value, actualEntity, key)) {
+      } else if (_areEqualByKey(proxy._value, actualEntity)) {
         _proxyCount--;
         
         proxy._initialValue = actualEntity;
@@ -321,7 +308,7 @@ class EntityAssembler {
     }
   }
   
-  void _swapEntries(Entity actualEntity, String key) {
+  void _swapEntries(Entity actualEntity) {
     DormProxy proxy;
     int i = _proxyRegistry.length;
     
@@ -331,33 +318,22 @@ class EntityAssembler {
       if (proxy.owner != null) {
         proxy.owner.forEach(
             (dynamic entry) {
-              if (_areEqualByKey(entry, actualEntity, key)) {
+              if (_areEqualByKey(entry, actualEntity)) {
                 proxy.owner[proxy.owner.indexOf(entry)] = actualEntity;
               }
             }
         );
-      } else if (_areEqualByKey(proxy._value, actualEntity, key)) {
+      } else if (_areEqualByKey(proxy._value, actualEntity)) {
         proxy._initialValue = actualEntity;
       }
     }
   }
   
-  Entity _existingFromSpawnRegistry(String refClassName, String key, Entity entity) {
+  Entity _existingFromSpawnRegistry(String refClassName, _ProxyKey key, Entity entity) {
     Entity registeredEntity;
     
-    SpawnEntry entry = _spawnRegistry.firstWhere(
-        (SpawnEntry registryEntry) => (registryEntry.refClassName == refClassName),
-        orElse: () {
-          SpawnEntry registryEntry = new SpawnEntry(refClassName);
-          
-          _spawnRegistry.add(registryEntry);
-          
-          return registryEntry;
-        }
-    );
-    
-    registeredEntity = entry.entities.firstWhere(
-        (Entity lookup) => (lookup._scan.key == key),
+    registeredEntity = _getSpawnRegistryForRefClassName(refClassName).entities.firstWhere(
+        (Entity lookup) => (lookup._scan.key.equals(key)),
         orElse: () => null
     );
     
@@ -386,7 +362,20 @@ class EntityAssembler {
     return null;
   }
   
-  bool _areEqualByKey(dynamic instance, Entity compareEntity, String key) {
+  SpawnEntry _getSpawnRegistryForRefClassName(String refClassName) {
+    return _spawnRegistry.firstWhere(
+        (SpawnEntry registryEntry) => (registryEntry.refClassName == refClassName),
+        orElse: () {
+          SpawnEntry registryEntry = new SpawnEntry(refClassName);
+          
+          _spawnRegistry.add(registryEntry);
+          
+          return registryEntry;
+        }
+    );
+  }
+  
+  bool _areEqualByKey(dynamic instance, Entity compareEntity) {
     Entity entity;
     
     if (instance is Entity) {

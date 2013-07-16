@@ -32,24 +32,24 @@ class EntityScan {
   // key
   //---------------------------------
   
-  String _cachedKey;
+  _ProxyKey _cachedKey;
   
-  String get key {
+  _ProxyKey get key {
     if (_cachedKey != null) {
       return _cachedKey;
     }
     
-    StringBuffer buffer = new StringBuffer();
+    int len = _identityProxies.length;
+    _cachedKey = new _ProxyKey(len);
     _ProxyEntry entry;
-    int i = _identityProxies.length;
+    int i;
     
-    while (i > 0) {
-      entry = _identityProxies[--i];
+    for (i=0; i<len; i++) {
+      entry = _identityProxies[i];
       
-      buffer.writeAll(<String>[_keyEntryStart, entry.property, _keyEntryEnd, _keyEntryStart, entry.proxy._value.toString(), _keyEntryEnd]);
+      _cachedKey.codes[i] = entry.proxy.propertySymbol.hashCode;
+      _cachedKey.values[i] = entry.proxy._value;
     }
-    
-    _cachedKey = buffer.toString();
     
     return _cachedKey;
   }
@@ -108,10 +108,10 @@ class EntityScan {
     }
   }
   
-  bool equalsBasedOnRefAndKey(EntityScan otherScan, {String otherKey}) {
+  bool equalsBasedOnRefAndKey(EntityScan otherScan, {_ProxyKey otherKey}) {
     return(
         (refClassName == otherScan.refClassName) && 
-        (key == ((otherKey == null) ? otherScan.key : otherKey))
+        (key.equals((otherKey == null) ? otherScan.key : otherKey))
     );
   }
 }
@@ -136,6 +136,41 @@ class _ProxyEntry {
   
   _ProxyEntry clone() {
     return new _ProxyEntry(property);
+  }
+  
+}
+
+class _ProxyKey {
+  
+  final int length;
+  
+  List<int> codes;
+  List<dynamic> values;
+  
+  bool operator == (_ProxyKey otherKey) => equals(otherKey);
+  
+  _ProxyKey(this.length) {
+    codes = new List<int>(length);
+    values = new List<dynamic>(length);
+  }
+  
+  bool equals(_ProxyKey otherKey) {
+    if (length != otherKey.length) {
+      return false;
+    }
+    
+    int i = length;
+    
+    while (i > 0) {
+      if (
+          (codes[--i] != otherKey.codes[i]) ||
+          (values[i] != otherKey.values[i])
+      ) {
+        return false;
+      }
+    }
+    
+    return true;
   }
   
 }

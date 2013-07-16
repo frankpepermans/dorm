@@ -96,7 +96,7 @@ _afterWarmup() {
 void _runBenchmark() {
   EntityFactory<TestEntity> factory = new EntityFactory(handleConflictAcceptClient);
   List<String> jsonRaw = <String>[];
-  int loopCount = 400;
+  int loopCount = 1000;
   int i = loopCount;
   DateTime time;
   
