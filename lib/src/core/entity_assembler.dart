@@ -49,6 +49,7 @@ class EntityAssembler {
     InstanceMirror instanceMirror;
     bool isIdentity;
     int i, j;
+    dynamic metatag;
     
     if(scan != null) {
       return scan;
@@ -59,13 +60,11 @@ class EntityAssembler {
     scan.entityType = forType;
     scan.ref = ref;
     scan.contructorMethod = constructorMethod;
+    scan.metadataCache = new MetadataCache();
     
     Property property;
     ClassMirror classMirror = reflectClass(forType);
-    List<InstanceMirror> metadata = <InstanceMirror>[];
     Map<Symbol, Mirror> members = new Map<Symbol, Mirror>();
-    
-    scan.classMirror = classMirror;
     
     classMirror.metadata.forEach(
         (InstanceMirror metadata) {
@@ -76,28 +75,14 @@ class EntityAssembler {
         }
     );
     
-    metadata.addAll(classMirror.metadata);
     members.addAll(classMirror.members);
     
     classMirror = classMirror.superclass;
     
     while (classMirror.qualifiedName != entitySymbol) {
-      metadata.addAll(classMirror.metadata);
       members.addAll(classMirror.members);
       
       classMirror = classMirror.superclass;
-    }
-    
-    i = metadata.length;
-    
-    while (i > 0) {
-      instanceMirror = metadata[--i];
-      
-      if (instanceMirror.reflectee is Immutable) {
-        scan.isMutableEntity = false;
-        
-        break;
-      }
     }
     
     members.forEach(
@@ -116,10 +101,12 @@ class EntityAssembler {
               j = mirror.metadata.length;
               
               while (j > 0) {
-                if (mirror.metadata[--j].reflectee is Id) {
+                metatag = mirror.metadata[--j].reflectee;
+                
+                scan.metadataCache.registerTagForProperty(property.property, metatag);
+                
+                if (metatag is Id) {
                   isIdentity = true;
-                  
-                  break;
                 }
               }
               
@@ -141,6 +128,50 @@ class EntityAssembler {
     return scan;
   }
   
+  void registerProxies(Entity entity, List<DormProxy> proxies) {
+    _ProxyEntry entry;
+    DormProxy proxy;
+    
+    entity._uid = entity.hashCode;
+    
+    if (entity._scan == null) {
+      entity._scan = _getScanForInstance(entity);
+    }
+    
+    EntityScan scan = entity._scan;
+    List<_ProxyEntry> proxyEntryList = scan._proxies;
+    int i = proxyEntryList.length;
+    int j;
+    
+    while (i > 0) {
+      entry = proxyEntryList[--i];
+      
+      j = proxies.length;
+      
+      while (j > 0) {
+        proxy = proxies[--j];
+        
+        if (entry.property == proxy.property) {
+          PropertyMetadataCache propertyMetadataCache = scan.metadataCache.obtainTagForProperty(proxy.property);
+          
+          proxy.isId = propertyMetadataCache.isId;
+          proxy.isTransient = propertyMetadataCache.isTransient;
+          proxy.isNullable = propertyMetadataCache.isNullable;
+          proxy.isLabelField = propertyMetadataCache.isLabelField;
+          proxy.isMutable = (scan.isMutableEntity && propertyMetadataCache.isMutable);
+          
+          proxy._initialValue = propertyMetadataCache.initialValue;
+          
+          entry.proxy = proxy;
+          
+          _proxyRegistry.add(proxy);
+          
+          break;
+        }
+      }
+    }
+  }
+  
   //---------------------------------
   //
   // Library protected methods
@@ -151,7 +182,7 @@ class EntityAssembler {
     EntityScan scan = _getExistingScan(entity.runtimeType);
     
     if(scan != null) {
-      return new EntityScan.fromScan(scan);
+      return new EntityScan.fromScan(scan, entity);
     }
     
     throw new DormError('Scan for entity not found');
@@ -162,8 +193,6 @@ class EntityAssembler {
     final Symbol typeSymbol = new Symbol(type);
     EntityScan scan;
     Entity entity, returningEntity;
-    InstanceMirror instanceMirror;
-    MethodMirror methodMirror;
     String key;
     int i;
     
@@ -177,11 +206,9 @@ class EntityAssembler {
       scan = _entityScans[--i];
       
       if (scan.ref == type) {
-        methodMirror = scan.classMirror.constructors[scan.classMirror.simpleName];
+        entity = scan.contructorMethod();
         
-        instanceMirror = scan.classMirror.newInstance(methodMirror.constructorName, []);
-        
-        entity = _toEntity(instanceMirror, rawData, onConflict);
+        entity.readExternal(rawData, onConflict);
         
         key = entity._scan.key;
         
@@ -352,67 +379,6 @@ class EntityAssembler {
     }
     
     return null;
-  }
-  
-  Entity _toEntity(InstanceMirror instanceMirror, Map<String, dynamic> rawData, OnConflictFunction onConflict) {
-    Entity entity = instanceMirror.reflectee;
-    _ProxyEntry entry;
-    DormProxy proxy;
-    InstanceMirror metadata;
-    List<InstanceMirror> metaMirrors;
-    
-    entity._uid = entity.hashCode;
-    entity._scan = _getScanForInstance(entity);
-    
-    List<_ProxyEntry> proxyEntryList = entity._scan._proxies;
-    dynamic reflectee;
-    int i = proxyEntryList.length;
-    int j;
-    
-    while (i > 0) {
-      entry = proxyEntryList[--i];
-      
-      proxy = new DormProxy()
-      ..property = entry.property
-      ..propertySymbol = entry.propertySymbol;
-      
-      metaMirrors = entry.mirror.metadata;
-      
-      j = metaMirrors.length;
-      
-      while (j > 0) {
-        metadata = metaMirrors[--j];
-        
-        reflectee = metadata.reflectee;
-        
-        if (reflectee is Id) {
-          proxy.isId = true;
-        } else if (reflectee is Transient) {
-          proxy.isTransient = true;
-        } else if (reflectee is NotNullable) {
-          proxy.isNullable = false;
-        } else if (reflectee is DefaultValue) {
-          proxy._initialValue = (reflectee as DefaultValue).value;
-        } else if (reflectee is LabelField) {
-          proxy.isLabelField = true;
-        } else if (
-            !entity._scan.isMutableEntity ||
-            (reflectee is Immutable)
-        ) {
-          proxy.isMutable = false;
-        }
-      }
-      
-      entry.proxy = proxy;
-      
-      _proxyRegistry.add(proxy);
-      
-      instanceMirror.setField(entry.symbol, proxy);
-    }
-    
-    entity.readExternal(rawData, onConflict);
-    
-    return entity;
   }
   
   bool _areEqualByKey(dynamic instance, Entity compareEntity, String key) {

@@ -84,23 +84,24 @@ main() {
   });
   
   test('Speed test', () {
-    List<String> jsonList = <String>[];
+    List<List<Map<String, dynamic>>> jsonList = <List<Map<String, dynamic>>>[];
     EntityFactory<TestEntity> factory = new EntityFactory(handleConflictAcceptServer);
-    int i = 1000;
+    int loopCount = 1000;
+    int i = loopCount;
     DateTime time;
     
     while (i > 0) {
-      String json = '[{"id":${--i},"name":"Speed test","?t":"entities.testEntity"}]';
+      List<Map<String, dynamic>> json = serializer.incoming('[{"id":${--i},"name":"Speed test","?t":"entities.testEntity"}]');
       
       jsonList.add(json);
     }
     
-    i = 1000;
+    i = loopCount;
     
     time = new DateTime.now();
     
     while (i > 0) {
-      factory.spawn(serializer.incoming(jsonList[--i])).first;
+      factory.spawn(jsonList[--i]).first;
     }
     
     int duration = time.millisecondsSinceEpoch - new DateTime.now().millisecondsSinceEpoch;
@@ -135,13 +136,13 @@ class TestEntity extends Entity {
   @NotNullable()
   @DefaultValue(0)
   @Immutable()
-  DormProxy<int> idProxy;
+  DormProxy<int> _id;
 
   static const String ID = 'id';
   static const Symbol ID_SYMBOL = const Symbol('orm_domain.TestEntity.id');
 
-  int get id => idProxy.value;
-  set id(int value) => idProxy.value = notifyPropertyChange(ID_SYMBOL, idProxy.value, value);
+  int get id => _id.value;
+  set id(int value) => _id.value = notifyPropertyChange(ID_SYMBOL, _id.value, value);
 
   //---------------------------------
   // name
@@ -149,26 +150,26 @@ class TestEntity extends Entity {
 
   @Property(NAME_SYMBOL, 'name')
   @LabelField()
-  DormProxy<String> nameProxy;
+  DormProxy<String> _name;
 
   static const String NAME = 'name';
   static const Symbol NAME_SYMBOL = const Symbol('orm_domain.TestEntity.name');
 
-  String get name => nameProxy.value;
-  set name(String value) => nameProxy.value = notifyPropertyChange(NAME_SYMBOL, nameProxy.value, value);
+  String get name => _name.value;
+  set name(String value) => _name.value = notifyPropertyChange(NAME_SYMBOL, _name.value, value);
   
   //---------------------------------
   // cyclicReference
   //---------------------------------
 
   @Property(CYCLIC_REFERENCE_SYMBOL, 'cyclicReference')
-  DormProxy<TestEntity> cyclicReferenceProxy;
+  DormProxy<TestEntity> _cyclicReference;
 
   static const String CYCLIC_REFERENCE = 'cyclicReference';
   static const Symbol CYCLIC_REFERENCE_SYMBOL = const Symbol('orm_domain.TestEntity.cyclicReference');
 
-  TestEntity get cyclicReference => cyclicReferenceProxy.value;
-  set cyclicReference(TestEntity value) => cyclicReferenceProxy.value = notifyPropertyChange(CYCLIC_REFERENCE_SYMBOL, cyclicReferenceProxy.value, value);
+  TestEntity get cyclicReference => _cyclicReference.value;
+  set cyclicReference(TestEntity value) => _cyclicReference.value = notifyPropertyChange(CYCLIC_REFERENCE_SYMBOL, _cyclicReference.value, value);
 
   //---------------------------------
   //
@@ -176,7 +177,26 @@ class TestEntity extends Entity {
   //
   //---------------------------------
 
-  TestEntity() : super();
+  TestEntity() : super() {
+    EntityAssembler assembler = new EntityAssembler();
+    
+    _id = new DormProxy()
+    ..property = 'id'
+    ..propertySymbol = ID_SYMBOL;
+    
+    _name = new DormProxy()
+    ..property = 'name'
+    ..propertySymbol = NAME_SYMBOL;
+    
+    _cyclicReference = new DormProxy()
+    ..property = 'cyclicReference'
+    ..propertySymbol = CYCLIC_REFERENCE_SYMBOL;
+    
+    assembler.registerProxies(
+      this,
+      <DormProxy>[_id, _name, _cyclicReference]    
+    );
+  }
   
   static TestEntity construct() {
     return new TestEntity();
