@@ -196,9 +196,9 @@ class EntityAssembler {
         
         key = entity._scan.key;
         
+        returningEntity = _existingFromSpawnRegistry(refClassName, key, entity);
+        
         if (!entity._isPointer) {
-          returningEntity = _existingFromSpawnRegistry(refClassName, key, entity);
-          
           if (entity != returningEntity) {
             _proxyRegistry.removeWhere(
               (DormProxy proxy) => entity.usedProxies.contains(proxy)    
@@ -212,12 +212,8 @@ class EntityAssembler {
           );
           
           returningEntity = entity;
-        } else {
-          returningEntity = _existingFromSpawnRegistry(refClassName, key, entity);
-          
-          if (returningEntity._isPointer) {
-            _proxyCount++;
-          }
+        } else if (returningEntity._isPointer) {
+          _proxyCount++;
         }
         
         return returningEntity;
@@ -355,8 +351,6 @@ class EntityAssembler {
     
     return entity;
   }
-  
-  List<Type> _reflectedTypes = new List<Type>();
   
   EntityScan _getExistingScan(String refClassName) {
     EntityScan scan;

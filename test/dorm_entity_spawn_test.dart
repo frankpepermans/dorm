@@ -95,7 +95,7 @@ _afterWarmup() {
 
 void _runBenchmark() {
   List<List<Map<String, dynamic>>> jsonList = <List<Map<String, dynamic>>>[];
-  EntityFactory<TestEntity> factory = new EntityFactory(handleConflictAcceptClient);
+  EntityFactory<TestEntity> factory = new EntityFactory(handleConflictAcceptServer);
   int loopCount = 1000;
   int i = loopCount;
   DateTime time;
