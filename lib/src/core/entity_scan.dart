@@ -29,26 +29,26 @@ class EntityScan {
   // key
   //---------------------------------
   
-  _ProxyKey _cachedKey;
-  
-  _ProxyKey get key {
-    if (_cachedKey != null) {
-      return _cachedKey;
-    }
-    
+  void buildKey() {
+    EntityAssembler assembler = new EntityAssembler();
+    EntityKey nextKey;
     int len = _identityProxies.length;
-    _cachedKey = new _ProxyKey(len);
     _ProxyEntry entry;
-    int i;
+    int i, code;
+    dynamic value;
+    
+    nextKey = assembler._keyChain;
     
     for (i=0; i<len; i++) {
       entry = _identityProxies[i];
       
-      _cachedKey.codes[i] = entry.proxy.propertySymbol.hashCode;
-      _cachedKey.values[i] = entry.proxy._value;
+      code = entry.proxy.propertySymbol.hashCode;
+      value = entry.proxy._value;
+      
+      nextKey[code] = value;
+      
+      nextKey = nextKey[[code, value]]..entityScans.add(this);
     }
-    
-    return _cachedKey;
   }
   
   //---------------------------------
@@ -103,13 +103,6 @@ class EntityScan {
     if (isIdentity) {
       _identityProxies.add(entry);
     }
-  }
-  
-  bool equalsBasedOnRefAndKey(EntityScan otherScan) {
-    return(
-        (refClassName == otherScan.refClassName) && 
-        key.equals(otherScan.key)
-    );
   }
 }
 

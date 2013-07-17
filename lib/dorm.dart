@@ -14,6 +14,7 @@ part 'src/core/entity_assembler.dart';
 part 'src/core/entity_factory.dart';
 part 'src/core/dorm_manager.dart';
 part 'src/core/dorm_proxy.dart';
+part 'src/core/entity_key.dart';
 part 'src/core/entity_scan.dart';
 part 'src/core/metadata_cache.dart';
 

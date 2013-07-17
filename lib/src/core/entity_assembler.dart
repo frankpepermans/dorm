@@ -11,6 +11,7 @@ class EntityAssembler {
   final List<EntityScan> _entityScans = <EntityScan>[];
   final List<DormProxy> _proxyRegistry = <DormProxy>[];
   final List<SpawnEntry> _spawnRegistry = <SpawnEntry>[];
+  final EntityKey _keyChain = new EntityKey();
   
   int _proxyCount = 0;
   
@@ -192,6 +193,8 @@ class EntityAssembler {
         
         entity.readExternal(rawData, onConflict);
         
+        entity._scan.buildKey();
+        
         returningEntity = _existingFromSpawnRegistry(refClassName, entity);
         
         if (!entity._isPointer) {
@@ -259,11 +262,13 @@ class EntityAssembler {
             }
           }
         }
+        
+        _keyChain.getExistingEntityScans(spawnee).remove(spawnee._scan);
       } else if (conflictManager == ConflictManager.ACCEPT_CLIENT) {
         _removeEntityProxies(spawnee);
       }
       
-      _swapEntries(existingEntity);
+      _swap(existingEntity, false);
     }
     
     if (!entry.entities.contains(existingEntity)) {
@@ -272,7 +277,7 @@ class EntityAssembler {
       existingEntity.changes.listen(existingEntity._identityKeyListener);
     }
     
-    _swapPointers(existingEntity);
+    _swap(existingEntity, true);
     
     return existingEntity;
   }
@@ -284,10 +289,15 @@ class EntityAssembler {
     while (i > 0) {
       _proxyRegistry.remove(proxies[--i].proxy);
     }
+    
+    _keyChain.getExistingEntityScans(entity).remove(entity._scan);
   }
   
-  void _swapPointers(Entity actualEntity) {
-    if (_proxyCount == 0) {
+  void _swap(Entity actualEntity, bool swapPointers) {
+    if (
+        swapPointers &&
+        (_proxyCount == 0)
+    ) {
       return;
     }
     
@@ -301,49 +311,22 @@ class EntityAssembler {
         proxy.owner.forEach(
             (dynamic entry) {
               if (_areEqualByKey(entry, actualEntity)) {
-                _proxyCount--;
+                swapPointers ? _proxyCount-- : null;
                 
                 proxy.owner[proxy.owner.indexOf(entry)] = actualEntity;
               }
             }
         );
       } else if (_areEqualByKey(proxy._value, actualEntity)) {
-        _proxyCount--;
+        swapPointers ? _proxyCount-- : null;
         
         proxy._initialValue = actualEntity;
       }
     }
   }
   
-  void _swapEntries(Entity actualEntity) {
-    DormProxy proxy;
-    int i = _proxyRegistry.length;
-    
-    while (i > 0) {
-      proxy = _proxyRegistry[--i];
-      
-      if (proxy.owner != null) {
-        proxy.owner.forEach(
-            (dynamic entry) {
-              if (_areEqualByKey(entry, actualEntity)) {
-                proxy.owner[proxy.owner.indexOf(entry)] = actualEntity;
-              }
-            }
-        );
-      } else if (_areEqualByKey(proxy._value, actualEntity)) {
-        proxy._initialValue = actualEntity;
-      }
-    }
-  }
-  
   Entity _existingFromSpawnRegistry(String refClassName, Entity entity) {
-    Entity registeredEntity;
-    Function equalsBasedOnRefAndKey = entity._scan.equalsBasedOnRefAndKey;
-    
-    registeredEntity = _getSpawnRegistryForRefClassName(refClassName).entities.firstWhere(
-        (Entity lookup) => equalsBasedOnRefAndKey(lookup._scan),
-        orElse: () => null
-    );
+    Entity registeredEntity = _keyChain.getExistingEntity(entity);
     
     if (
         (registeredEntity != null) &&
@@ -387,12 +370,7 @@ class EntityAssembler {
     Entity entity;
     
     if (instance is Entity) {
-      entity = instance as Entity;
-      
-      return (
-          entity._isPointer &&
-          entity._scan.equalsBasedOnRefAndKey(compareEntity._scan)
-      );
+      return _keyChain.getExistingEntityScans(instance).contains(compareEntity._scan);
     }
     
     return false;

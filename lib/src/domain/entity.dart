@@ -168,7 +168,7 @@ abstract class Entity extends ObservableBase implements IExternalizable {
                 (result != null) &&
                 result.proxy.isId
             ) {
-              _scan._cachedKey = null;
+              _scan.buildKey();
             }
           }
         }
