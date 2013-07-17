@@ -30,16 +30,14 @@ class EntityScan {
   //---------------------------------
   
   void buildKey() {
-    EntityKey nextKey;
-    int len = _identityProxies.length;
+    EntityKey nextKey = EntityAssembler._instance._keyChain;
     _ProxyEntry entry;
-    int i, code;
+    int code;
+    int i = _identityProxies.length;
     dynamic value;
     
-    nextKey = EntityAssembler._instance._keyChain;
-    
-    for (i=0; i<len; i++) {
-      entry = _identityProxies[i];
+    while (i > 0) {
+      entry = _identityProxies[--i];
       
       code = entry.proxy.propertySymbol.hashCode;
       value = entry.proxy._value;
