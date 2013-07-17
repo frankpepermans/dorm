@@ -46,8 +46,10 @@ class EntityScan {
       
       nextKey[code] = value;
       
-      nextKey = nextKey[[code, value]]..entityScans.add(this);
+      nextKey = nextKey[[code, value]];
     }
+    
+    nextKey.entityScans.add(this);
   }
   
   //---------------------------------
