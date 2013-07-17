@@ -175,6 +175,7 @@ class EntityAssembler {
     final String refClassName = rawData[SerializationType.ENTITY_TYPE];
     EntityScan scan;
     Entity entity, returningEntity;
+    List<_ProxyEntry> entityProxies;
     int i, j;
     
     if (onConflict == null) {
@@ -190,9 +191,8 @@ class EntityAssembler {
         entity = scan.contructorMethod();
         
         entity.readExternal(rawData, onConflict);
-        entity.changes.listen(entity._identityKeyListener);
         
-        returningEntity = _existingFromSpawnRegistry(refClassName, entity._scan.key, entity);
+        returningEntity = _existingFromSpawnRegistry(refClassName, entity);
         
         if (!entity._isPointer) {
           entity = _registerSpawnedEntity(
@@ -203,6 +203,8 @@ class EntityAssembler {
           
           returningEntity = entity;
         } else if (returningEntity._isPointer) {
+          _removeEntityProxies(entity);
+          
           _proxyCount++;
         }
         
@@ -258,13 +260,7 @@ class EntityAssembler {
           }
         }
       } else if (conflictManager == ConflictManager.ACCEPT_CLIENT) {
-        spawneeProxies = spawnee._scan._proxies;
-        
-        i = spawneeProxies.length;
-        
-        while (i > 0) {
-          _proxyRegistry.remove(spawneeProxies[--i].proxy);
-        }
+        _removeEntityProxies(spawnee);
       }
       
       _swapEntries(existingEntity);
@@ -272,11 +268,22 @@ class EntityAssembler {
     
     if (!entry.entities.contains(existingEntity)) {
       entry.entities.add(existingEntity);
+      
+      existingEntity.changes.listen(existingEntity._identityKeyListener);
     }
     
     _swapPointers(existingEntity);
     
     return existingEntity;
+  }
+  
+  void _removeEntityProxies(Entity entity) {
+    List<_ProxyEntry> proxies = entity._scan._proxies;
+    int i = proxies.length;
+    
+    while (i > 0) {
+      _proxyRegistry.remove(proxies[--i].proxy);
+    }
   }
   
   void _swapPointers(Entity actualEntity) {
@@ -329,7 +336,7 @@ class EntityAssembler {
     }
   }
   
-  Entity _existingFromSpawnRegistry(String refClassName, _ProxyKey key, Entity entity) {
+  Entity _existingFromSpawnRegistry(String refClassName, Entity entity) {
     Entity registeredEntity;
     Function equalsBasedOnRefAndKey = entity._scan.equalsBasedOnRefAndKey;
     
