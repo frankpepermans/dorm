@@ -10,7 +10,6 @@ class EntityAssembler {
   
   final List<EntityScan> _entityScans = <EntityScan>[];
   final List<DormProxy> _proxyRegistry = <DormProxy>[];
-  final List<_SpawnEntry> _spawnRegistry = <_SpawnEntry>[];
   final EntityKey _keyChain = new EntityKey();
   
   int _proxyCount = 0;
@@ -264,7 +263,7 @@ class EntityAssembler {
           }
         }
         
-        _keyChain.getExistingEntityScans(spawnee).remove(spawnee._scan);
+        _keyChain.remove(spawnee);
       } else if (conflictManager == ConflictManager.ACCEPT_CLIENT) {
         _removeEntityProxies(spawnee);
       }
@@ -274,8 +273,6 @@ class EntityAssembler {
     
     if (!existingEntity._isRegistered) {
       existingEntity._isRegistered = true;
-      
-      _getSpawnRegistryForRefClassName(refClassName).entities.add(existingEntity);
       
       existingEntity.changes.listen(existingEntity._identityKeyListener);
     }
@@ -293,7 +290,7 @@ class EntityAssembler {
       _proxyRegistry.remove(proxies[--i].proxy);
     }
     
-    _keyChain.getExistingEntityScans(entity).remove(entity._scan);
+    _keyChain.remove(entity);
   }
   
   void _swap(Entity actualEntity, bool swapPointers) {
@@ -315,10 +312,11 @@ class EntityAssembler {
             (dynamic entry) {
               if (
                   (entry is Entity) &&
-                  (entry.refClassName == actualEntity.refClassName) &&
-                  _keyChain.getExistingEntityScans(entry).contains(actualEntity._scan)
+                  _keyChain.areSameKeySignature(entry, actualEntity)
               ) {
-                swapPointers ? _proxyCount-- : null;
+                if (swapPointers) _proxyCount--;
+                
+                //_removeEntityProxies(entry);
                 
                 proxy.owner[proxy.owner.indexOf(entry)] = actualEntity;
               }
@@ -326,10 +324,11 @@ class EntityAssembler {
         );
       } else if (
           (proxy._value is Entity) &&
-          (proxy._value.refClassName == actualEntity.refClassName) &&
-          _keyChain.getExistingEntityScans(proxy._value).contains(actualEntity._scan)
+          _keyChain.areSameKeySignature(proxy._value, actualEntity)
       ) {
-        swapPointers ? _proxyCount-- : null;
+        if (swapPointers) _proxyCount--;
+        
+        //_removeEntityProxies(proxy._value);
         
         proxy._initialValue = actualEntity;
       }
@@ -364,29 +363,7 @@ class EntityAssembler {
     return null;
   }
   
-  _SpawnEntry _getSpawnRegistryForRefClassName(String refClassName) {
-    return _spawnRegistry.firstWhere(
-        (_SpawnEntry registryEntry) => (registryEntry.refClassName == refClassName),
-        orElse: () {
-          _SpawnEntry registryEntry = new _SpawnEntry(refClassName);
-          
-          _spawnRegistry.add(registryEntry);
-          
-          return registryEntry;
-        }
-    );
-  }
-  
   ConflictManager _handleConflictAcceptClient(Entity serverEntity, Entity clientEntity) {
     return ConflictManager.ACCEPT_CLIENT;
   }
-}
-
-class _SpawnEntry {
-  
-  final String refClassName;
-  final List<Entity> entities = <Entity>[];
-  
-  _SpawnEntry(this.refClassName);
-  
 }
