@@ -150,6 +150,8 @@ class EntityAssembler {
           
           _proxyRegistry.add(proxy);
           
+          proxies.remove(proxy);
+          
           break;
         }
       }

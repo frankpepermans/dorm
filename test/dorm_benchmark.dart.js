@@ -63336,7 +63336,7 @@ EntityAssembler: {"": "Object;_entityScans<,_proxyRegistry<,_spawnRegistry<,_key
       entry = t1.$index(proxyEntryList, i);
       j = t4.get$length(proxies);
       if (typeof j !== "number")
-        return this.registerProxies$2$bailout(2, entity, proxies, scan, proxyEntryList, t1, i, t3, t2, entry, proxy, t4, j);
+        return this.registerProxies$2$bailout(2, entity, proxies, scan, proxyEntryList, t1, i, t3, t4, entry, t2, proxy, j);
       for (; j > 0;) {
         --j;
         proxy = t4.$index(proxies, j);
@@ -63351,6 +63351,7 @@ EntityAssembler: {"": "Object;_entityScans<,_proxyRegistry<,_spawnRegistry<,_key
           entry.set$proxy(proxy);
           $.add$1$ax(entity.get$_proxies(), proxy);
           t3.add$1(t2, proxy);
+          t4.remove$1(proxies, proxy);
           break;
         }
       }
@@ -63358,7 +63359,7 @@ EntityAssembler: {"": "Object;_entityScans<,_proxyRegistry<,_spawnRegistry<,_key
     "0,549,550,560,561";
   },
   "+registerProxies:2:0": 0,
-  registerProxies$2$bailout: function(state0, entity, proxies, scan, proxyEntryList, t1, i, t3, t2, entry, proxy, t4, j) {
+  registerProxies$2$bailout: function(state0, entity, proxies, scan, proxyEntryList, t1, i, t3, t4, entry, t2, proxy, j) {
     switch (state0) {
       case 0:
         if (entity.get$_uid() == null) {
@@ -63403,6 +63404,7 @@ EntityAssembler: {"": "Object;_entityScans<,_proxyRegistry<,_spawnRegistry<,_key
                     entry.set$proxy(proxy);
                     $.add$1$ax(entity.get$_proxies(), proxy);
                     t3.add$1(t2, proxy);
+                    t4.remove$1(proxies, proxy);
                     break;
                   }
                 }
@@ -63628,7 +63630,11 @@ EntityAssembler: {"": "Object;_entityScans<,_proxyRegistry<,_spawnRegistry<,_key
         $.forEach$1$ax(t1.proxy_0.get$owner(), new $.EntityAssembler__swap_closure(t1, this, actualEntity, swapPointers));
       else {
         t6 = t1.proxy_0.get$_liblib7$_value();
-        if (typeof t6 === "object" && t6 !== null && !!$.getInterceptor(t6).$isEntity && $.contains$1$asx(t5.getExistingEntityScans$1(t6), actualEntity.get$_scan()) === true) {
+        if (typeof t6 === "object" && t6 !== null && !!$.getInterceptor(t6).$isEntity)
+          t6 = $.$eq(t6.get$refClassName(), actualEntity.get$refClassName()) === true && $.contains$1$asx(t5.getExistingEntityScans$1(t1.proxy_0.get$_liblib7$_value()), actualEntity.get$_scan()) === true;
+        else
+          t6 = false;
+        if (t6) {
           if (t2)
             this._proxyCount = $.$sub$n(this._proxyCount, 1);
           t1.proxy_0.set$_initialValue(actualEntity);
@@ -63647,7 +63653,7 @@ EntityAssembler: {"": "Object;_entityScans<,_proxyRegistry<,_spawnRegistry<,_key
         $.forEach$1$ax(t1.proxy_0.get$owner(), new $.EntityAssembler__swap_closure(t1, this, actualEntity, swapPointers));
       else {
         t6 = t1.proxy_0.get$_liblib7$_value();
-        if (typeof t6 === "object" && t6 !== null && !!$.getInterceptor(t6).$isEntity && $.contains$1$asx(t5.getExistingEntityScans$1(t6), actualEntity.get$_scan()) === true) {
+        if (typeof t6 === "object" && t6 !== null && !!$.getInterceptor(t6).$isEntity && $.$eq(t6.get$refClassName(), actualEntity.get$refClassName()) === true && $.contains$1$asx(t5.getExistingEntityScans$1(t1.proxy_0.get$_liblib7$_value()), actualEntity.get$_scan()) === true) {
           if (t2)
             this._proxyCount = $.$sub$n(this._proxyCount, 1);
           t1.proxy_0.set$_initialValue(actualEntity);
@@ -63776,7 +63782,12 @@ EntityAssembler_scan_closure: {"": "Closure;box_0",
 EntityAssembler__swap_closure: {"": "Closure;box_0,this_1,actualEntity_2,swapPointers_3",
   call$1: function(entry) {
     var t1;
-    if (typeof entry === "object" && entry !== null && !!$.getInterceptor(entry).$isEntity && $.contains$1$asx(this.this_1.get$_keyChain().getExistingEntityScans$1(entry), this.actualEntity_2.get$_scan()) === true) {
+    if (typeof entry === "object" && entry !== null && !!$.getInterceptor(entry).$isEntity) {
+      t1 = this.actualEntity_2;
+      t1 = $.$eq(entry.get$refClassName(), t1.get$refClassName()) === true && $.contains$1$asx(this.this_1.get$_keyChain().getExistingEntityScans$1(entry), t1.get$_scan()) === true;
+    } else
+      t1 = false;
+    if (t1) {
       if (this.swapPointers_3 === true) {
         t1 = this.this_1;
         t1.set$_proxyCount($.$sub$n(t1.get$_proxyCount(), 1));
@@ -64523,11 +64534,22 @@ ServiceBase: {"": "Object;host>,port>,serializer<,onConflict<",
 
 ServiceBase_apply_closure: {"": "Closure;this_0,isUniqueResult_1,completer_2",
   call$1: function(request) {
-    var t1, t2, spawned;
+    var t1, t2, factory, stopwatch, result, spawned;
     t1 = $.getInterceptor$x(request);
     if ($.$gt$n($.get$length$asx(t1.get$responseText(request)), 0) === true) {
       t2 = this.this_0;
-      spawned = $.EntityFactory$(t2.get$onConflict(), null).spawn$1(t2.get$serializer().incoming$1(t1.get$responseText(request)));
+      factory = $.EntityFactory$(t2.get$onConflict(), null);
+      $.print(t1.get$responseText(request));
+      stopwatch = $.Stopwatch$();
+      stopwatch.start$0(stopwatch);
+      result = t2.get$serializer().incoming$1(t1.get$responseText(request));
+      stopwatch.stop$0(stopwatch);
+      $.print("json parse completed in " + $.S(stopwatch.get$elapsedMilliseconds()) + " ms");
+      stopwatch = $.Stopwatch$();
+      stopwatch.start$0(stopwatch);
+      spawned = factory.spawn$1(result);
+      stopwatch.stop$0(stopwatch);
+      $.print("assembly completed in " + $.S(stopwatch.get$elapsedMilliseconds()) + " ms");
       t1 = this.isUniqueResult_1 === true ? $.get$first$ax(spawned) : spawned;
       $.complete$1$x(this.completer_2, t1);
     }
