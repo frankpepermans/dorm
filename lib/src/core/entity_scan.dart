@@ -128,38 +128,3 @@ class _ProxyEntry {
   }
   
 }
-
-class _ProxyKey {
-  
-  final int length;
-  
-  List<int> codes;
-  List<dynamic> values;
-  
-  bool operator == (_ProxyKey otherKey) => equals(otherKey);
-  
-  _ProxyKey(this.length) {
-    codes = new List<int>(length);
-    values = new List<dynamic>(length);
-  }
-  
-  bool equals(_ProxyKey otherKey) {
-    if (length != otherKey.length) {
-      return false;
-    }
-    
-    int i = length;
-    
-    while (i > 0) {
-      if (
-          (codes[--i] != otherKey.codes[i]) ||
-          (values[i] != otherKey.values[i])
-      ) {
-        return false;
-      }
-    }
-    
-    return true;
-  }
-  
-}
