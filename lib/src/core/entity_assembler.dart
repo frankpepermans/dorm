@@ -10,7 +10,7 @@ class EntityAssembler {
   
   final List<EntityScan> _entityScans = <EntityScan>[];
   final List<DormProxy> _proxyRegistry = <DormProxy>[];
-  final List<SpawnEntry> _spawnRegistry = <SpawnEntry>[];
+  final List<_SpawnEntry> _spawnRegistry = <_SpawnEntry>[];
   final EntityKey _keyChain = new EntityKey();
   
   int _proxyCount = 0;
@@ -224,7 +224,7 @@ class EntityAssembler {
     ConflictManager conflictManager;
     List<_ProxyEntry> entryProxies;
     List<_ProxyEntry> spawneeProxies;
-    SpawnEntry entry = _getSpawnRegistryForRefClassName(refClassName);
+    _SpawnEntry entry = _getSpawnRegistryForRefClassName(refClassName);
     _ProxyEntry entryA, entryB;
     int i, j;
     
@@ -310,14 +310,20 @@ class EntityAssembler {
       if (proxy.owner != null) {
         proxy.owner.forEach(
             (dynamic entry) {
-              if (_areEqualByKey(entry, actualEntity)) {
+              if (
+                  (entry is Entity) &&
+                  _keyChain.getExistingEntityScans(entry).contains(actualEntity._scan)
+              ) {
                 swapPointers ? _proxyCount-- : null;
                 
                 proxy.owner[proxy.owner.indexOf(entry)] = actualEntity;
               }
             }
         );
-      } else if (_areEqualByKey(proxy._value, actualEntity)) {
+      } else if (
+          (proxy._value is Entity) &&
+          _keyChain.getExistingEntityScans(proxy._value).contains(actualEntity._scan)
+      ) {
         swapPointers ? _proxyCount-- : null;
         
         proxy._initialValue = actualEntity;
@@ -353,11 +359,11 @@ class EntityAssembler {
     return null;
   }
   
-  SpawnEntry _getSpawnRegistryForRefClassName(String refClassName) {
+  _SpawnEntry _getSpawnRegistryForRefClassName(String refClassName) {
     return _spawnRegistry.firstWhere(
-        (SpawnEntry registryEntry) => (registryEntry.refClassName == refClassName),
+        (_SpawnEntry registryEntry) => (registryEntry.refClassName == refClassName),
         orElse: () {
-          SpawnEntry registryEntry = new SpawnEntry(refClassName);
+          _SpawnEntry registryEntry = new _SpawnEntry(refClassName);
           
           _spawnRegistry.add(registryEntry);
           
@@ -366,26 +372,16 @@ class EntityAssembler {
     );
   }
   
-  bool _areEqualByKey(dynamic instance, Entity compareEntity) {
-    Entity entity;
-    
-    if (instance is Entity) {
-      return _keyChain.getExistingEntityScans(instance).contains(compareEntity._scan);
-    }
-    
-    return false;
-  }
-  
   ConflictManager _handleConflictAcceptClient(Entity serverEntity, Entity clientEntity) {
     return ConflictManager.ACCEPT_CLIENT;
   }
 }
 
-class SpawnEntry {
+class _SpawnEntry {
   
   final String refClassName;
   final List<Entity> entities = <Entity>[];
   
-  SpawnEntry(this.refClassName);
+  _SpawnEntry(this.refClassName);
   
 }

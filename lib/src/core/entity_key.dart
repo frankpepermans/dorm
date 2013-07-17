@@ -29,7 +29,6 @@ class EntityKey {
   }
   
   List<EntityScan> getExistingEntityScans(Entity forEntity) {
-    EntityAssembler assembler = new EntityAssembler();
     EntityKey nextKey;
     List<_ProxyEntry> identityProxies = forEntity._scan._identityProxies;
     int len = identityProxies.length;
@@ -37,7 +36,7 @@ class EntityKey {
     int i, code;
     dynamic value;
     
-    nextKey = assembler._keyChain;
+    nextKey = EntityAssembler._instance._keyChain;
     
     for (i=0; i<len; i++) {
       entry = identityProxies[i];
