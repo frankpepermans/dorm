@@ -224,7 +224,6 @@ class EntityAssembler {
     ConflictManager conflictManager;
     List<_ProxyEntry> entryProxies;
     List<_ProxyEntry> spawneeProxies;
-    _SpawnEntry entry = _getSpawnRegistryForRefClassName(refClassName);
     _ProxyEntry entryA, entryB;
     int i, j;
     
@@ -271,8 +270,10 @@ class EntityAssembler {
       _swap(existingEntity, false);
     }
     
-    if (!entry.entities.contains(existingEntity)) {
-      entry.entities.add(existingEntity);
+    if (!existingEntity._isRegistered) {
+      existingEntity._isRegistered = true;
+      
+      _getSpawnRegistryForRefClassName(refClassName).entities.add(existingEntity);
       
       existingEntity.changes.listen(existingEntity._identityKeyListener);
     }

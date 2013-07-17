@@ -5,7 +5,7 @@ abstract class Entity extends ObservableBase implements IExternalizable {
   List<DormProxy> _proxies = <DormProxy>[];
   Map _source;
   EntityScan _scan;
-  bool _isPointer;
+  bool _isPointer, _isRegistered = false;
   int _uid;
   
   //-----------------------------------
