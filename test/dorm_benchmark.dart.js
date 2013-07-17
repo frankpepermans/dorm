@@ -63913,24 +63913,38 @@ EntityScan: {"": "Object;_original@,entity@,_proxies@,_identityProxies@,contruct
     return this.contructorMethod.call$0();
   },
   buildKey$0: function() {
-    var len, nextKey, i, entry, code, value, t1;
-    len = $.get$length$asx(this._identityProxies);
+    var nextKey, i, entry, code, value, t1;
     nextKey = $.EntityAssembler__instance.get$_keyChain();
-    if (typeof len !== "number")
-      throw $.iae(len);
-    i = 0;
-    for (; i < len; ++i) {
+    i = $.get$length$asx(this._identityProxies);
+    if (typeof i !== "number")
+      return this.buildKey$0$bailout(1, nextKey, i);
+    for (; i > 0;) {
+      --i;
       entry = $.$index$asx(this._identityProxies, i);
       code = $.get$hashCode$(entry.get$proxy().get$propertySymbol());
       value = entry.get$proxy().get$_liblib7$_value();
       t1 = $.getInterceptor$ax(nextKey);
       t1.$indexSet(nextKey, code, value);
       nextKey = t1.$index(nextKey, [code, value]);
-      $.add$1$ax(nextKey.get$entityScans(), this);
     }
+    $.add$1$ax(nextKey.get$entityScans(), this);
     "0";
   },
   "+buildKey:0:0": 0,
+  buildKey$0$bailout: function(state0, nextKey, i) {
+    var t1, t2, entry, code, value;
+    for (; t1 = $.getInterceptor$n(i), t1.$gt(i, 0) === true;) {
+      t2 = this._identityProxies;
+      i = t1.$sub(i, 1);
+      entry = $.$index$asx(t2, i);
+      code = $.get$hashCode$(entry.get$proxy().get$propertySymbol());
+      value = entry.get$proxy().get$_liblib7$_value();
+      t2 = $.getInterceptor$ax(nextKey);
+      t2.$indexSet(nextKey, code, value);
+      nextKey = t2.$index(nextKey, [code, value]);
+    }
+    $.add$1$ax(nextKey.get$entityScans(), this);
+  },
   addProxy$2: function(property, isIdentity) {
     var entry = $._ProxyEntry$(property.get$property());
     $.add$1$ax(this._proxies, entry);

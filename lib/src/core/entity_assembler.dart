@@ -267,7 +267,7 @@ class EntityAssembler {
         _removeEntityProxies(spawnee);
       }
       
-      _swap(existingEntity, false);
+      //_swap(existingEntity, false);
     }
     
     if (!existingEntity._isRegistered) {
@@ -278,7 +278,7 @@ class EntityAssembler {
       existingEntity.changes.listen(existingEntity._identityKeyListener);
     }
     
-    _swap(existingEntity, true);
+    _swap(existingEntity);
     
     return existingEntity;
   }
@@ -294,11 +294,8 @@ class EntityAssembler {
     _keyChain.getExistingEntityScans(entity).remove(entity._scan);
   }
   
-  void _swap(Entity actualEntity, bool swapPointers) {
-    if (
-        swapPointers &&
-        (_proxyCount == 0)
-    ) {
+  void _swap(Entity actualEntity) {
+    if (_proxyCount == 0) {
       return;
     }
     
@@ -313,9 +310,10 @@ class EntityAssembler {
             (dynamic entry) {
               if (
                   (entry is Entity) &&
+                  (entry.refClassName == actualEntity.refClassName) &&
                   _keyChain.getExistingEntityScans(entry).contains(actualEntity._scan)
               ) {
-                swapPointers ? _proxyCount-- : null;
+                _proxyCount--;
                 
                 proxy.owner[proxy.owner.indexOf(entry)] = actualEntity;
               }
@@ -323,9 +321,10 @@ class EntityAssembler {
         );
       } else if (
           (proxy._value is Entity) &&
+          (proxy._value.refClassName == actualEntity.refClassName) &&
           _keyChain.getExistingEntityScans(proxy._value).contains(actualEntity._scan)
       ) {
-        swapPointers ? _proxyCount-- : null;
+        _proxyCount--;
         
         proxy._initialValue = actualEntity;
       }

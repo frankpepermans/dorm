@@ -58,7 +58,7 @@ class RelatedEmployeesItemRenderer extends LabelItemRenderer {
         job.employees.forEach(
           (Employee employee) {
             if (employee != data) {
-              namesList.add(employee.toString());
+              namesList.add(employee.name);
             }
           }
         );

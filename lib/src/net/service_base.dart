@@ -20,9 +20,23 @@ class ServiceBase {
         (HttpRequest request) {
           if (request.responseText.length > 0) {
             EntityFactory<Entity> factory = new EntityFactory(onConflict);
+            Stopwatch stopwatch;
+            print(request.responseText);
+            stopwatch = new Stopwatch()..start();
             
             List<Map<String, dynamic>> result = serializer.incoming(request.responseText);
+            
+            stopwatch.stop();
+            
+            print('json parse completed in ${stopwatch.elapsedMilliseconds} ms');
+            
+            stopwatch = new Stopwatch()..start();
+            
             ObservableList<Entity> spawned = factory.spawn(result);
+            
+            stopwatch.stop();
+            
+            print('assembly completed in ${stopwatch.elapsedMilliseconds} ms');
             
             completer.complete(isUniqueResult ? spawned.first : spawned);
           }
