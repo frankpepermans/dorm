@@ -11,7 +11,7 @@ class EntityAssembler {
   static const Symbol ENTITY_SYMBOL = const Symbol('dorm.Entity');
   
   final List<EntityScan> _entityScans = <EntityScan>[];
-  final List<DormProxy> _proxyRegistry = <DormProxy>[];
+  final List<List<dynamic>> _collections = <List<dynamic>>[];
   final EntityKey _keyChain = new EntityKey();
   
   int _proxyCount = 0;
@@ -109,8 +109,6 @@ class EntityAssembler {
           
           entity._proxies.add(proxy);
           
-          _proxyRegistry.add(proxy);
-          
           proxies.remove(proxy);
           
           break;
@@ -138,8 +136,10 @@ class EntityAssembler {
   Entity _assemble(Map<String, dynamic> rawData, OnConflictFunction onConflict) {
     final String refClassName = rawData[SerializationType.ENTITY_TYPE];
     EntityScan scan;
-    Entity entity, returningEntity;
+    Entity spawnee, entity, returningEntity;
+    DormProxy proxy;
     List<_ProxyEntry> entityProxies;
+    List<DormProxy> propProxies;
     int i, j;
     
     if (onConflict == null) {
@@ -152,7 +152,7 @@ class EntityAssembler {
       scan = _entityScans[--i];
       
       if (scan.refClassName == refClassName) {
-        entity = scan._contructorMethod();
+        spawnee = entity = scan._contructorMethod();
         
         entity.readExternal(rawData, onConflict);
         
@@ -169,9 +169,23 @@ class EntityAssembler {
           
           returningEntity = entity;
         } else if (returningEntity._isPointer) {
-          _removeEntityProxies(entity);
-          
           _proxyCount++;
+        }
+        
+        if (spawnee == returningEntity) {
+          propProxies = spawnee._proxies;
+          
+          j = propProxies.length;
+          
+          while (j > 0) {
+            proxy = propProxies[--j];
+            
+            if (proxy.owner != null) {
+              _collections.add(proxy.owner);
+            }
+          }
+        } else {
+          _keyChain.remove(spawnee);
         }
         
         return returningEntity;
@@ -218,17 +232,17 @@ class EntityAssembler {
             if (entryA.property == entryB.property) {
               entryA.proxy._initialValue = existingEntity.notifyPropertyChange(entryA.proxy.propertySymbol, entryA.proxy._value, entryB.proxy._value);
               
-              _proxyRegistry.remove(entryB.proxy);
+              if (entryB.proxy.owner != null) {
+                _collections.remove(entryB.proxy.owner);
+              }
               
               break;
             }
           }
         }
-        
-        _keyChain.remove(spawnee);
-      } else if (conflictManager == ConflictManager.ACCEPT_CLIENT) {
-        _removeEntityProxies(spawnee);
       }
+      
+      _keyChain.remove(spawnee);
       
       _swap(existingEntity, false);
     }
@@ -244,17 +258,6 @@ class EntityAssembler {
     return existingEntity;
   }
   
-  void _removeEntityProxies(Entity entity) {
-    List<_ProxyEntry> proxies = entity._scan._proxies;
-    int i = proxies.length;
-    
-    while (i > 0) {
-      _proxyRegistry.remove(proxies[--i].proxy);
-    }
-    
-    _keyChain.remove(entity);
-  }
-  
   void _swap(Entity actualEntity, bool swapPointers) {
     if (
         swapPointers &&
@@ -263,37 +266,46 @@ class EntityAssembler {
       return;
     }
     
+    List<dynamic> collectionEntry;
     DormProxy proxy;
-    int i = _proxyRegistry.length;
+    int i = _collections.length;
     
-    while (i > 0) {
-      proxy = _proxyRegistry[--i];
-      
-      if (proxy.owner != null) {
-        proxy.owner.forEach(
-            (dynamic entry) {
+    Iterable<EntityScan> siblings = _keyChain.getExistingEntityScans(actualEntity).where(
+      (EntityScan scan) => (scan.entity != actualEntity)    
+    );
+    
+    siblings.forEach(
+        (EntityScan scan) {
+          scan._proxies.forEach(
+            (_ProxyEntry entry) {
               if (
-                  (entry is Entity) &&
-                  _keyChain.areSameKeySignature(entry, actualEntity)
+                  (entry.proxy._value is Entity) &&
+                  _keyChain.areSameKeySignature(entry.proxy._value, actualEntity)
               ) {
                 if (swapPointers) _proxyCount--;
                 
-                //_removeEntityProxies(entry);
-                
-                proxy.owner[proxy.owner.indexOf(entry)] = actualEntity;
+                entry.proxy._initialValue = actualEntity;
               }
             }
-        );
-      } else if (
-          (proxy._value is Entity) &&
-          _keyChain.areSameKeySignature(proxy._value, actualEntity)
-      ) {
-        if (swapPointers) _proxyCount--;
-        
-        //_removeEntityProxies(proxy._value);
-        
-        proxy._initialValue = actualEntity;
-      }
+          );
+        }
+    );
+    
+    while (i > 0) {
+      collectionEntry = _collections[--i];
+      
+      collectionEntry.forEach(
+          (dynamic entry) {
+            if (
+                (entry is Entity) &&
+                _keyChain.areSameKeySignature(entry, actualEntity)
+            ) {
+              if (swapPointers) _proxyCount--;
+              
+              collectionEntry[collectionEntry.indexOf(entry)] = actualEntity;
+            }
+          }
+      );
     }
   }
   
