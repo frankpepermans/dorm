@@ -2,22 +2,20 @@ library dorm_entity_spawn_test;
 
 import 'package:dorm/dorm.dart';
 import 'dart:async';
-import 'dart:html';
 import 'dart:json';
 
 Serializer serializer = new SerializerJson();
-List<Map<String, dynamic>> rawData;
 
 main() {
   EntityAssembler assembler = new EntityAssembler();
   
   assembler.scan(TestEntity, 'entities.testEntity', TestEntity.construct);
   
-  _buildRawData();
-  _runBenchmark(0);
+  _runBenchmark();
 }
 
-void _buildRawData() {
+void _runBenchmark() {
+  EntityFactory<TestEntity> factory = new EntityFactory(handleConflictAcceptClient);
   List<String> jsonRaw = <String>[];
   int loopCount = 1000;
   int i = loopCount;
@@ -27,21 +25,15 @@ void _buildRawData() {
     jsonRaw.add('{"id":${--i},"name":"Speed test","?t":"entities.testEntity"}');
   }
   
-  rawData = serializer.incoming('[' + jsonRaw.join(',') + ']');
-}
-
-void _runBenchmark(_) {
-  EntityFactory<TestEntity> factory = new EntityFactory(handleConflictAcceptClient);
-  
   Stopwatch stopwatch = new Stopwatch()..start();
   
-  factory.spawn(rawData);
+  factory.spawn(serializer.incoming('[' + jsonRaw.join(',') + ']'));
   
   stopwatch.stop();
   
   print('completed in ${stopwatch.elapsedMilliseconds} ms');
   
-  window.animationFrame.then(_runBenchmark);
+  new Timer(new Duration(milliseconds:1), _runBenchmark);
 }
 
 ConflictManager handleConflictAcceptClient(Entity serverEntity, Entity clientEntity) {

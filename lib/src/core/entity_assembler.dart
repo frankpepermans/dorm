@@ -136,7 +136,7 @@ class EntityAssembler {
   Entity _assemble(Map<String, dynamic> rawData, OnConflictFunction onConflict) {
     final String refClassName = rawData[SerializationType.ENTITY_TYPE];
     EntityScan scan;
-    Entity spawnee, entity, returningEntity;
+    Entity spawnee, localNonPointerEntity;
     DormProxy proxy;
     List<_ProxyEntry> entityProxies;
     List<DormProxy> propProxies;
@@ -152,27 +152,31 @@ class EntityAssembler {
       scan = _entityScans[--i];
       
       if (scan.refClassName == refClassName) {
-        spawnee = entity = scan._contructorMethod();
+        spawnee = scan._contructorMethod();
         
-        entity.readExternal(rawData, onConflict);
+        spawnee.readExternal(rawData, onConflict);
         
-        entity._scan.buildKey();
+        localNonPointerEntity = _existingFromSpawnRegistry(refClassName, spawnee);
         
-        returningEntity = _existingFromSpawnRegistry(refClassName, entity);
+        spawnee._scan.buildKey();
         
-        if (!entity._isPointer) {
-          entity = _registerSpawnedEntity(
-              entity,
-              returningEntity, 
-              refClassName, onConflict
-          );
+        _solveConflictsIfAny(
+            spawnee,
+            localNonPointerEntity, 
+            onConflict
+        );
+        
+        if (localNonPointerEntity != null) {
+          _keyChain.remove(spawnee);
           
-          returningEntity = entity;
-        } else if (returningEntity._isPointer) {
-          _proxyCount++;
+          return localNonPointerEntity;
         }
         
-        if (spawnee == returningEntity) {
+        if (spawnee._isPointer) {
+          _keyChain.remove(spawnee);
+          
+          _proxyCount++;
+        } else {
           propProxies = spawnee._proxies;
           
           j = propProxies.length;
@@ -184,11 +188,11 @@ class EntityAssembler {
               _collections.add(proxy.owner);
             }
           }
-        } else {
-          _keyChain.remove(spawnee);
+          
+          _swap(spawnee, true);
         }
         
-        return returningEntity;
+        return spawnee;
       }
     }
     
@@ -197,65 +201,52 @@ class EntityAssembler {
     return null;
   }
   
-  Entity _registerSpawnedEntity(Entity spawnee, Entity existingEntity, String refClassName, OnConflictFunction onConflict) {
+  void _solveConflictsIfAny(Entity spawnee, Entity existingEntity, OnConflictFunction onConflict) {
+    if (
+        spawnee._isPointer ||
+        (existingEntity == null)
+    ) {
+      return;
+    }
+    
     ConflictManager conflictManager;
     List<_ProxyEntry> entryProxies;
     List<_ProxyEntry> spawneeProxies;
     _ProxyEntry entryA, entryB;
     int i, j;
     
-    if (spawnee != existingEntity) {
-      if (onConflict == null) {
-        throw new DormError('Conflict was detected, but no onConflict method is available');
-      }
+    if (onConflict == null) {
+      throw new DormError('Conflict was detected, but no onConflict method is available');
+    }
+    
+    conflictManager = onConflict(
+        spawnee, 
+        existingEntity
+    );
+    
+    if (conflictManager == ConflictManager.ACCEPT_SERVER) {
+      entryProxies = existingEntity._scan._proxies;
       
-      conflictManager = onConflict(
-          spawnee, 
-          existingEntity
-      );
+      i = entryProxies.length;
       
-      if (conflictManager == ConflictManager.ACCEPT_SERVER) {
-        entryProxies = existingEntity._scan._proxies;
+      while (i > 0) {
+        entryA = entryProxies[--i];
         
-        i = entryProxies.length;
+        spawneeProxies = spawnee._scan._proxies;
         
-        while (i > 0) {
-          entryA = entryProxies[--i];
+        j = spawneeProxies.length;
+        
+        while (j > 0) {
+          entryB = spawneeProxies[--j];
           
-          spawneeProxies = spawnee._scan._proxies;
-          
-          j = spawneeProxies.length;
-          
-          while (j > 0) {
-            entryB = spawneeProxies[--j];
+          if (entryA.property == entryB.property) {
+            entryA.proxy._initialValue = existingEntity.notifyPropertyChange(entryA.proxy.propertySymbol, entryA.proxy._value, entryB.proxy._value);
             
-            if (entryA.property == entryB.property) {
-              entryA.proxy._initialValue = existingEntity.notifyPropertyChange(entryA.proxy.propertySymbol, entryA.proxy._value, entryB.proxy._value);
-              
-              if (entryB.proxy.owner != null) {
-                _collections.remove(entryB.proxy.owner);
-              }
-              
-              break;
-            }
+            break;
           }
         }
       }
-      
-      _keyChain.remove(spawnee);
-      
-      _swap(existingEntity, false);
     }
-    
-    if (!existingEntity._isRegistered) {
-      existingEntity._isRegistered = true;
-      
-      existingEntity.changes.listen(existingEntity._identityKeyListener);
-    }
-    
-    _swap(existingEntity, true);
-    
-    return existingEntity;
   }
   
   void _swap(Entity actualEntity, bool swapPointers) {
@@ -267,29 +258,7 @@ class EntityAssembler {
     }
     
     List<dynamic> collectionEntry;
-    DormProxy proxy;
     int i = _collections.length;
-    
-    Iterable<EntityScan> siblings = _keyChain.getExistingEntityScans(actualEntity).where(
-      (EntityScan scan) => (scan.entity != actualEntity)    
-    );
-    
-    siblings.forEach(
-        (EntityScan scan) {
-          scan._proxies.forEach(
-            (_ProxyEntry entry) {
-              if (
-                  (entry.proxy._value is Entity) &&
-                  _keyChain.areSameKeySignature(entry.proxy._value, actualEntity)
-              ) {
-                if (swapPointers) _proxyCount--;
-                
-                entry.proxy._initialValue = actualEntity;
-              }
-            }
-          );
-        }
-    );
     
     while (i > 0) {
       collectionEntry = _collections[--i];
@@ -301,6 +270,8 @@ class EntityAssembler {
                 _keyChain.areSameKeySignature(entry, actualEntity)
             ) {
               if (swapPointers) _proxyCount--;
+              
+              _keyChain.remove(entry);
               
               collectionEntry[collectionEntry.indexOf(entry)] = actualEntity;
             }
@@ -319,7 +290,7 @@ class EntityAssembler {
       return registeredEntity;
     }
     
-    return entity;
+    return null;
   }
   
   EntityScan _getExistingScan(String refClassName) {

@@ -19,13 +19,16 @@ class RelatedEmployeesItemRenderer extends LabelItemRenderer {
   //---------------------------------
 
   set data(dynamic value) {
-    if (value is Entity) {
-      value.changes.listen(
-        (_) => invalidateData() 
-      );
-    }
-    
     super.data = value;
+    
+    if (
+        (value != null) &&
+        (value[field] is Job)
+    ) {
+      Job job = value[field];
+      
+      job.changes.listen((List<ChangeRecord> changes) => invalidateData());
+    }
   }
 
   //---------------------------------

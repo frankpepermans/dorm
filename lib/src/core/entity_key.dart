@@ -59,6 +59,10 @@ class EntityKey {
   
   bool remove(Entity entity) => getExistingEntityScans(entity).remove(entity._scan);
   
+  Iterable<EntityScan> getSiblings(Entity forEntity) => getExistingEntityScans(forEntity).where(
+      (EntityScan scan) => (scan.entity != forEntity)    
+  );
+  
   List<EntityScan> getExistingEntityScans(Entity forEntity) {
     EntityKey nextKey;
     List<_ProxyEntry> identityProxies = forEntity._scan._identityProxies;
