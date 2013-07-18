@@ -1,0 +1,152 @@
+        <!DOCTYPE html>
+        <html>
+        <head>
+                <meta charset="utf-8">
+        <title>ObservableBase class / observe Library / Dart Documentation</title>
+        <link rel="stylesheet" type="text/css"
+            href="../styles.css">
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="../favicon.ico">
+        
+        </head>
+        <body data-library="observe" data-type="ObservableBase">
+        <div class="page">
+        <div class="header">
+          <a href="../index.html"><div class="logo"></div></a>
+          <a href="../index.html">Dart Documentation</a>
+         &rsaquo; <a href="../observe.html">observe</a> &rsaquo; <a href="../observe/ObservableBase.html">ObservableBase</a>        <div id="search-box">
+          <input type="search" name="q" id="q" autocomplete="off"
+              class="search-input" placeholder="Search API">
+        </div>
+        
+      </div>
+      <div class="drop-down" id="drop-down"></div>
+      
+        <div class="nav">
+        
+</div>
+<div class="content">
+        <h2><strong>ObservableBase</strong>
+          class
+        </h2>
+        
+<button id="show-inherited" class="show-inherited">Hide inherited</button>
+<div class="doc">
+<p>Base class implementing <a class="crossref" href="../observe/Observable.html">Observable</a>.</p>
+<p>When a field, property, or indexable item is changed, a derived class should
+call <a class="crossref" href="../observe/ObservableBase.html#notifyPropertyChange">notifyPropertyChange</a>. See that method for an example.</p>
+<pre class="source">
+typedef ObservableBase = Object with ObservableMixin;
+</pre>
+</div>
+<h3>Subclasses</h3>
+<p>
+<span class="type-box"><span class="icon-class"></span><a href="../observe/CompoundBinding.html">CompoundBinding</a></span>, <span class="type-box"><span class="icon-class"></span><a href="../dorm/Entity.html">Entity</a></span>, <span class="type-box"><span class="icon-class"></span><a href="../observe/ObservableBox.html">ObservableBox&lt;T&gt;</a></span>, <span class="type-box"><span class="icon-class"></span><a href="../observe/ObservableMap.html">ObservableMap&lt;K, V&gt;</a></span></p>
+<h3>Implements</h3>
+<p>
+<span class="type-box"><span class="icon-class"></span><a href="../observe/ObservableMixin.html">ObservableMixin</a></span></p>
+<div>
+<h3>Properties</h3>
+<div class="field"><h4 id="changes">
+<button class="show-code">Code</button>
+final Stream&lt;List&lt;<a href="../observe/ChangeRecord.html">ChangeRecord</a>&gt;&gt;         <strong>changes</strong> <a class="anchor-link"
+            href="#changes"
+            title="Permalink to ObservableBase.changes">#</a>
+        </h4>
+        <div class="doc">
+<div class="inherited">
+<p>The stream of change records to this object.</p>
+<p>Changes should be delivered in asynchronous batches by calling
+<a class="crossref" href="../observe.html#queueChangeRecords">queueChangeRecords</a>.</p>
+<p><a class="crossref" href="../observe.html#deliverChangeRecords">deliverChangeRecords</a> can be called to force delivery.</p>
+<div class="docs-inherited-from">docs inherited from <a href="../observe/Observable.html">Observable</a> </div></div>
+<pre class="source">
+Stream&lt;List&lt;ChangeRecord&gt;&gt; get changes {
+ if (_broadcastController == null) {
+   _broadcastController =
+       new StreamController&lt;List&lt;ChangeRecord&gt;&gt;.broadcast(sync: true);
+ }
+ return _broadcastController.stream;
+}
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="hasObservers">
+<button class="show-code">Code</button>
+final bool         <strong>hasObservers</strong> <a class="anchor-link"
+            href="#hasObservers"
+            title="Permalink to ObservableBase.hasObservers">#</a>
+        </h4>
+        <div class="doc">
+<p>True if this object has any observers, and should call
+<a class="crossref" href="../observe/ObservableMixin.html#notifyPropertyChange">notifyPropertyChange</a> for changes.</p>
+<pre class="source">
+bool get hasObservers =&gt; _broadcastController != null &amp;&amp;
+                        _broadcastController.hasListener;
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Methods</h3>
+<div class="method"><h4 id="notifyChange">
+<button class="show-code">Code</button>
+void <strong>notifyChange</strong>(<a href="../observe/ChangeRecord.html">ChangeRecord</a> record) <a class="anchor-link" href="#notifyChange"
+              title="Permalink to ObservableBase.notifyChange">#</a></h4>
+<div class="doc">
+<p>Notify observers of a change. For most objects <a class="crossref" href="../observe/ObservableMixin.html#notifyPropertyChange">notifyPropertyChange</a> is
+more convenient, but collections sometimes deliver other types of changes
+such as a <a class="crossref" href="../observe/ListChangeRecord.html">ListChangeRecord</a>.</p>
+<pre class="source">
+void notifyChange(ChangeRecord record) {
+ if (!hasObservers) return;
+
+ if (_changes == null) {
+   _changes = [];
+   queueChangeRecords(_deliverChanges);
+ }
+ _changes.add(record);
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="notifyPropertyChange">
+<button class="show-code">Code</button>
+dynamic <strong>notifyPropertyChange</strong>(Symbol field, Object oldValue, Object newValue) <a class="anchor-link" href="#notifyPropertyChange"
+              title="Permalink to ObservableBase.notifyPropertyChange">#</a></h4>
+<div class="doc">
+<p>Notify that the field <code>name</code> of this object has been changed.</p>
+<p>The 
+<span class="param">oldValue</span> and 
+<span class="param">newValue</span> are also recorded. If the two values are
+identical, no change will be recorded.</p>
+<p>For convenience this returns 
+<span class="param">newValue</span>. This makes it easy to use in a
+setter:</p>
+<pre><code>var _myField;
+get myField =&gt; _myField;
+set myField(value) {
+  _myField = notifyPropertyChange(
+      const Symbol('myField'), _myField, value);
+}
+</code></pre>
+<pre class="source">
+notifyPropertyChange(Symbol field, Object oldValue, Object newValue) {
+ if (hasObservers &amp;&amp; !identical(oldValue, newValue)) {
+   notifyChange(new PropertyChangeRecord(field));
+ }
+ return newValue;
+}
+</pre>
+</div>
+</div>
+</div>
+        </div>
+        <div class="clear"></div>
+        </div>
+        <div class="footer">
+          <div>This page was generated at 2013-07-18 09:40:18.876</div>
+        </div>
+        <script async src="../client-live-nav.js"></script>
+        </body></html>
+        

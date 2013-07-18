@@ -1,0 +1,272 @@
+        <!DOCTYPE html>
+        <html>
+        <head>
+                <meta charset="utf-8">
+        <title>DormManager class / dorm Library / Dart Documentation</title>
+        <link rel="stylesheet" type="text/css"
+            href="../styles.css">
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="../favicon.ico">
+        
+        </head>
+        <body data-library="dorm" data-type="DormManager">
+        <div class="page">
+        <div class="header">
+          <a href="../index.html"><div class="logo"></div></a>
+          <a href="../index.html">Dart Documentation</a>
+         &rsaquo; <a href="../dorm.html">dorm</a> &rsaquo; <a href="../dorm/DormManager.html">DormManager</a>        <div id="search-box">
+          <input type="search" name="q" id="q" autocomplete="off"
+              class="search-input" placeholder="Search API">
+        </div>
+        
+      </div>
+      <div class="drop-down" id="drop-down"></div>
+      
+        <div class="nav">
+        
+</div>
+<div class="content">
+        <h2><strong>DormManager</strong>
+          class
+        </h2>
+        
+<button id="show-inherited" class="show-inherited">Hide inherited</button>
+<div class="doc">
+<pre class="source">
+class DormManager {
+ 
+ //-----------------------------------
+ //
+ // Private properties
+ //
+ //-----------------------------------
+ 
+ List&lt;Entity&gt; _queue = &lt;Entity&gt;[];
+ List&lt;Entity&gt; _deleteQueue = &lt;Entity&gt;[];
+ 
+ //-----------------------------------
+ //
+ // Public properties
+ //
+ //-----------------------------------
+ 
+ String id;
+ 
+ //-----------------------------------
+ //
+ // Constructor
+ //
+ //-----------------------------------
+ 
+ DormManager({String id}) {
+   this.id = id;
+ }
+ 
+ //-----------------------------------
+ //
+ // Public methods
+ //
+ //-----------------------------------
+ 
+ void queueAsDeleted(Entity entity) {
+   if (
+       entity._scan.isMutableEntity &amp;&amp;
+       !_deleteQueue.contains(entity)
+   ) {
+     _deleteQueue.add(entity);
+   }
+ }
+ 
+ void queue(Entity entity) {
+   if (
+       entity._scan.isMutableEntity &amp;&amp;
+       !_queue.contains(entity) &amp;&amp;
+       entity.isDirty()
+   ) {
+     _queue.add(entity);
+   }
+ }
+ 
+ DormManagerCommitStructure getCommitStructure() {
+   List&lt;Entity&gt; queueRecursive = &lt;Entity&gt;[];
+   List&lt;Entity&gt; deleteQueueRecursive = &lt;Entity&gt;[];
+   
+   queueRecursive.addAll(_queue);
+   deleteQueueRecursive.addAll(_deleteQueue);
+   
+   _queue.forEach(
+     (Entity entity) =&gt; _scanRecursively(entity, queueRecursive)
+   );
+   
+   _deleteQueue.forEach(
+       (Entity entity) =&gt; _scanRecursively(entity, deleteQueueRecursive)
+   );
+   
+   _queue = queueRecursive;
+   _deleteQueue = deleteQueueRecursive;
+   
+   _flushInternal();
+   
+   _queue.forEach(
+       (Entity entity) =&gt; entity.validate()
+   );
+   
+   _deleteQueue.forEach(
+       (Entity entity) =&gt; entity.validate()
+   );
+   
+   return new DormManagerCommitStructure(queueRecursive, deleteQueueRecursive);
+ }
+ 
+ //-----------------------------------
+ //
+ // Private methods
+ //
+ //-----------------------------------
+ 
+ void _scanRecursively(Entity entity, List&lt;Entity&gt; list) {
+   entity._scan._proxies.forEach(
+     (_ProxyEntry entry) {
+       if (entry.proxy.value is Entity) {
+         if (
+             entry.proxy.value._scan.isMutableEntity &amp;&amp;
+             !list.contains(entry.proxy.value) &amp;&amp;
+             entry.proxy.value.isDirty()
+         ) {
+           list.add(entry.proxy.value);
+         }
+       } else if (entry.proxy.value is List) {
+         List&lt;Entity&gt; entityList = entry.proxy.value;
+         
+         entityList.forEach(
+           (Entity listEntity) =&gt; _scanRecursively(listEntity, list)  
+         );
+       }
+     }
+   );
+ }
+ 
+ void _flushInternal() {
+   _queue = &lt;Entity&gt;[];
+   _deleteQueue = &lt;Entity&gt;[];
+ }
+ 
+}
+</pre>
+</div>
+<div>
+<h3>Constructors</h3>
+<div class="method"><h4 id="DormManager">
+<button class="show-code">Code</button>
+new <strong>DormManager</strong>({String id}) <a class="anchor-link" href="#DormManager"
+              title="Permalink to DormManager.DormManager">#</a></h4>
+<div class="doc">
+<pre class="source">
+DormManager({String id}) {
+ this.id = id;
+}
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Properties</h3>
+<div class="field"><h4 id="id">
+<button class="show-code">Code</button>
+String         <strong>id</strong> <a class="anchor-link"
+            href="#id"
+            title="Permalink to DormManager.id">#</a>
+        </h4>
+        <div class="doc">
+<pre class="source">
+String id
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Methods</h3>
+<div class="method"><h4 id="getCommitStructure">
+<button class="show-code">Code</button>
+<a href="../dorm/DormManagerCommitStructure.html">DormManagerCommitStructure</a> <strong>getCommitStructure</strong>() <a class="anchor-link" href="#getCommitStructure"
+              title="Permalink to DormManager.getCommitStructure">#</a></h4>
+<div class="doc">
+<pre class="source">
+DormManagerCommitStructure getCommitStructure() {
+ List&lt;Entity&gt; queueRecursive = &lt;Entity&gt;[];
+ List&lt;Entity&gt; deleteQueueRecursive = &lt;Entity&gt;[];
+ 
+ queueRecursive.addAll(_queue);
+ deleteQueueRecursive.addAll(_deleteQueue);
+ 
+ _queue.forEach(
+   (Entity entity) =&gt; _scanRecursively(entity, queueRecursive)
+ );
+ 
+ _deleteQueue.forEach(
+     (Entity entity) =&gt; _scanRecursively(entity, deleteQueueRecursive)
+ );
+ 
+ _queue = queueRecursive;
+ _deleteQueue = deleteQueueRecursive;
+ 
+ _flushInternal();
+ 
+ _queue.forEach(
+     (Entity entity) =&gt; entity.validate()
+ );
+ 
+ _deleteQueue.forEach(
+     (Entity entity) =&gt; entity.validate()
+ );
+ 
+ return new DormManagerCommitStructure(queueRecursive, deleteQueueRecursive);
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="queue">
+<button class="show-code">Code</button>
+void <strong>queue</strong>(<a href="../dorm/Entity.html">Entity</a> entity) <a class="anchor-link" href="#queue"
+              title="Permalink to DormManager.queue">#</a></h4>
+<div class="doc">
+<pre class="source">
+void queue(Entity entity) {
+ if (
+     entity._scan.isMutableEntity &amp;&amp;
+     !_queue.contains(entity) &amp;&amp;
+     entity.isDirty()
+ ) {
+   _queue.add(entity);
+ }
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="queueAsDeleted">
+<button class="show-code">Code</button>
+void <strong>queueAsDeleted</strong>(<a href="../dorm/Entity.html">Entity</a> entity) <a class="anchor-link" href="#queueAsDeleted"
+              title="Permalink to DormManager.queueAsDeleted">#</a></h4>
+<div class="doc">
+<pre class="source">
+void queueAsDeleted(Entity entity) {
+ if (
+     entity._scan.isMutableEntity &amp;&amp;
+     !_deleteQueue.contains(entity)
+ ) {
+   _deleteQueue.add(entity);
+ }
+}
+</pre>
+</div>
+</div>
+</div>
+        </div>
+        <div class="clear"></div>
+        </div>
+        <div class="footer">
+          <div>This page was generated at 2013-07-18 09:40:18.528</div>
+        </div>
+        <script async src="../client-live-nav.js"></script>
+        </body></html>
+        

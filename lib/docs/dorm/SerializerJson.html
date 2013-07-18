@@ -1,0 +1,132 @@
+        <!DOCTYPE html>
+        <html>
+        <head>
+                <meta charset="utf-8">
+        <title>SerializerJson&lt;T&gt; class / dorm Library / Dart Documentation</title>
+        <link rel="stylesheet" type="text/css"
+            href="../styles.css">
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="../favicon.ico">
+        
+        </head>
+        <body data-library="dorm" data-type="SerializerJson&amp;lt;T&amp;gt;">
+        <div class="page">
+        <div class="header">
+          <a href="../index.html"><div class="logo"></div></a>
+          <a href="../index.html">Dart Documentation</a>
+         &rsaquo; <a href="../dorm.html">dorm</a> &rsaquo; <a href="../dorm/SerializerJson.html">SerializerJson&lt;T&gt;</a>        <div id="search-box">
+          <input type="search" name="q" id="q" autocomplete="off"
+              class="search-input" placeholder="Search API">
+        </div>
+        
+      </div>
+      <div class="drop-down" id="drop-down"></div>
+      
+        <div class="nav">
+        
+</div>
+<div class="content">
+        <h2><strong>SerializerJson&lt;T&gt;</strong>
+          class
+        </h2>
+        
+<button id="show-inherited" class="show-inherited">Hide inherited</button>
+<div class="doc">
+<pre class="source">
+class SerializerJson&lt;T&gt; implements Serializer {
+ 
+ //-----------------------------------
+ //
+ // Constructor
+ //
+ //-----------------------------------
+ 
+ SerializerJson._contruct();
+ 
+ //-----------------------------------
+ //
+ // Factories
+ //
+ //-----------------------------------
+ 
+ factory SerializerJson() =&gt; new SerializerJson&lt;String&gt;._contruct();
+ 
+ //-----------------------------------
+ //
+ // Public methods
+ //
+ //-----------------------------------
+ 
+ List&lt;Map&lt;String, dynamic&gt;&gt; incoming(T data) =&gt; parse(data);
+ 
+ String outgoing(dynamic data) {
+   if (
+       (data is List) ||
+       (data is Map)
+   ) {
+     return stringify(data);
+   }
+   
+   return data.toString();
+ }
+ 
+}
+</pre>
+</div>
+<h3>Implements</h3>
+<p>
+<span class="type-box"><span class="icon-class"></span><a href="../dorm/Serializer.html">Serializer</a></span></p>
+<div>
+<h3>Constructors</h3>
+<div class="method"><h4 id="SerializerJson">
+<button class="show-code">Code</button>
+factory <strong>SerializerJson</strong>() <a class="anchor-link" href="#SerializerJson"
+              title="Permalink to SerializerJson&lt;T&gt;.SerializerJson">#</a></h4>
+<div class="doc">
+<pre class="source">
+factory SerializerJson() =&gt; new SerializerJson&lt;String&gt;._contruct();
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Methods</h3>
+<div class="method"><h4 id="incoming">
+<button class="show-code">Code</button>
+List&lt;Map&lt;String, dynamic&gt;&gt; <strong>incoming</strong>(<a href="../dorm/SerializerJson.html">T</a> data) <a class="anchor-link" href="#incoming"
+              title="Permalink to SerializerJson&lt;T&gt;.incoming">#</a></h4>
+<div class="doc">
+<pre class="source">
+List&lt;Map&lt;String, dynamic&gt;&gt; incoming(T data) =&gt; parse(data);
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="outgoing">
+<button class="show-code">Code</button>
+String <strong>outgoing</strong>(data) <a class="anchor-link" href="#outgoing"
+              title="Permalink to SerializerJson&lt;T&gt;.outgoing">#</a></h4>
+<div class="doc">
+<pre class="source">
+String outgoing(dynamic data) {
+ if (
+     (data is List) ||
+     (data is Map)
+ ) {
+   return stringify(data);
+ }
+ 
+ return data.toString();
+}
+</pre>
+</div>
+</div>
+</div>
+        </div>
+        <div class="clear"></div>
+        </div>
+        <div class="footer">
+          <div>This page was generated at 2013-07-18 09:40:18.069</div>
+        </div>
+        <script async src="../client-live-nav.js"></script>
+        </body></html>
+        

@@ -1,0 +1,169 @@
+        <!DOCTYPE html>
+        <html>
+        <head>
+                <meta charset="utf-8">
+        <title>MetadataCache class / dorm Library / Dart Documentation</title>
+        <link rel="stylesheet" type="text/css"
+            href="../styles.css">
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="../favicon.ico">
+        
+        </head>
+        <body data-library="dorm" data-type="MetadataCache">
+        <div class="page">
+        <div class="header">
+          <a href="../index.html"><div class="logo"></div></a>
+          <a href="../index.html">Dart Documentation</a>
+         &rsaquo; <a href="../dorm.html">dorm</a> &rsaquo; <a href="../dorm/MetadataCache.html">MetadataCache</a>        <div id="search-box">
+          <input type="search" name="q" id="q" autocomplete="off"
+              class="search-input" placeholder="Search API">
+        </div>
+        
+      </div>
+      <div class="drop-down" id="drop-down"></div>
+      
+        <div class="nav">
+        
+</div>
+<div class="content">
+        <h2><strong>MetadataCache</strong>
+          class
+        </h2>
+        
+<button id="show-inherited" class="show-inherited">Hide inherited</button>
+<div class="doc">
+<pre class="source">
+class MetadataCache {
+ 
+ //---------------------------------
+ //
+ // Public properties
+ //
+ //---------------------------------
+ 
+ List&lt;_PropertyMetadataCache&gt; propertyMetadataCacheList = &lt;_PropertyMetadataCache&gt;[];
+ 
+ //---------------------------------
+ //
+ // Constructor
+ //
+ //---------------------------------
+ 
+ MetadataCache();
+ 
+ //---------------------------------
+ //
+ // Public methods
+ //
+ //---------------------------------
+ 
+ _PropertyMetadataCache obtainTagForProperty(String property) {
+   return propertyMetadataCacheList.firstWhere(
+     (_PropertyMetadataCache entry) =&gt; (entry.property == property),
+     orElse: () {
+       _PropertyMetadataCache entry = new _PropertyMetadataCache(property);
+       
+       propertyMetadataCacheList.add(entry);
+       
+       return entry;
+     }
+   );
+ }
+ 
+ void registerTagForProperty(String property, Object reflectee) {
+   _PropertyMetadataCache propertyMetadataCache = obtainTagForProperty(property);
+   
+   switch (reflectee.runtimeType) {
+     case Id:              propertyMetadataCache.isId = true;                                            break;
+     case Transient:       propertyMetadataCache.isTransient = true;                                     break;
+     case NotNullable:     propertyMetadataCache.isNullable = false;                                     break;
+     case DefaultValue:    propertyMetadataCache.initialValue = (reflectee as DefaultValue).value;       break;
+     case LabelField:      propertyMetadataCache.isLabelField = true;                                    break;
+     case Immutable:       propertyMetadataCache.isMutable = false;                                      break;
+   }
+ }
+}
+</pre>
+</div>
+<div>
+<h3>Constructors</h3>
+<div class="method"><h4 id="MetadataCache">
+<button class="show-code">Code</button>
+new <strong>MetadataCache</strong>() <a class="anchor-link" href="#MetadataCache"
+              title="Permalink to MetadataCache.MetadataCache">#</a></h4>
+<div class="doc">
+<pre class="source">
+MetadataCache();
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Properties</h3>
+<div class="field"><h4 id="propertyMetadataCacheList">
+<button class="show-code">Code</button>
+List&lt;<a href="../dorm/_PropertyMetadataCache.html">_PropertyMetadataCache</a>&gt;         <strong>propertyMetadataCacheList</strong> <a class="anchor-link"
+            href="#propertyMetadataCacheList"
+            title="Permalink to MetadataCache.propertyMetadataCacheList">#</a>
+        </h4>
+        <div class="doc">
+<pre class="source">
+List&lt;_PropertyMetadataCache&gt; propertyMetadataCacheList = &lt;_PropertyMetadataCache&gt;[]
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Methods</h3>
+<div class="method"><h4 id="obtainTagForProperty">
+<button class="show-code">Code</button>
+<a href="../dorm/_PropertyMetadataCache.html">_PropertyMetadataCache</a> <strong>obtainTagForProperty</strong>(String property) <a class="anchor-link" href="#obtainTagForProperty"
+              title="Permalink to MetadataCache.obtainTagForProperty">#</a></h4>
+<div class="doc">
+<pre class="source">
+_PropertyMetadataCache obtainTagForProperty(String property) {
+ return propertyMetadataCacheList.firstWhere(
+   (_PropertyMetadataCache entry) =&gt; (entry.property == property),
+   orElse: () {
+     _PropertyMetadataCache entry = new _PropertyMetadataCache(property);
+     
+     propertyMetadataCacheList.add(entry);
+     
+     return entry;
+   }
+ );
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="registerTagForProperty">
+<button class="show-code">Code</button>
+void <strong>registerTagForProperty</strong>(String property, Object reflectee) <a class="anchor-link" href="#registerTagForProperty"
+              title="Permalink to MetadataCache.registerTagForProperty">#</a></h4>
+<div class="doc">
+<pre class="source">
+void registerTagForProperty(String property, Object reflectee) {
+ _PropertyMetadataCache propertyMetadataCache = obtainTagForProperty(property);
+ 
+ switch (reflectee.runtimeType) {
+   case Id:              propertyMetadataCache.isId = true;                                            break;
+   case Transient:       propertyMetadataCache.isTransient = true;                                     break;
+   case NotNullable:     propertyMetadataCache.isNullable = false;                                     break;
+   case DefaultValue:    propertyMetadataCache.initialValue = (reflectee as DefaultValue).value;       break;
+   case LabelField:      propertyMetadataCache.isLabelField = true;                                    break;
+   case Immutable:       propertyMetadataCache.isMutable = false;                                      break;
+ }
+}
+</pre>
+</div>
+</div>
+</div>
+        </div>
+        <div class="clear"></div>
+        </div>
+        <div class="footer">
+          <div>This page was generated at 2013-07-18 09:40:18.475</div>
+        </div>
+        <script async src="../client-live-nav.js"></script>
+        </body></html>
+        

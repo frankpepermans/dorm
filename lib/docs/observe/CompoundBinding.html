@@ -1,0 +1,373 @@
+        <!DOCTYPE html>
+        <html>
+        <head>
+                <meta charset="utf-8">
+        <title>CompoundBinding class / observe Library / Dart Documentation</title>
+        <link rel="stylesheet" type="text/css"
+            href="../styles.css">
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="../favicon.ico">
+        
+        </head>
+        <body data-library="observe" data-type="CompoundBinding">
+        <div class="page">
+        <div class="header">
+          <a href="../index.html"><div class="logo"></div></a>
+          <a href="../index.html">Dart Documentation</a>
+         &rsaquo; <a href="../observe.html">observe</a> &rsaquo; <a href="../observe/CompoundBinding.html">CompoundBinding</a>        <div id="search-box">
+          <input type="search" name="q" id="q" autocomplete="off"
+              class="search-input" placeholder="Search API">
+        </div>
+        
+      </div>
+      <div class="drop-down" id="drop-down"></div>
+      
+        <div class="nav">
+        
+</div>
+<div class="content">
+        <h2><strong>CompoundBinding</strong>
+          class
+        </h2>
+        
+<button id="show-inherited" class="show-inherited">Hide inherited</button>
+<div class="doc">
+<p>Model-Driven Views contains a helper object which is useful for the
+implementation of a Custom Syntax.</p>
+<pre><code>var binding = new CompoundBinding((values) {
+  var combinedValue;
+  // compute combinedValue based on the current values which are provided
+  return combinedValue;
+});
+binding.bind('name1', obj1, path1);
+binding.bind('name2', obj2, path2);
+//...
+binding.bind('nameN', objN, pathN);
+</code></pre>
+<p>CompoundBinding is an object which knows how to listen to multiple path
+values (registered via <a class="crossref" href="../observe/CompoundBinding.html#bind">bind</a>) and invoke its <a class="crossref" href="../observe/CompoundBinding.html#combinator">combinator</a> when one or more
+of the values have changed and set its <a class="crossref" href="../observe/CompoundBinding.html#value">value</a> property to the return value
+of the function. When any value has changed, all current values are provided
+to the <a class="crossref" href="../observe/CompoundBinding.html#combinator">combinator</a> in the single <code>values</code> argument.</p>
+<pre class="source">
+class CompoundBinding extends ObservableBase {
+ CompoundBindingCombinator _combinator;
+
+ // TODO(jmesserly): ideally these would be String keys, but sometimes we
+ // use integers.
+ Map&lt;dynamic, StreamSubscription&gt; _bindings = new Map();
+ Map _values = new Map();
+ bool _scheduled = false;
+ bool _disposed = false;
+ Object _value;
+
+ CompoundBinding([CompoundBindingCombinator combinator]) {
+   // TODO(jmesserly): this is a tweak to the original code, it seemed to me
+   // that passing the combinator to the constructor should be equivalent to
+   // setting it via the property.
+   // I also added a null check to the combinator setter.
+   this.combinator = combinator;
+ }
+
+ CompoundBindingCombinator get combinator =&gt; _combinator;
+
+ set combinator(CompoundBindingCombinator combinator) {
+   _combinator = combinator;
+   if (combinator != null) _scheduleResolve();
+ }
+
+ static const _VALUE = const Symbol('value');
+
+ get value =&gt; _value;
+
+ void set value(newValue) {
+   _value = notifyPropertyChange(_VALUE, _value, newValue);
+ }
+
+ void bind(name, model, String path) {
+   unbind(name);
+
+   _bindings[name] = new PathObserver(model, path).bindSync((value) {
+     _values[name] = value;
+     _scheduleResolve();
+   });
+ }
+
+ void unbind(name, {bool suppressResolve: false}) {
+   var binding = _bindings.remove(name);
+   if (binding == null) return;
+
+   binding.cancel();
+   _values.remove(name);
+   if (!suppressResolve) _scheduleResolve();
+ }
+
+ // TODO(rafaelw): Is this the right processing model?
+ // TODO(rafaelw): Consider having a seperate ChangeSummary for
+ // CompoundBindings so to excess dirtyChecks.
+ void _scheduleResolve() {
+   if (_scheduled) return;
+   _scheduled = true;
+   queueChangeRecords(resolve);
+ }
+
+ void resolve() {
+   if (_disposed) return;
+   _scheduled = false;
+
+   if (_combinator == null) {
+     throw new StateError(
+         'CompoundBinding attempted to resolve without a combinator');
+   }
+
+   value = _combinator(_values);
+ }
+
+ void dispose() {
+   for (var binding in _bindings.values) {
+     binding.cancel();
+   }
+   _bindings.clear();
+   _values.clear();
+
+   _disposed = true;
+   value = null;
+ }
+}
+</pre>
+</div>
+<h3>Extends</h3>
+<p>
+<span class="type-box"><span class="icon-class"></span><a href="../observe/ObservableBase.html">ObservableBase</a></span>&nbsp;&gt;&nbsp;<span class="type-box"><span class="icon-class"></span><strong>CompoundBinding</strong></span></p>
+<div>
+<h3>Constructors</h3>
+<div class="method"><h4 id="CompoundBinding">
+<button class="show-code">Code</button>
+new <strong>CompoundBinding</strong>([<a href="../observe/CompoundBindingCombinator.html">CompoundBindingCombinator</a> combinator]) <a class="anchor-link" href="#CompoundBinding"
+              title="Permalink to CompoundBinding.CompoundBinding">#</a></h4>
+<div class="doc">
+<pre class="source">
+CompoundBinding([CompoundBindingCombinator combinator]) {
+ // TODO(jmesserly): this is a tweak to the original code, it seemed to me
+ // that passing the combinator to the constructor should be equivalent to
+ // setting it via the property.
+ // I also added a null check to the combinator setter.
+ this.combinator = combinator;
+}
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Properties</h3>
+<div class="field inherited"><h4 id="changes">
+<button class="show-code">Code</button>
+final Stream&lt;List&lt;<a href="../observe/ChangeRecord.html">ChangeRecord</a>&gt;&gt;         <strong>changes</strong> <a class="anchor-link"
+            href="#changes"
+            title="Permalink to CompoundBinding.changes">#</a>
+        </h4>
+        <div class="inherited-from">inherited from <a href="../observe/ObservableBase.html">ObservableBase</a> </div><div class="doc">
+<div class="inherited">
+<p>The stream of change records to this object.</p>
+<p>Changes should be delivered in asynchronous batches by calling
+<a class="crossref" href="../observe.html#queueChangeRecords">queueChangeRecords</a>.</p>
+<p><a class="crossref" href="../observe.html#deliverChangeRecords">deliverChangeRecords</a> can be called to force delivery.</p>
+<div class="docs-inherited-from">docs inherited from <a href="../observe/Observable.html">Observable</a> </div></div>
+<pre class="source">
+Stream&lt;List&lt;ChangeRecord&gt;&gt; get changes {
+ if (_broadcastController == null) {
+   _broadcastController =
+       new StreamController&lt;List&lt;ChangeRecord&gt;&gt;.broadcast(sync: true);
+ }
+ return _broadcastController.stream;
+}
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="combinator">
+<button class="show-code">Code</button>
+<a href="../observe/CompoundBindingCombinator.html">CompoundBindingCombinator</a>         <strong>combinator</strong> <a class="anchor-link"
+            href="#combinator"
+            title="Permalink to CompoundBinding.combinator">#</a>
+        </h4>
+        <div class="doc">
+<pre class="source">
+CompoundBindingCombinator get combinator =&gt; _combinator;
+</pre>
+<pre class="source">
+set combinator(CompoundBindingCombinator combinator) {
+ _combinator = combinator;
+ if (combinator != null) _scheduleResolve();
+}
+</pre>
+</div>
+</div>
+<div class="field inherited"><h4 id="hasObservers">
+<button class="show-code">Code</button>
+final bool         <strong>hasObservers</strong> <a class="anchor-link"
+            href="#hasObservers"
+            title="Permalink to CompoundBinding.hasObservers">#</a>
+        </h4>
+        <div class="inherited-from">inherited from <a href="../observe/ObservableBase.html">ObservableBase</a> </div><div class="doc">
+<p>True if this object has any observers, and should call
+<a class="crossref" href="../observe/ObservableMixin.html#notifyPropertyChange">notifyPropertyChange</a> for changes.</p>
+<pre class="source">
+bool get hasObservers =&gt; _broadcastController != null &amp;&amp;
+                        _broadcastController.hasListener;
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="value">
+<button class="show-code">Code</button>
+var         <strong>value</strong> <a class="anchor-link"
+            href="#value"
+            title="Permalink to CompoundBinding.value">#</a>
+        </h4>
+        <div class="doc">
+<pre class="source">
+get value =&gt; _value;
+</pre>
+<pre class="source">
+void set value(newValue) {
+ _value = notifyPropertyChange(_VALUE, _value, newValue);
+}
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Methods</h3>
+<div class="method"><h4 id="bind">
+<button class="show-code">Code</button>
+void <strong>bind</strong>(name, model, String path) <a class="anchor-link" href="#bind"
+              title="Permalink to CompoundBinding.bind">#</a></h4>
+<div class="doc">
+<pre class="source">
+void bind(name, model, String path) {
+ unbind(name);
+
+ _bindings[name] = new PathObserver(model, path).bindSync((value) {
+   _values[name] = value;
+   _scheduleResolve();
+ });
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="dispose">
+<button class="show-code">Code</button>
+void <strong>dispose</strong>() <a class="anchor-link" href="#dispose"
+              title="Permalink to CompoundBinding.dispose">#</a></h4>
+<div class="doc">
+<pre class="source">
+void dispose() {
+ for (var binding in _bindings.values) {
+   binding.cancel();
+ }
+ _bindings.clear();
+ _values.clear();
+
+ _disposed = true;
+ value = null;
+}
+</pre>
+</div>
+</div>
+<div class="method inherited"><h4 id="notifyChange">
+<button class="show-code">Code</button>
+void <strong>notifyChange</strong>(<a href="../observe/ChangeRecord.html">ChangeRecord</a> record) <a class="anchor-link" href="#notifyChange"
+              title="Permalink to CompoundBinding.notifyChange">#</a></h4>
+<div class="inherited-from">inherited from <a href="../observe/ObservableBase.html">ObservableBase</a> </div><div class="doc">
+<p>Notify observers of a change. For most objects <a class="crossref" href="../observe/ObservableMixin.html#notifyPropertyChange">notifyPropertyChange</a> is
+more convenient, but collections sometimes deliver other types of changes
+such as a <a class="crossref" href="../observe/ListChangeRecord.html">ListChangeRecord</a>.</p>
+<pre class="source">
+void notifyChange(ChangeRecord record) {
+ if (!hasObservers) return;
+
+ if (_changes == null) {
+   _changes = [];
+   queueChangeRecords(_deliverChanges);
+ }
+ _changes.add(record);
+}
+</pre>
+</div>
+</div>
+<div class="method inherited"><h4 id="notifyPropertyChange">
+<button class="show-code">Code</button>
+dynamic <strong>notifyPropertyChange</strong>(Symbol field, Object oldValue, Object newValue) <a class="anchor-link" href="#notifyPropertyChange"
+              title="Permalink to CompoundBinding.notifyPropertyChange">#</a></h4>
+<div class="inherited-from">inherited from <a href="../observe/ObservableBase.html">ObservableBase</a> </div><div class="doc">
+<p>Notify that the field <code>name</code> of this object has been changed.</p>
+<p>The 
+<span class="param">oldValue</span> and 
+<span class="param">newValue</span> are also recorded. If the two values are
+identical, no change will be recorded.</p>
+<p>For convenience this returns 
+<span class="param">newValue</span>. This makes it easy to use in a
+setter:</p>
+<pre><code>var _myField;
+get myField =&gt; _myField;
+set myField(value) {
+  _myField = notifyPropertyChange(
+      const Symbol('myField'), _myField, value);
+}
+</code></pre>
+<pre class="source">
+notifyPropertyChange(Symbol field, Object oldValue, Object newValue) {
+ if (hasObservers &amp;&amp; !identical(oldValue, newValue)) {
+   notifyChange(new PropertyChangeRecord(field));
+ }
+ return newValue;
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="resolve">
+<button class="show-code">Code</button>
+void <strong>resolve</strong>() <a class="anchor-link" href="#resolve"
+              title="Permalink to CompoundBinding.resolve">#</a></h4>
+<div class="doc">
+<pre class="source">
+void resolve() {
+ if (_disposed) return;
+ _scheduled = false;
+
+ if (_combinator == null) {
+   throw new StateError(
+       'CompoundBinding attempted to resolve without a combinator');
+ }
+
+ value = _combinator(_values);
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="unbind">
+<button class="show-code">Code</button>
+void <strong>unbind</strong>(name, {bool suppressResolve: false}) <a class="anchor-link" href="#unbind"
+              title="Permalink to CompoundBinding.unbind">#</a></h4>
+<div class="doc">
+<pre class="source">
+void unbind(name, {bool suppressResolve: false}) {
+ var binding = _bindings.remove(name);
+ if (binding == null) return;
+
+ binding.cancel();
+ _values.remove(name);
+ if (!suppressResolve) _scheduleResolve();
+}
+</pre>
+</div>
+</div>
+</div>
+        </div>
+        <div class="clear"></div>
+        </div>
+        <div class="footer">
+          <div>This page was generated at 2013-07-18 09:40:18.847</div>
+        </div>
+        <script async src="../client-live-nav.js"></script>
+        </body></html>
+        

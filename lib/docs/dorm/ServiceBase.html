@@ -1,0 +1,227 @@
+        <!DOCTYPE html>
+        <html>
+        <head>
+                <meta charset="utf-8">
+        <title>ServiceBase class / dorm Library / Dart Documentation</title>
+        <link rel="stylesheet" type="text/css"
+            href="../styles.css">
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="../favicon.ico">
+        
+        </head>
+        <body data-library="dorm" data-type="ServiceBase">
+        <div class="page">
+        <div class="header">
+          <a href="../index.html"><div class="logo"></div></a>
+          <a href="../index.html">Dart Documentation</a>
+         &rsaquo; <a href="../dorm.html">dorm</a> &rsaquo; <a href="../dorm/ServiceBase.html">ServiceBase</a>        <div id="search-box">
+          <input type="search" name="q" id="q" autocomplete="off"
+              class="search-input" placeholder="Search API">
+        </div>
+        
+      </div>
+      <div class="drop-down" id="drop-down"></div>
+      
+        <div class="nav">
+        
+</div>
+<div class="content">
+        <h2><strong>ServiceBase</strong>
+          class
+        </h2>
+        
+<button id="show-inherited" class="show-inherited">Hide inherited</button>
+<div class="doc">
+<pre class="source">
+class ServiceBase {
+ 
+ //-----------------------------------
+ //
+ // Public properties
+ //
+ //-----------------------------------
+ 
+ final String host;
+ final String port;
+ final Serializer serializer;
+ final OnConflictFunction onConflict;
+ 
+ //-----------------------------------
+ //
+ // Constructor
+ //
+ //-----------------------------------
+ 
+ ServiceBase(this.host, this.port, this.serializer, this.onConflict);
+ 
+ //-----------------------------------
+ //
+ // Public methods
+ //
+ //-----------------------------------
+ 
+ Future apply(String operation, Map&lt;String, dynamic&gt; arguments, bool isUniqueResult) {
+   Completer completer = new Completer();
+   print(serializer.outgoing(arguments));
+   HttpRequest.request(
+       'http://${host}:$port', 
+       method:operation, 
+       sendData:serializer.outgoing(arguments)
+   ).then(
+       (HttpRequest request) {
+         if (request.responseText.length &gt; 0) {
+           EntityFactory&lt;Entity&gt; factory = new EntityFactory(onConflict);
+           Stopwatch stopwatch;
+           print(request.responseText);
+           stopwatch = new Stopwatch()..start();
+           
+           List&lt;Map&lt;String, dynamic&gt;&gt; result = serializer.incoming(request.responseText);
+           
+           stopwatch.stop();
+           
+           print('json parse completed in ${stopwatch.elapsedMilliseconds} ms');
+           
+           stopwatch = new Stopwatch()..start();
+           
+           ObservableList&lt;Entity&gt; spawned = factory.spawn(result);
+           
+           stopwatch.stop();
+           
+           print('assembly completed in ${stopwatch.elapsedMilliseconds} ms');
+           
+           completer.complete(isUniqueResult ? spawned.first : spawned);
+         }
+       }, onError: (_) {
+         print('Oops, something went wrong, are you sure that the server has started up correctly?');
+       }
+   );
+   
+   return completer.future;
+ }
+ 
+}
+</pre>
+</div>
+<div>
+<h3>Constructors</h3>
+<div class="method"><h4 id="ServiceBase">
+<button class="show-code">Code</button>
+new <strong>ServiceBase</strong>(String host, String port, <a href="../dorm/Serializer.html">Serializer</a> serializer, <a href="../dorm/OnConflictFunction.html">OnConflictFunction</a> onConflict) <a class="anchor-link" href="#ServiceBase"
+              title="Permalink to ServiceBase.ServiceBase">#</a></h4>
+<div class="doc">
+<pre class="source">
+ServiceBase(this.host, this.port, this.serializer, this.onConflict);
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Properties</h3>
+<div class="field"><h4 id="host">
+<button class="show-code">Code</button>
+final String         <strong>host</strong> <a class="anchor-link"
+            href="#host"
+            title="Permalink to ServiceBase.host">#</a>
+        </h4>
+        <div class="doc">
+<pre class="source">
+final String host
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="onConflict">
+<button class="show-code">Code</button>
+final <a href="../dorm/OnConflictFunction.html">OnConflictFunction</a>         <strong>onConflict</strong> <a class="anchor-link"
+            href="#onConflict"
+            title="Permalink to ServiceBase.onConflict">#</a>
+        </h4>
+        <div class="doc">
+<pre class="source">
+final OnConflictFunction onConflict
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="port">
+<button class="show-code">Code</button>
+final String         <strong>port</strong> <a class="anchor-link"
+            href="#port"
+            title="Permalink to ServiceBase.port">#</a>
+        </h4>
+        <div class="doc">
+<pre class="source">
+final String port
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="serializer">
+<button class="show-code">Code</button>
+final <a href="../dorm/Serializer.html">Serializer</a>         <strong>serializer</strong> <a class="anchor-link"
+            href="#serializer"
+            title="Permalink to ServiceBase.serializer">#</a>
+        </h4>
+        <div class="doc">
+<pre class="source">
+final Serializer serializer
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Methods</h3>
+<div class="method"><h4 id="apply">
+<button class="show-code">Code</button>
+Future <strong>apply</strong>(String operation, Map&lt;String, dynamic&gt; arguments, bool isUniqueResult) <a class="anchor-link" href="#apply"
+              title="Permalink to ServiceBase.apply">#</a></h4>
+<div class="doc">
+<pre class="source">
+Future apply(String operation, Map&lt;String, dynamic&gt; arguments, bool isUniqueResult) {
+ Completer completer = new Completer();
+ print(serializer.outgoing(arguments));
+ HttpRequest.request(
+     'http://${host}:$port', 
+     method:operation, 
+     sendData:serializer.outgoing(arguments)
+ ).then(
+     (HttpRequest request) {
+       if (request.responseText.length &gt; 0) {
+         EntityFactory&lt;Entity&gt; factory = new EntityFactory(onConflict);
+         Stopwatch stopwatch;
+         print(request.responseText);
+         stopwatch = new Stopwatch()..start();
+         
+         List&lt;Map&lt;String, dynamic&gt;&gt; result = serializer.incoming(request.responseText);
+         
+         stopwatch.stop();
+         
+         print('json parse completed in ${stopwatch.elapsedMilliseconds} ms');
+         
+         stopwatch = new Stopwatch()..start();
+         
+         ObservableList&lt;Entity&gt; spawned = factory.spawn(result);
+         
+         stopwatch.stop();
+         
+         print('assembly completed in ${stopwatch.elapsedMilliseconds} ms');
+         
+         completer.complete(isUniqueResult ? spawned.first : spawned);
+       }
+     }, onError: (_) {
+       print('Oops, something went wrong, are you sure that the server has started up correctly?');
+     }
+ );
+ 
+ return completer.future;
+}
+</pre>
+</div>
+</div>
+</div>
+        </div>
+        <div class="clear"></div>
+        </div>
+        <div class="footer">
+          <div>This page was generated at 2013-07-18 09:40:18.304</div>
+        </div>
+        <script async src="../client-live-nav.js"></script>
+        </body></html>
+        

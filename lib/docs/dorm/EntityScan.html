@@ -1,0 +1,313 @@
+        <!DOCTYPE html>
+        <html>
+        <head>
+                <meta charset="utf-8">
+        <title>EntityScan class / dorm Library / Dart Documentation</title>
+        <link rel="stylesheet" type="text/css"
+            href="../styles.css">
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="../favicon.ico">
+        
+        </head>
+        <body data-library="dorm" data-type="EntityScan">
+        <div class="page">
+        <div class="header">
+          <a href="../index.html"><div class="logo"></div></a>
+          <a href="../index.html">Dart Documentation</a>
+         &rsaquo; <a href="../dorm.html">dorm</a> &rsaquo; <a href="../dorm/EntityScan.html">EntityScan</a>        <div id="search-box">
+          <input type="search" name="q" id="q" autocomplete="off"
+              class="search-input" placeholder="Search API">
+        </div>
+        
+      </div>
+      <div class="drop-down" id="drop-down"></div>
+      
+        <div class="nav">
+        
+</div>
+<div class="content">
+        <h2><strong>EntityScan</strong>
+          class
+        </h2>
+        
+<button id="show-inherited" class="show-inherited">Hide inherited</button>
+<div class="doc">
+<pre class="source">
+class EntityScan {
+ 
+ //---------------------------------
+ //
+ // Private properties
+ //
+ //---------------------------------
+ 
+ EntityScan _original;
+ 
+ List&lt;_ProxyEntry&gt; _proxies = new List&lt;_ProxyEntry&gt;();
+ List&lt;_ProxyEntry&gt; _identityProxies = new List&lt;_ProxyEntry&gt;();
+ List&lt;EntityScan&gt; _keyCollection;
+ 
+ //---------------------------------
+ //
+ // Public properties
+ //
+ //---------------------------------
+ 
+ Entity entity;
+ Function contructorMethod;
+ MetadataCache metadataCache;
+ String refClassName;
+ bool isMutableEntity = true;
+ 
+ //---------------------------------
+ // key
+ //---------------------------------
+ 
+ void buildKey() {
+   EntityKey nextKey = EntityAssembler._instance._keyChain;
+   _ProxyEntry entry;
+   int code;
+   int i = _identityProxies.length;
+   dynamic value;
+   
+   while (i &gt; 0) {
+     entry = _identityProxies[--i];
+     
+     code = entry.proxy.propertySymbol.hashCode;
+     value = entry.proxy._value;
+     
+     nextKey[code] = value;
+     
+     nextKey = nextKey[[code, value]];
+   }
+   
+   if (_keyCollection != nextKey.entityScans) {
+     if (_keyCollection != null) _keyCollection.remove(this);
+     
+     _keyCollection = nextKey.entityScans..add(this);
+   }
+ }
+ 
+ //---------------------------------
+ //
+ // Constructor
+ //
+ //---------------------------------
+ 
+ EntityScan() {
+   metadataCache = new MetadataCache();
+ }
+ 
+ EntityScan.fromScan(EntityScan original, Entity entity) {
+   List&lt;_ProxyEntry&gt; originalProxies = original._proxies;
+   List&lt;_ProxyEntry&gt; originalIdentityProxies = original._identityProxies;
+   _ProxyEntry clonedEntry;
+   int i = originalProxies.length;
+   
+   this._original = original;
+   this.entity = entity;
+   
+   this.contructorMethod = original.contructorMethod;
+   this.metadataCache = original.metadataCache;
+   this.refClassName = original.refClassName;
+   this.isMutableEntity = original.isMutableEntity;
+   
+   while (i &gt; 0) {
+     clonedEntry = originalProxies[--i].clone();
+     
+     this._proxies.add(clonedEntry);
+     
+     if (clonedEntry.isIdentity) this._identityProxies.add(clonedEntry);
+   }
+ }
+ 
+ //---------------------------------
+ //
+ // Public methods
+ //
+ //---------------------------------
+ 
+ void addProxy(Property property, bool isIdentity) {
+   _ProxyEntry entry = new _ProxyEntry(property.property, isIdentity);
+   
+   _proxies.add(entry);
+   
+   if (isIdentity) {
+     _identityProxies.add(entry);
+   }
+ }
+}
+</pre>
+</div>
+<div>
+<h3>Constructors</h3>
+<div class="method"><h4 id="EntityScan">
+<button class="show-code">Code</button>
+new <strong>EntityScan</strong>() <a class="anchor-link" href="#EntityScan"
+              title="Permalink to EntityScan.EntityScan">#</a></h4>
+<div class="doc">
+<pre class="source">
+EntityScan() {
+ metadataCache = new MetadataCache();
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="EntityScan.fromScan">
+<button class="show-code">Code</button>
+new <strong>EntityScan.fromScan</strong>(<a href="../dorm/EntityScan.html">EntityScan</a> original, <a href="../dorm/Entity.html">Entity</a> entity) <a class="anchor-link" href="#EntityScan.fromScan"
+              title="Permalink to EntityScan.EntityScan.fromScan">#</a></h4>
+<div class="doc">
+<pre class="source">
+EntityScan.fromScan(EntityScan original, Entity entity) {
+ List&lt;_ProxyEntry&gt; originalProxies = original._proxies;
+ List&lt;_ProxyEntry&gt; originalIdentityProxies = original._identityProxies;
+ _ProxyEntry clonedEntry;
+ int i = originalProxies.length;
+ 
+ this._original = original;
+ this.entity = entity;
+ 
+ this.contructorMethod = original.contructorMethod;
+ this.metadataCache = original.metadataCache;
+ this.refClassName = original.refClassName;
+ this.isMutableEntity = original.isMutableEntity;
+ 
+ while (i &gt; 0) {
+   clonedEntry = originalProxies[--i].clone();
+   
+   this._proxies.add(clonedEntry);
+   
+   if (clonedEntry.isIdentity) this._identityProxies.add(clonedEntry);
+ }
+}
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Properties</h3>
+<div class="field"><h4 id="contructorMethod">
+<button class="show-code">Code</button>
+Function         <strong>contructorMethod</strong> <a class="anchor-link"
+            href="#contructorMethod"
+            title="Permalink to EntityScan.contructorMethod">#</a>
+        </h4>
+        <div class="doc">
+<pre class="source">
+Function contructorMethod
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="entity">
+<button class="show-code">Code</button>
+<a href="../dorm/Entity.html">Entity</a>         <strong>entity</strong> <a class="anchor-link"
+            href="#entity"
+            title="Permalink to EntityScan.entity">#</a>
+        </h4>
+        <div class="doc">
+<pre class="source">
+Entity entity
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="isMutableEntity">
+<button class="show-code">Code</button>
+bool         <strong>isMutableEntity</strong> <a class="anchor-link"
+            href="#isMutableEntity"
+            title="Permalink to EntityScan.isMutableEntity">#</a>
+        </h4>
+        <div class="doc">
+<pre class="source">
+bool isMutableEntity = true
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="metadataCache">
+<button class="show-code">Code</button>
+<a href="../dorm/MetadataCache.html">MetadataCache</a>         <strong>metadataCache</strong> <a class="anchor-link"
+            href="#metadataCache"
+            title="Permalink to EntityScan.metadataCache">#</a>
+        </h4>
+        <div class="doc">
+<pre class="source">
+MetadataCache metadataCache
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="refClassName">
+<button class="show-code">Code</button>
+String         <strong>refClassName</strong> <a class="anchor-link"
+            href="#refClassName"
+            title="Permalink to EntityScan.refClassName">#</a>
+        </h4>
+        <div class="doc">
+<pre class="source">
+String refClassName
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Methods</h3>
+<div class="method"><h4 id="addProxy">
+<button class="show-code">Code</button>
+void <strong>addProxy</strong>(<a href="../dorm/Property.html">Property</a> property, bool isIdentity) <a class="anchor-link" href="#addProxy"
+              title="Permalink to EntityScan.addProxy">#</a></h4>
+<div class="doc">
+<pre class="source">
+void addProxy(Property property, bool isIdentity) {
+ _ProxyEntry entry = new _ProxyEntry(property.property, isIdentity);
+ 
+ _proxies.add(entry);
+ 
+ if (isIdentity) {
+   _identityProxies.add(entry);
+ }
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="buildKey">
+<button class="show-code">Code</button>
+void <strong>buildKey</strong>() <a class="anchor-link" href="#buildKey"
+              title="Permalink to EntityScan.buildKey">#</a></h4>
+<div class="doc">
+<pre class="source">
+void buildKey() {
+ EntityKey nextKey = EntityAssembler._instance._keyChain;
+ _ProxyEntry entry;
+ int code;
+ int i = _identityProxies.length;
+ dynamic value;
+ 
+ while (i &gt; 0) {
+   entry = _identityProxies[--i];
+   
+   code = entry.proxy.propertySymbol.hashCode;
+   value = entry.proxy._value;
+   
+   nextKey[code] = value;
+   
+   nextKey = nextKey[[code, value]];
+ }
+ 
+ if (_keyCollection != nextKey.entityScans) {
+   if (_keyCollection != null) _keyCollection.remove(this);
+   
+   _keyCollection = nextKey.entityScans..add(this);
+ }
+}
+</pre>
+</div>
+</div>
+</div>
+        </div>
+        <div class="clear"></div>
+        </div>
+        <div class="footer">
+          <div>This page was generated at 2013-07-18 09:40:18.480</div>
+        </div>
+        <script async src="../client-live-nav.js"></script>
+        </body></html>
+        
