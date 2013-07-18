@@ -2,9 +2,27 @@ part of dorm;
 
 class SerializerJson<T> implements Serializer {
   
+  //-----------------------------------
+  //
+  // Constructor
+  //
+  //-----------------------------------
+  
   SerializerJson._contruct();
   
+  //-----------------------------------
+  //
+  // Factories
+  //
+  //-----------------------------------
+  
   factory SerializerJson() => new SerializerJson<String>._contruct();
+  
+  //-----------------------------------
+  //
+  // Public methods
+  //
+  //-----------------------------------
   
   List<Map<String, dynamic>> incoming(T data) => parse(data);
   

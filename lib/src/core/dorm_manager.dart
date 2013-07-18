@@ -2,13 +2,38 @@ part of dorm;
 
 class DormManager {
   
-  String id;
+  //-----------------------------------
+  //
+  // Private properties
+  //
+  //-----------------------------------
+  
   List<Entity> _queue = <Entity>[];
   List<Entity> _deleteQueue = <Entity>[];
+  
+  //-----------------------------------
+  //
+  // Public properties
+  //
+  //-----------------------------------
+  
+  String id;
+  
+  //-----------------------------------
+  //
+  // Constructor
+  //
+  //-----------------------------------
   
   DormManager({String id}) {
     this.id = id;
   }
+  
+  //-----------------------------------
+  //
+  // Public methods
+  //
+  //-----------------------------------
   
   void queueAsDeleted(Entity entity) {
     if (
@@ -60,6 +85,12 @@ class DormManager {
     return new DormManagerCommitStructure(queueRecursive, deleteQueueRecursive);
   }
   
+  //-----------------------------------
+  //
+  // Private methods
+  //
+  //-----------------------------------
+  
   void _scanRecursively(Entity entity, List<Entity> list) {
     entity._scan._proxies.forEach(
       (_ProxyEntry entry) {
@@ -88,6 +119,12 @@ class DormManager {
   }
   
 }
+
+//-----------------------------------
+//
+// Internal objects
+//
+//-----------------------------------
 
 class DormManagerCommitStructure {
   

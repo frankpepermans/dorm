@@ -133,7 +133,7 @@ class EntityAssembler {
         proxy = proxies[--j];
         
         if (entry.property == proxy.property) {
-          PropertyMetadataCache propertyMetadataCache = scan.metadataCache.obtainTagForProperty(proxy.property);
+          _PropertyMetadataCache propertyMetadataCache = scan.metadataCache.obtainTagForProperty(proxy.property);
           
           proxy.isId = propertyMetadataCache.isId;
           proxy.isTransient = propertyMetadataCache.isTransient;

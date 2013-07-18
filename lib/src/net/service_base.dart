@@ -2,12 +2,30 @@ part of dorm;
 
 class ServiceBase {
   
+  //-----------------------------------
+  //
+  // Public properties
+  //
+  //-----------------------------------
+  
   final String host;
   final String port;
   final Serializer serializer;
   final OnConflictFunction onConflict;
   
+  //-----------------------------------
+  //
+  // Constructor
+  //
+  //-----------------------------------
+  
   ServiceBase(this.host, this.port, this.serializer, this.onConflict);
+  
+  //-----------------------------------
+  //
+  // Public methods
+  //
+  //-----------------------------------
   
   Future apply(String operation, Map<String, dynamic> arguments, bool isUniqueResult) {
     Completer completer = new Completer();

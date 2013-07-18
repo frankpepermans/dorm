@@ -1,5 +1,9 @@
 part of dorm;
 
+//-----------------------------------
+// Ref annotation
+//-----------------------------------
+
 class Ref {
   
   final String path;
@@ -9,6 +13,10 @@ class Ref {
   String toString() => path;
   
 }
+
+//-----------------------------------
+// Property annotation
+//-----------------------------------
 
 class Property {
   
@@ -21,6 +29,10 @@ class Property {
   
 }
 
+//-----------------------------------
+// NotNullable annotation
+//-----------------------------------
+
 class NotNullable {
   
   const NotNullable();
@@ -28,6 +40,10 @@ class NotNullable {
   String toString() => 'not nullable';
   
 }
+
+//-----------------------------------
+// DefaultValue annotation
+//-----------------------------------
 
 class DefaultValue {
   
@@ -39,6 +55,10 @@ class DefaultValue {
   
 }
 
+//-----------------------------------
+// Transient annotation
+//-----------------------------------
+
 class Transient {
   
   const Transient();
@@ -46,6 +66,10 @@ class Transient {
   String toString() => 'transient';
   
 }
+
+//-----------------------------------
+// Id annotation
+//-----------------------------------
 
 class Id {
   
@@ -55,6 +79,10 @@ class Id {
   
 }
 
+//-----------------------------------
+// Immutable annotation
+//-----------------------------------
+
 class Immutable {
   
   const Immutable();
@@ -62,6 +90,10 @@ class Immutable {
   String toString() => 'immutable';
   
 }
+
+//-----------------------------------
+// Lazy annotation
+//-----------------------------------
 
 class Lazy {
   
@@ -71,12 +103,20 @@ class Lazy {
   
 }
 
+//-----------------------------------
+// LabelField annotation
+//-----------------------------------
+
 class LabelField {
   
   const LabelField();
   
   String toString() => 'label field';
 }
+
+//-----------------------------------
+// Annotation annotation
+//-----------------------------------
 
 class Annotation {
   

@@ -2,11 +2,29 @@ part of dorm;
 
 abstract class Entity extends ObservableBase implements IExternalizable {
   
+  //-----------------------------------
+  //
+  // Private properties
+  //
+  //-----------------------------------
+  
   List<DormProxy> _proxies = <DormProxy>[];
   Map _source;
   EntityScan _scan;
   bool _isPointer, _isRegistered = false;
   int _uid;
+  
+  //-----------------------------------
+  //
+  // Public properties
+  //
+  //-----------------------------------
+  
+  //-----------------------------------
+  // refClassName
+  //-----------------------------------
+  
+  String get refClassName => null;
   
   //-----------------------------------
   //
@@ -49,18 +67,6 @@ abstract class Entity extends ObservableBase implements IExternalizable {
     
     return null;
   }
-  
-  //-----------------------------------
-  //
-  // Public properties
-  //
-  //-----------------------------------
-  
-  //-----------------------------------
-  // refClassName
-  //-----------------------------------
-  
-  String get refClassName => null;
   
   //-----------------------------------
   //
@@ -151,7 +157,7 @@ abstract class Entity extends ObservableBase implements IExternalizable {
   
   //---------------------------------
   //
-  // Library protected methods
+  // Private methods
   //
   //---------------------------------
   

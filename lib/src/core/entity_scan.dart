@@ -9,21 +9,22 @@ class EntityScan {
   //---------------------------------
   
   EntityScan _original;
-  Entity entity;
   
   List<_ProxyEntry> _proxies = new List<_ProxyEntry>();
   List<_ProxyEntry> _identityProxies = new List<_ProxyEntry>();
-  
-  Function contructorMethod;
-  MetadataCache metadataCache;
-  String refClassName, _key;
-  bool isMutableEntity = true;
+  List<EntityScan> _keyCollection;
   
   //---------------------------------
   //
   // Public properties
   //
   //---------------------------------
+  
+  Entity entity;
+  Function contructorMethod;
+  MetadataCache metadataCache;
+  String refClassName;
+  bool isMutableEntity = true;
   
   //---------------------------------
   // key
@@ -47,7 +48,11 @@ class EntityScan {
       nextKey = nextKey[[code, value]];
     }
     
-    nextKey.entityScans.add(this);
+    if (_keyCollection != nextKey.entityScans) {
+      if (_keyCollection != null) _keyCollection.remove(this);
+      
+      _keyCollection = nextKey.entityScans..add(this);
+    }
   }
   
   //---------------------------------
@@ -63,7 +68,6 @@ class EntityScan {
   EntityScan.fromScan(EntityScan original, Entity entity) {
     List<_ProxyEntry> originalProxies = original._proxies;
     List<_ProxyEntry> originalIdentityProxies = original._identityProxies;
-    _ProxyEntry otherEntry;
     _ProxyEntry clonedEntry;
     int i = originalProxies.length;
     
@@ -76,15 +80,11 @@ class EntityScan {
     this.isMutableEntity = original.isMutableEntity;
     
     while (i > 0) {
-      otherEntry = originalProxies[--i];
-      
-      clonedEntry = otherEntry.clone();
+      clonedEntry = originalProxies[--i].clone();
       
       this._proxies.add(clonedEntry);
       
-      if (originalIdentityProxies.contains(otherEntry)) {
-        this._identityProxies.add(clonedEntry);
-      }
+      if (clonedEntry.isIdentity) this._identityProxies.add(clonedEntry);
     }
   }
   
@@ -95,7 +95,7 @@ class EntityScan {
   //---------------------------------
   
   void addProxy(Property property, bool isIdentity) {
-    _ProxyEntry entry = new _ProxyEntry(property.property);
+    _ProxyEntry entry = new _ProxyEntry(property.property, isIdentity);
     
     _proxies.add(entry);
     
@@ -118,13 +118,14 @@ class EntityScan {
 class _ProxyEntry {
   
   final String property;
+  final bool isIdentity;
   
   DormProxy proxy;
   
-  _ProxyEntry(this.property);
+  _ProxyEntry(this.property, this.isIdentity);
   
   _ProxyEntry clone() {
-    return new _ProxyEntry(property);
+    return new _ProxyEntry(property, isIdentity);
   }
   
 }

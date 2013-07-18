@@ -1,6 +1,12 @@
 part of dorm;
 
 class DormProxy<T> {
+  
+  //-----------------------------------
+  //
+  // Private properties
+  //
+  //-----------------------------------
 
   T _defaultValue;
   T _value;
@@ -9,6 +15,16 @@ class DormProxy<T> {
     _defaultValue = value;
     _value = value;
   }
+  
+  //-----------------------------------
+  //
+  // Public properties
+  //
+  //-----------------------------------
+  
+  //-----------------------------------
+  // value
+  //-----------------------------------
   
   T get value => _value;
   set value(T newValue) => _value = newValue;
@@ -22,9 +38,27 @@ class DormProxy<T> {
   bool isNullable = true;
   bool isLabelField = false;
   
+  //-----------------------------------
+  //
+  // Operator overloads
+  //
+  //-----------------------------------
+  
   T operator ~() => _value;
   
+  //-----------------------------------
+  //
+  // Constructor
+  //
+  //-----------------------------------
+  
   DormProxy();
+  
+  //-----------------------------------
+  //
+  // Public methods
+  //
+  //-----------------------------------
   
   void validate() {
     if (!isMutable) {
