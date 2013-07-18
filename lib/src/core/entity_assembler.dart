@@ -56,21 +56,24 @@ class EntityAssembler {
     scan = new EntityScan(refClassName, constructorMethod);
     
     ClassMirror classMirror = reflectClass(forType);
-    Map<Symbol, Mirror> members = new Map<Symbol, Mirror>.from(classMirror.members);
+    List<Mirror> members = new List<Mirror>.from(classMirror.members.values);
     
     classMirror = classMirror.superclass;
     
     while (classMirror.qualifiedName != ENTITY_SYMBOL) {
-      members.addAll(classMirror.members);
+      members.addAll(classMirror.members.values);
       
       classMirror = classMirror.superclass;
     }
     
-    members.values.forEach(
-      (Mirror mirror) {
-        if (mirror is VariableMirror) scan.registerMetadataUsing(mirror);
-      }
-    );
+    Mirror mirror;
+    int i = members.length;
+    
+    while (i > 0) {
+      mirror = members[--i];
+      
+      if (mirror is VariableMirror) scan.registerMetadataUsing(mirror);
+    }
     
     _entityScans.add(scan);
     
