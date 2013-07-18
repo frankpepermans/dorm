@@ -14,8 +14,6 @@ class EntityAssembler {
   final List<List<dynamic>> _collections = <List<dynamic>>[];
   final EntityKey _keyChain = new EntityKey();
   
-  int _proxyCount = 0;
-  
   //---------------------------------
   //
   // Singleton Constructor
@@ -174,8 +172,6 @@ class EntityAssembler {
         
         if (spawnee._isPointer) {
           _keyChain.remove(spawnee);
-          
-          _proxyCount++;
         } else {
           propProxies = spawnee._proxies;
           
@@ -189,7 +185,7 @@ class EntityAssembler {
             }
           }
           
-          _swap(spawnee, true);
+          _updateCollectionsWith(spawnee);
         }
         
         return spawnee;
@@ -249,14 +245,7 @@ class EntityAssembler {
     }
   }
   
-  void _swap(Entity actualEntity, bool swapPointers) {
-    if (
-        swapPointers &&
-        (_proxyCount == 0)
-    ) {
-      return;
-    }
-    
+  void _updateCollectionsWith(Entity actualEntity) {
     List<dynamic> collectionEntry;
     int i = _collections.length;
     
@@ -269,10 +258,6 @@ class EntityAssembler {
                 (entry is Entity) &&
                 _keyChain.areSameKeySignature(entry, actualEntity)
             ) {
-              if (swapPointers) _proxyCount--;
-              
-              _keyChain.remove(entry);
-              
               collectionEntry[collectionEntry.indexOf(entry)] = actualEntity;
             }
           }
