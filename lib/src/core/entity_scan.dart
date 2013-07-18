@@ -9,6 +9,8 @@ class EntityScan {
   //---------------------------------
   
   EntityScan _original;
+  MetadataCache _metadataCache;
+  Function _contructorMethod;
   
   List<_ProxyEntry> _proxies = new List<_ProxyEntry>();
   List<_ProxyEntry> _identityProxies = new List<_ProxyEntry>();
@@ -21,8 +23,6 @@ class EntityScan {
   //---------------------------------
   
   Entity entity;
-  Function contructorMethod;
-  MetadataCache metadataCache;
   String refClassName;
   bool isMutableEntity = true;
   
@@ -61,8 +61,8 @@ class EntityScan {
   //
   //---------------------------------
   
-  EntityScan() {
-    metadataCache = new MetadataCache();
+  EntityScan(this.refClassName, this._contructorMethod) {
+    _metadataCache = new MetadataCache();
   }
   
   EntityScan.fromScan(EntityScan original, Entity entity) {
@@ -74,8 +74,8 @@ class EntityScan {
     this._original = original;
     this.entity = entity;
     
-    this.contructorMethod = original.contructorMethod;
-    this.metadataCache = original.metadataCache;
+    this._contructorMethod = original._contructorMethod;
+    this._metadataCache = original._metadataCache;
     this.refClassName = original.refClassName;
     this.isMutableEntity = original.isMutableEntity;
     
@@ -104,7 +104,40 @@ class EntityScan {
     }
   }
   
-  void updateProxyWithMetadata(DormProxy proxy) => metadataCache._updateProxyWithMetadata(proxy, this);
+  void registerMetadataUsing(VariableMirror mirror) {
+    InstanceMirror instanceMirror;
+    Property property;
+    int i = mirror.metadata.length;
+    int j;
+    bool isIdentity;
+    dynamic metatag;
+    
+    while (i > 0) {
+      instanceMirror = mirror.metadata[--i];
+      
+      if (instanceMirror.reflectee is Property) {
+        property = instanceMirror.reflectee as Property;
+        
+        isIdentity = false;
+        
+        j = mirror.metadata.length;
+        
+        while (j > 0) {
+          metatag = mirror.metadata[--j].reflectee;
+          
+          _metadataCache.registerTagForProperty(property.property, metatag);
+          
+          if (metatag is Id) {
+            isIdentity = true;
+          }
+        }
+        
+        addProxy(property, isIdentity);
+      }
+    }
+  }
+  
+  void updateProxyWithMetadata(DormProxy proxy) => _metadataCache._updateProxyWithMetadata(proxy, this);
 }
 
 //---------------------------------

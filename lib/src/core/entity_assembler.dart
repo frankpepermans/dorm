@@ -8,6 +8,8 @@ class EntityAssembler {
   //
   //---------------------------------
   
+  static const Symbol ENTITY_SYMBOL = const Symbol('dorm.Entity');
+  
   final List<EntityScan> _entityScans = <EntityScan>[];
   final List<DormProxy> _proxyRegistry = <DormProxy>[];
   final EntityKey _keyChain = new EntityKey();
@@ -45,63 +47,28 @@ class EntityAssembler {
   //---------------------------------
   
   EntityScan scan(Type forType, String refClassName, Function constructorMethod) {
-    const Symbol entitySymbol = const Symbol('dorm.Entity');
     EntityScan scan = _getExistingScan(refClassName);
     
     if(scan != null) {
       return scan;
     }
     
-    scan = new EntityScan()
-    ..refClassName = refClassName
-    ..contructorMethod = constructorMethod;
+    scan = new EntityScan(refClassName, constructorMethod);
     
     ClassMirror classMirror = reflectClass(forType);
-    
     Map<Symbol, Mirror> members = new Map<Symbol, Mirror>.from(classMirror.members);
     
     classMirror = classMirror.superclass;
     
-    while (classMirror.qualifiedName != entitySymbol) {
+    while (classMirror.qualifiedName != ENTITY_SYMBOL) {
       members.addAll(classMirror.members);
       
       classMirror = classMirror.superclass;
     }
     
-    members.forEach(
-      (Symbol symbol, Mirror mirror) {
-        if (mirror is VariableMirror) {
-          InstanceMirror instanceMirror;
-          Property property;
-          int i = mirror.metadata.length;
-          int j;
-          bool isIdentity;
-          dynamic metatag;
-          
-          while (i > 0) {
-            instanceMirror = mirror.metadata[--i];
-            
-            if (instanceMirror.reflectee is Property) {
-              property = instanceMirror.reflectee as Property;
-              
-              isIdentity = false;
-              
-              j = mirror.metadata.length;
-              
-              while (j > 0) {
-                metatag = mirror.metadata[--j].reflectee;
-                
-                scan.metadataCache.registerTagForProperty(property.property, metatag);
-                
-                if (metatag is Id) {
-                  isIdentity = true;
-                }
-              }
-              
-              scan.addProxy(property, isIdentity);
-            }
-          }
-        }
+    members.values.forEach(
+      (Mirror mirror) {
+        if (mirror is VariableMirror) scan.registerMetadataUsing(mirror);
       }
     );
     
@@ -182,7 +149,7 @@ class EntityAssembler {
       scan = _entityScans[--i];
       
       if (scan.refClassName == refClassName) {
-        entity = scan.contructorMethod();
+        entity = scan._contructorMethod();
         
         entity.readExternal(rawData, onConflict);
         
