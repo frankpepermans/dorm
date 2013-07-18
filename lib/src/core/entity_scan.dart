@@ -103,6 +103,8 @@ class EntityScan {
       _identityProxies.add(entry);
     }
   }
+  
+  void updateProxyWithMetadata(DormProxy proxy) => metadataCache._updateProxyWithMetadata(proxy, this);
 }
 
 //---------------------------------

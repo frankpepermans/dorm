@@ -24,7 +24,38 @@ class MetadataCache {
   //
   //---------------------------------
   
-  _PropertyMetadataCache obtainTagForProperty(String property) {
+  void registerTagForProperty(String property, Object reflectee) {
+    _PropertyMetadataCache propertyMetadataCache = _obtainTagForProperty(property);
+    
+    switch (reflectee.runtimeType) {
+      case Id:              propertyMetadataCache.isId = true;                                            break;
+      case Transient:       propertyMetadataCache.isTransient = true;                                     break;
+      case NotNullable:     propertyMetadataCache.isNullable = false;                                     break;
+      case DefaultValue:    propertyMetadataCache.initialValue = (reflectee as DefaultValue).value;       break;
+      case LabelField:      propertyMetadataCache.isLabelField = true;                                    break;
+      case Immutable:       propertyMetadataCache.isMutable = false;                                      break;
+    }
+  }
+  
+  //---------------------------------
+  //
+  // Private methods
+  //
+  //---------------------------------
+  
+  void _updateProxyWithMetadata(DormProxy proxy, EntityScan scan) {
+    _PropertyMetadataCache propertyMetadataCache = _obtainTagForProperty(proxy.property);
+    
+    proxy.isId = propertyMetadataCache.isId;
+    proxy.isTransient = propertyMetadataCache.isTransient;
+    proxy.isNullable = propertyMetadataCache.isNullable;
+    proxy.isLabelField = propertyMetadataCache.isLabelField;
+    proxy.isMutable = (scan.isMutableEntity && propertyMetadataCache.isMutable);
+    
+    proxy._initialValue = propertyMetadataCache.initialValue;
+  }
+  
+  _PropertyMetadataCache _obtainTagForProperty(String property) {
     return propertyMetadataCacheList.firstWhere(
       (_PropertyMetadataCache entry) => (entry.property == property),
       orElse: () {
@@ -35,19 +66,6 @@ class MetadataCache {
         return entry;
       }
     );
-  }
-  
-  void registerTagForProperty(String property, Object reflectee) {
-    _PropertyMetadataCache propertyMetadataCache = obtainTagForProperty(property);
-    
-    switch (reflectee.runtimeType) {
-      case Id:              propertyMetadataCache.isId = true;                                            break;
-      case Transient:       propertyMetadataCache.isTransient = true;                                     break;
-      case NotNullable:     propertyMetadataCache.isNullable = false;                                     break;
-      case DefaultValue:    propertyMetadataCache.initialValue = (reflectee as DefaultValue).value;       break;
-      case LabelField:      propertyMetadataCache.isLabelField = true;                                    break;
-      case Immutable:       propertyMetadataCache.isMutable = false;                                      break;
-    }
   }
 }
 
