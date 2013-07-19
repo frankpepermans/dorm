@@ -6,9 +6,27 @@
     <title>Dorm unit tests</title>
   </head>
   <body>
-    <h1>Dorm : Test</h1>
+    <h1>Dorm : Benchmark of 10000 rows per run, 1 second interval between runs</h1>
     
     <script type="application/dart" src="dorm_benchmark.dart"></script>
     <script src="packages/browser/dart.js"></script>
+    
+    <div>Sample row: <b>
+      {<br>
+    "id": {
+        0 to 9999
+    },<br>
+    "name": "Speed test",<br>
+    "type": "type_{0 to 9999}",<br>
+    "?t": "entities.testEntity"<br>
+}<br></b><br><br><i><b>
+Dorm parses it to a TestEntity class instance,<br>
+each iteration reloads the exact same ID set of 1 to 10000,<br>
+Dorm will each time lookup the incoming ID to see if it exists,<br>
+if it does not, it will create that instance ID,<br>
+otherwise it will ignore (accept-client) or update from server (accept-server)</b></i><br><br>
+    </div>
+    
+    <div id="out" />
   </body>
 </html>

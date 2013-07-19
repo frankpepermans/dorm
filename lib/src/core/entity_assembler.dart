@@ -153,10 +153,9 @@ class EntityAssembler {
         spawnee = scan._contructorMethod();
         
         spawnee.readExternal(rawData, onConflict);
-        
-        localNonPointerEntity = _existingFromSpawnRegistry(refClassName, spawnee);
-        
         spawnee._scan.buildKey();
+        
+        localNonPointerEntity = _existingFromSpawnRegistry(spawnee);
         
         _solveConflictsIfAny(
             spawnee,
@@ -265,7 +264,7 @@ class EntityAssembler {
     }
   }
   
-  Entity _existingFromSpawnRegistry(String refClassName, Entity entity) {
+  Entity _existingFromSpawnRegistry(Entity entity) {
     Entity registeredEntity = _keyChain.getExistingEntity(entity);
     
     if (

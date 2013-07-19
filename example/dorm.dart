@@ -34,6 +34,17 @@ void main() {
   ormInitialize();
   
   init();
+  //benchmark();
+}
+
+void benchmark() {
+  fetchService = new FetchService(url, port, serializer, handleConflictAcceptClient);
+  
+  fetchService.ormEntityLoad('Employee').then(
+      (ObservableList<Entity> resultList) {
+        window.animationFrame.whenComplete(benchmark);
+      }
+  );
 }
 
 void init() {

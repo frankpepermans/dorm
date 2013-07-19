@@ -2,9 +2,12 @@ library dorm_entity_spawn_test;
 
 import 'package:dorm/dorm.dart';
 import 'dart:async';
+import 'dart:html';
 import 'dart:json';
 
 Serializer serializer = new SerializerJson();
+
+DivElement out = query("#out");
 
 main() {
   EntityAssembler assembler = new EntityAssembler();
@@ -17,23 +20,35 @@ main() {
 void _runBenchmark() {
   EntityFactory<TestEntity> factory = new EntityFactory(handleConflictAcceptClient);
   List<String> jsonRaw = <String>[];
-  int loopCount = 1000;
+  int loopCount = 10000;
   int i = loopCount;
+  int t1, t2;
+  Stopwatch stopwatch;
   DateTime time;
   
   while (i > 0) {
-    jsonRaw.add('{"id":${--i},"name":"Speed test","?t":"entities.testEntity"}');
+    jsonRaw.add('{"id":${--i},"name":"Speed test","type":"type_${i}","?t":"entities.testEntity"}');
   }
   
-  Stopwatch stopwatch = new Stopwatch()..start();
+  stopwatch = new Stopwatch()..start();
   
-  factory.spawn(serializer.incoming('[' + jsonRaw.join(',') + ']'));
+  List<Map<String, dynamic>> parsed = serializer.incoming('[' + jsonRaw.join(',') + ']');
   
   stopwatch.stop();
   
-  print('completed in ${stopwatch.elapsedMilliseconds} ms');
+  t1 = stopwatch.elapsedMilliseconds;
   
-  new Timer(new Duration(milliseconds:1), _runBenchmark);
+  stopwatch = new Stopwatch()..start();
+  
+  factory.spawn(parsed);
+  
+  stopwatch.stop();
+  
+  t2 = stopwatch.elapsedMilliseconds;
+  
+  out.innerHtml += 'json to Map $t1 ms, dorm to entity class model $t2 ms<br>';
+  
+  new Timer(new Duration(seconds:1), _runBenchmark);
 }
 
 ConflictManager handleConflictAcceptClient(Entity serverEntity, Entity clientEntity) {
@@ -131,6 +146,19 @@ class TestEntity extends TestEntitySuperClass {
   set name(String value) => _name.value = notifyPropertyChange(NAME_SYMBOL, _name.value, value);
   
   //---------------------------------
+  // type
+  //---------------------------------
+
+  @Property(TYPE_SYMBOL, 'type')
+  DormProxy<String> _type;
+
+  static const String TYPE = 'type';
+  static const Symbol TYPE_SYMBOL = const Symbol('orm_domain.TestEntity.type');
+
+  String get type => _type.value;
+  set type(String value) => _type.value = notifyPropertyChange(TYPE_SYMBOL, _type.value, value);
+  
+  //---------------------------------
   // cyclicReference
   //---------------------------------
 
@@ -156,13 +184,17 @@ class TestEntity extends TestEntitySuperClass {
     ..property = 'name'
     ..propertySymbol = NAME_SYMBOL;
     
+    _type = new DormProxy()
+    ..property = 'type'
+    ..propertySymbol = TYPE_SYMBOL;
+    
     _cyclicReference = new DormProxy()
     ..property = 'cyclicReference'
     ..propertySymbol = CYCLIC_REFERENCE_SYMBOL;
     
     assembler.registerProxies(
       this,
-      <DormProxy>[_name, _cyclicReference]    
+      <DormProxy>[_name, _type, _cyclicReference]    
     );
   }
   

@@ -47,7 +47,7 @@ class EntityKey {
   //---------------------------------
   
   Entity getExistingEntity(Entity forEntity) {
-    EntityScan result = getExistingEntityScans(forEntity).firstWhere(
+    EntityScan result = forEntity._scan._keyCollection.firstWhere(
       (EntityScan scan) => (scan.entity != forEntity),
       orElse: () => null
     );
@@ -55,35 +55,13 @@ class EntityKey {
     return (result != null) ? result.entity : null; 
   }
   
-  bool areSameKeySignature(Entity entity, Entity compareEntity) => getExistingEntityScans(entity).contains(compareEntity._scan);
+  bool areSameKeySignature(Entity entity, Entity compareEntity) => entity._scan._keyCollection.contains(compareEntity._scan);
   
-  bool remove(Entity entity) => getExistingEntityScans(entity).remove(entity._scan);
+  bool remove(Entity entity) => entity._scan._keyCollection.remove(entity._scan);
   
-  Iterable<EntityScan> getSiblings(Entity forEntity) => getExistingEntityScans(forEntity).where(
+  Iterable<EntityScan> getSiblings(Entity forEntity) => forEntity._scan._keyCollection.where(
       (EntityScan scan) => (scan.entity != forEntity)    
   );
   
-  List<EntityScan> getExistingEntityScans(Entity forEntity) {
-    EntityKey nextKey;
-    List<_ProxyEntry> identityProxies = forEntity._scan._identityProxies;
-    int len = identityProxies.length;
-    _ProxyEntry entry;
-    int i, code;
-    dynamic value;
-    
-    nextKey = EntityAssembler._instance._keyChain;
-    
-    for (i=0; i<len; i++) {
-      entry = identityProxies[i];
-      
-      code = entry.proxy.propertySymbol.hashCode;
-      value = entry.proxy._value;
-      
-      nextKey[code] = value;
-      
-      nextKey = nextKey[[code, value]];
-    }
-    
-    return nextKey.entityScans;
-  }
+  List<EntityScan> getExistingEntityScans(Entity forEntity) => forEntity._scan._keyCollection;
 }
