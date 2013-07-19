@@ -31,7 +31,7 @@ class DormProxy<T> {
   
   String property;
   Symbol propertySymbol;
-  List<Entity> owner;
+  List<dynamic> owner;
   bool isId = false;
   bool isTransient = false;
   bool isMutable = true;
