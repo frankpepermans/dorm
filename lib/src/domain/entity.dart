@@ -120,7 +120,7 @@ abstract class Entity extends ObservableBase implements IExternalizable {
       if (entryValue is Map) {
         spawnList[0] = entryValue;
         
-        proxy._initialValue = factory.spawn(spawnList).first;
+        proxy._initialValue = factory.spawn(spawnList, proxy:proxy).first;
       } else if (entryValue is Iterable) {
         proxy._initialValue = proxy.owner = new ObservableList.from(factory.spawn(entryValue));
       } else {

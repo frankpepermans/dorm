@@ -12,6 +12,7 @@ class EntityAssembler {
   
   final List<EntityScan> _entityScans = <EntityScan>[];
   final List<List<dynamic>> _collections = <List<dynamic>>[];
+  final List<DormProxy> _pendingProxies = <DormProxy>[];
   final EntityKey _keyChain = new EntityKey();
   
   //---------------------------------
@@ -131,7 +132,7 @@ class EntityAssembler {
     throw new DormError('Scan for entity not found');
   }
   
-  Entity _assemble(Map<String, dynamic> rawData, OnConflictFunction onConflict) {
+  Entity _assemble(Map<String, dynamic> rawData, DormProxy owningProxy, OnConflictFunction onConflict) {
     final String refClassName = rawData[SerializationType.ENTITY_TYPE];
     EntityScan scan;
     Entity spawnee, localNonPointerEntity;
@@ -170,6 +171,10 @@ class EntityAssembler {
         }
         
         if (spawnee._isPointer) {
+          if (owningProxy != null) {
+            _pendingProxies.add(owningProxy);
+          }
+          
           _keyChain.remove(spawnee);
         } else {
           propProxies = spawnee._proxies;
@@ -246,7 +251,20 @@ class EntityAssembler {
   
   void _updateCollectionsWith(Entity actualEntity) {
     List<dynamic> collectionEntry;
-    int i = _collections.length;
+    DormProxy proxy;
+    int i = _pendingProxies.length;
+    
+    while (i > 0) {
+      proxy = _pendingProxies[--i];
+      
+      if (_keyChain.areSameKeySignature(proxy._value, actualEntity)) {
+        proxy._initialValue = actualEntity;
+        
+        _pendingProxies.remove(proxy);
+      }
+    }
+    
+    i = _collections.length;
     
     while (i > 0) {
       collectionEntry = _collections[--i];
