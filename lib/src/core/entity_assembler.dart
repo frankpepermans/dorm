@@ -252,6 +252,7 @@ class EntityAssembler {
   void _updateCollectionsWith(Entity actualEntity) {
     List<dynamic> collectionEntry;
     DormProxy proxy;
+    bool collectionEntryHasPointers;
     int i = _pendingProxies.length;
     
     while (i > 0) {
@@ -269,16 +270,23 @@ class EntityAssembler {
     while (i > 0) {
       collectionEntry = _collections[--i];
       
+      collectionEntryHasPointers = false;
+      
       collectionEntry.forEach(
           (dynamic entry) {
-            if (
-                (entry is Entity) &&
-                _keyChain.areSameKeySignature(entry, actualEntity)
-            ) {
-              collectionEntry[collectionEntry.indexOf(entry)] = actualEntity;
+            if (entry is Entity) {
+              if (_keyChain.areSameKeySignature(entry, actualEntity)) {
+                collectionEntry[collectionEntry.indexOf(entry)] = actualEntity;
+              } else if (entry._isPointer) {
+                collectionEntryHasPointers = true;
+              }
             }
           }
       );
+      
+      if (!collectionEntryHasPointers) {
+        _collections.remove(collectionEntry);
+      }
     }
   }
   
