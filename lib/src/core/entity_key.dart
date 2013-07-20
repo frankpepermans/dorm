@@ -47,17 +47,12 @@ class EntityKey {
   //---------------------------------
   
   Entity getFirstSibling(Entity forEntity) {
-    EntityScan scan;
-    List<EntityScan> scans = forEntity._scan._keyCollection;
-    int len = scans.length, i;
+    EntityScan result = forEntity._scan._keyCollection.firstWhere(
+      (EntityScan scan) => (scan.entity != forEntity),
+      orElse: () => null
+    );
     
-    for (i=0; i<len; i++) {
-      scan = scans[i];
-      
-      if (scan.entity != forEntity) return scan.entity;
-    }
-    
-    return null;
+    return (result != null) ? result.entity : null;
   }
   
   bool areSameKeySignature(Entity entity, Entity compareEntity) => entity._scan._keyCollection.contains(compareEntity._scan);

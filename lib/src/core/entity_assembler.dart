@@ -310,15 +310,9 @@ class EntityAssembler {
   }
   
   EntityScan _existingFromScanRegistry(String refClassName) {
-    EntityScan scan;
-    int i = _entityScans.length;
-    
-    while (i > 0) {
-      scan = _entityScans[--i];
-      
-      if (scan.refClassName == refClassName) return scan;
-    }
-    
-    return null;
+    return _entityScans.firstWhere(
+      (EntityScan scan) => (scan.refClassName == refClassName),
+      orElse: () => null
+    );
   }
 }
