@@ -20,7 +20,7 @@ main() {
 void _runBenchmark() {
   EntityFactory<TestEntity> factory = new EntityFactory(handleConflictAcceptClient);
   List<String> jsonRaw = <String>[];
-  int loopCount = 10000;
+  int loopCount = 1000;
   int i = loopCount;
   int t1, t2;
   Stopwatch stopwatch;

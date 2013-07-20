@@ -99,9 +99,7 @@ class EntityScan {
     
     _proxies.add(entry);
     
-    if (isIdentity) {
-      _identityProxies.add(entry);
-    }
+    if (isIdentity) _identityProxies.add(entry);
   }
   
   void registerMetadataUsing(VariableMirror mirror) {
@@ -127,9 +125,7 @@ class EntityScan {
           
           _metadataCache.registerTagForProperty(property.property, metatag);
           
-          if (metatag is Id) {
-            isIdentity = true;
-          }
+          if (metatag is Id) isIdentity = true;
         }
         
         addProxy(property, isIdentity);
@@ -159,8 +155,6 @@ class _ProxyEntry {
   
   _ProxyEntry(this.property, this.isIdentity);
   
-  _ProxyEntry clone() {
-    return new _ProxyEntry(property, isIdentity);
-  }
+  _ProxyEntry clone() => new _ProxyEntry(property, isIdentity);
   
 }

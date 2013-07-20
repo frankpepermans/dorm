@@ -61,16 +61,12 @@ class DormProxy<T> {
   //-----------------------------------
   
   void validate() {
-    if (!isMutable) {
-      throw new DormError('$property is immutable');
-    }
+    if (!isMutable) throw new DormError('$property is immutable');
     
     if (
       !isNullable &&
       (_value == null)
-    ) {
-      throw new DormError('$property is not nullable');
-    }
+    ) throw new DormError('$property is not nullable');
   }
   
 }

@@ -1,5 +1,22 @@
 part of dorm;
 
+/**
+ * This class is a singleton, you may obtain the instance at any time in the following manner :
+ * 
+ *     main() {
+ *       EntityAssembler assemblerSingletonInstance = new EntityAssembler();
+ *     }
+ * 
+ * While it is possible to create an [Entity] directly with the assembler, you should use [EntityFactory]
+ * with your services to facilitate this.
+ * 
+ * The assembler is responsible for the creation of an [Entity] and also continues to maintain it afterwards. 
+ * As soon as an [Entity] is created, it will be stored in the [EntityKey] chain,
+ * should the same [Entity] then at a later time be reloaded in any way,
+ * then the assembler will choose to update it in the case of [ConflictManager.ACCEPT_SERVER]
+ * or keep the client [Entity] unchanged in case of [ConflictManager.ACCEPT_CLIENT].
+ * This [ConflictManager] should be passed with the main spawn function of the [EntityFactory]
+ */
 class EntityAssembler {
   
   //---------------------------------
@@ -14,6 +31,8 @@ class EntityAssembler {
   final List<List<dynamic>> _collections = <List<dynamic>>[];
   final List<DormProxy> _pendingProxies = <DormProxy>[];
   final EntityKey _keyChain = new EntityKey();
+  
+  ConflictManager _handleConflictAcceptClient(Entity serverEntity, Entity clientEntity) => ConflictManager.ACCEPT_CLIENT;
   
   //---------------------------------
   //
@@ -46,11 +65,9 @@ class EntityAssembler {
   //---------------------------------
   
   EntityScan scan(Type forType, String refClassName, Function constructorMethod) {
-    EntityScan scan = _getExistingScan(refClassName);
+    EntityScan scan = _existingFromScanRegistry(refClassName);
     
-    if(scan != null) {
-      return scan;
-    }
+    if(scan != null) return scan;
     
     scan = new EntityScan(refClassName, constructorMethod);
     
@@ -85,7 +102,7 @@ class EntityAssembler {
     
     if (entity._uid == null) {
       entity._uid = entity.hashCode;
-      entity._scan = _getScanForInstance(entity);
+      entity._scan = _createEntityScan(entity);
     }
     
     EntityScan scan = entity._scan;
@@ -122,12 +139,10 @@ class EntityAssembler {
   //
   //---------------------------------
   
-  EntityScan _getScanForInstance(Entity entity) {
-    EntityScan scan = _getExistingScan(entity.refClassName);
+  EntityScan _createEntityScan(Entity entity) {
+    EntityScan scan = _existingFromScanRegistry(entity.refClassName);
     
-    if(scan != null) {
-      return new EntityScan.fromScan(scan, entity);
-    }
+    if(scan != null) return new EntityScan.fromScan(scan, entity);
     
     throw new DormError('Scan for entity not found');
   }
@@ -141,9 +156,7 @@ class EntityAssembler {
     List<DormProxy> propProxies;
     int i, j;
     
-    if (onConflict == null) {
-      onConflict = _handleConflictAcceptClient;
-    }
+    if (onConflict == null) onConflict = _handleConflictAcceptClient;
     
     i = _entityScans.length;
     
@@ -205,9 +218,7 @@ class EntityAssembler {
     if (
         spawnee._isPointer ||
         (existingEntity == null)
-    ) {
-      return;
-    }
+    ) return;
     
     ConflictManager conflictManager;
     List<_ProxyEntry> entryProxies;
@@ -215,9 +226,7 @@ class EntityAssembler {
     _ProxyEntry entryA, entryB;
     int i, j;
     
-    if (onConflict == null) {
-      throw new DormError('Conflict was detected, but no onConflict method is available');
-    }
+    if (onConflict == null) throw new DormError('Conflict was detected, but no onConflict method is available');
     
     conflictManager = onConflict(
         spawnee, 
@@ -284,41 +293,29 @@ class EntityAssembler {
           }
       );
       
-      if (!collectionEntryHasPointers) {
-        _collections.remove(collectionEntry);
-      }
+      if (!collectionEntryHasPointers) _collections.remove(collectionEntry);
     }
   }
   
   Entity _existingFromSpawnRegistry(Entity entity) {
     Entity registeredEntity = _keyChain.getExistingEntity(entity);
     
-    if (
+    return (
         (registeredEntity != null) &&
         !registeredEntity._isPointer
-    ) {
-      return registeredEntity;
-    }
-    
-    return null;
+    ) ? registeredEntity : null;
   }
   
-  EntityScan _getExistingScan(String refClassName) {
+  EntityScan _existingFromScanRegistry(String refClassName) {
     EntityScan scan;
     int i = _entityScans.length;
     
     while (i > 0) {
       scan = _entityScans[--i];
       
-      if (scan.refClassName == refClassName) {
-        return scan;
-      }
+      if (scan.refClassName == refClassName) return scan;
     }
     
     return null;
-  }
-  
-  ConflictManager _handleConflictAcceptClient(Entity serverEntity, Entity clientEntity) {
-    return ConflictManager.ACCEPT_CLIENT;
   }
 }
