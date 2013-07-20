@@ -102,13 +102,16 @@ abstract class Entity extends ObservableBase implements IExternalizable {
   void readExternal(Map<String, dynamic> data, OnConflictFunction onConflict) {
     EntityFactory<Entity> factory = new EntityFactory(onConflict);
     _ProxyEntry entry;
-    List<_ProxyEntry> proxies = _scan._proxies;
+    List<_ProxyEntry> proxies;
     Iterable<Map<String, dynamic>> spawnList = new List<Map<String, dynamic>>(1);
     DormProxy proxy;
-    int i = proxies.length;
     dynamic entryValue;
     
     _isPointer = data.containsKey(SerializationType.POINTER);
+    
+    proxies = _isPointer ? _scan._identityProxies : _scan._proxies;
+    
+    int i = proxies.length;
     
     while (i > 0) {
       entry = proxies[--i];

@@ -64,6 +64,9 @@ class EntityAssembler {
   //
   //---------------------------------
   
+  /**
+   * TO_DO: scan requires mirrors, it would be better to move this to a build file later
+   */
   EntityScan scan(Type forType, String refClassName, Function constructorMethod) {
     EntityScan scan = _existingFromScanRegistry(refClassName);
     
@@ -298,7 +301,7 @@ class EntityAssembler {
   }
   
   Entity _existingFromSpawnRegistry(Entity entity) {
-    Entity registeredEntity = _keyChain.getExistingEntity(entity);
+    Entity registeredEntity = _keyChain.getFirstSibling(entity);
     
     return (
         (registeredEntity != null) &&
