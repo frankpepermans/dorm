@@ -1,102 +1,174 @@
-Dorm, an orm client for Dart
- 
- 
+Dorm
+===========
 
-1.       Introduction
+Dorm is a client side library, it can he hooked up to a server side [ORM] implementation such as [Hibernate] for example.
+The idea behind Dorm is that you expose your [ORM] entity model (or a subset of it) to your client application
+and load and/or commit entities asynchronously via services.
 
-Dorm stands for Dart ORM,
+Dorm supports :
+- cyclic references (i.e. foo.bar.listOfFoos) via pointers
+- default serializer for JSON data
+- Entities use the [observable] library, an [Entity] extends ObservableBase, and an [Entity] collection is an ObservableList
 
-Object-Relational-Mapping is a popular (mostly server) based solution to abstract the database model to a virtual entity object model. (see Hibernate or EntityFramework for example)
+Dorm will soon support :
+- lazy loading
+- push via web sockets, share [Entity] status between clients
 
-Table values are loaded into virtual entities that can be readily used from within the targeted programming language.
+[![Build Status](https://drone.io/github.com/frankpepermans/dorm/status.png)](https://drone.io/github.com/frankpepermans/dorm/latest)
 
-What Dorm does, is create a way of exporting these objects to the client. On the client, entities can be loaded, created, deleted or manipulated and in the end be sent back to the server to finalize the changes to the database itself. To make this work, the dorm client must ensure that each loaded entity maps 1-to-1 with its server counterpart (i.e. there can be no duplicates of the same entity on the client, only pointers to a single unique instance).
+Try It Now
+-----------
+Add the Dorm package to your pubspec.yaml file:
 
-The programmer shouldn’t need to worry about this relationship, and rather just load up his entities through a simple API.
+```yaml
+dependencies:
+  dorm: any
+```
 
-2.       No client-ORM without a server counterpart!
+Setting it up
+----------
+The [example] in Dorm requires a Dart [server] which acts as a minimal ORM engine, running on JSON files.
+Here, you can define your database in the dbo folder using JSON.
 
-Dorm should in the long run be compatible with any server-side ORM solution, to provide this, specific adapters need to be written to ensure communication between dorm and the server.
+The [example] is a good starting point for implementing Dorm yourself,
+it also has a few sample services and even a commit service.
 
-In this early stage, Dorm talks to a Dart (mock) server. This server has no real database, instead it presents tables in JSON format.
+When ready, run 'build_entities.dart' which will generate the client side entities needed in the dorm example.
 
-In the package, you’ll find a server implementation with 2 runnable Dart files :
+Finally, run 'run_mock_server.dart' to launch the test server.
 
--          build_entities.dart : Will dynamically create Entities for use on the Dorm client, based on the entity definition files from the mock server
--          run_mock_server.dart : Launches a Dart server (default localhost) to which Dorm can connect and transfer entities with
+Now you can launch the 'dorm.dart' file in the main examples folder.
 
-The mock server already has a demo table structure in JSON format, here’s what it looks like :
+I've successfully hooked Dorm up with an existing Hibernate ORM,
+if you wish to do the same, then you must provide 2 things on the server :
 
+- a way to generate Dorm entities as in the example JSON test server, from your ORM engine
+- a serializer which supports cyclic references, Dorm can then access your webserver and request the JSON data
 
+Generating Dorm entities
+----------
+Dorm entities support inheritance.
 
-Also found with the server, are a number of server-side ORM entities, these are also written in JSON format and define the following structure :
+Dorm entities use a proxy,
+you should generate [Entity] properties in the following way:
 
+```Dorm entity
+	@Property(BAR_SYMBOL, 'bar', int)
+	@Id()
+	@NotNullable()
+	@DefaultValue(0)
+	@Immutable()
+	DormProxy<int> _bar;
 
+	static const String BAR = 'bar';
+	static const Symbol BAR_SYMBOL = const Symbol('orm_domain.Foo.bar');
 
-ORM entities support inheritance,
+	int get bar => _bar.value;
+	set bar(int value) => _bar.value = notifyPropertyChange(BAR_SYMBOL, _bar.value, value);
+```
 
-There are 2 base entities, MutableEntity and ImmutableEntity.
+Then, in the [Entity] constructor body, you need to register this property as following:
 
-The first one is persistable, while the second one is read-only.
+```Dorm entity
+	EntityAssembler assembler = new EntityAssembler();
+	
+	_bar = new DormProxy()
+	..property = 'bar'
+	..propertySymbol = BAR_SYMBOL;
 
-Note how Employee also extends Person, in general, an Employee is a Person, but adds one property, namely job.
+	assembler.registerProxies(this, <DormProxy>[_bar]);
+```
 
-Finally, run build_entities.dart to create client-side Dorm entities based on this model.
+See [Person] for a full example of a Dorm entity.
 
-3.       Annotations
+Finally, you must also define a library file which contains all your generated entities,
 
-Entities and properties can be annotated with different tags, here’s a list of the currently supported ones :
+with this file, generate the following method:
 
--          Ref(String name) : Entity class level, holds the reference to the server-entity counterpart (e.g. Ref(‘entities.employee’))
--          Property(String name) : Declares a property within the entity. Each property is managed via a Proxy class, this Proxy class acts behind the scenes for Dorm.
--          Immutable() : Entity class level or property level, indicates that the class or property is read-only, trying to change a value or this class or property, will result in a generated runtime error.
--          Id() : Property level, indicates that a property is an identifier
--          NotNullable() : Property level, dictates that a property cannot be NULL
--          DefaultValue(dynamic value) : Property level, defines the default value of the property, as stated in the server-side entity file
--          Transient : Property level, indicates that this property can be ignored by Dorm, for example, changing the property value will not cause an update on the server
+```Dorm domain library file
+void ormInitialize() {
+	EntityAssembler assembler = new EntityAssembler();
 
-Here’s an example of a Dorm generated file on the client :
-
-
-
-4.       Dorm client methods
-
-Use the following methods in the Dorm client to work with the entities.
-
-Obviously, import the library as following: import 'package:dorm/dorm.dart';
-
-And also import your generated client domain: import 'orm_domain/orm_domain.dart';
-
-Then, before doing anything else, initialize Dorm by calling ormInitialize();
-
-If you want, you can also create an instance of DormManager, whenever you need to persist changes to entities, hand them to this manager via the queue() or queueDeleted() methods, and in the end call the flush() method.
-
-Now the 2 main methods, ormEntityLoad() and ormEntityLoadByPK() can be used to request entities. The first method will always load a collection, and the second one a unique entity.
-
--          Call ormEntityLoad(‘Employee’) for example to load all employees
--          Call ormEntityLoad(‘Employee’, where:Map) to filter your collection
--          Call ormEntityLoadByPK(‘Employee’, 1) to load the Employee with identity 1
-
-Both methods will return a Future, either Future<List<Entity>> for collections, or Future<Entity> for unique requests.
-
-5.       Conflict management
-
-Conflict management is needed when client and server entities go out of sync, imagine you first load an entity to the client, change a property, but then re-request that same entity.
-
-At this point, you must decide which version to proceed with, either your client-side updated one, or the server-side old one.
-
-To tackle this, you can add an onConflict function to ormEntityLoad() or  ormEntityLoadByPK(). This method will run every time a conflict like the above occurs. This method typically looks like this :
-
-ConflictManager handleConflictAcceptClient(Entity serverEntity, Entity clientEntity) {
-      return ConflictManager.ACCEPT_CLIENT;
+	assembler.scan(Foo, 'entities.foo', Foo.construct);
+	//...
 }
+```
 
-The example simply always returns to accept the current client version of the entity. You could add complexity by choosing to return the server version based on the entity type for example.
+And in your project main(), call this method to initialize Dorm.
 
- 
+Serialization
+----------
+By default, Dorm uses a JSON serializer, but you could write your own serializer to support [AMF] for example.
 
-You can find some examples of the above within the web folder (dorm.dart), output is console based.
+Your client services must use the serializer when dealing with incoming/outgoing data,
+here's an example of a service's body:
 
-Make sure to start up the Dart server before running the client application!
+```Dorm service
+	final Serializer serializer = new SerializerJson<String>();
+	
+	Future serviceMethodNameHere(String operation, Map<String, dynamic> arguments) {
+		Completer completer = new Completer();
+		
+		HttpRequest.request(
+			'http://${host}:$port', 
+			method:operation, 
+			sendData:serializer.outgoing(arguments) // serialize your arguments to JSON
+		).then(
+			(HttpRequest request) {
+			  if (request.responseText.length > 0) {
+				EntityFactory<Entity> factory = new EntityFactory(onConflict);
+				
+				List<Map<String, dynamic>> result = serializer.incoming(request.responseText); // parses the incomin JSON data to a Map
+				
+				ObservableList<Entity> spawned = factory.spawn(result, serializer); // generates your entities from the above Map
+				
+				completer.complete(isUniqueResult ? spawned.first : spawned);
+			  }
+			}
+		);
+		
+		return completer.future;
+	}
+```
 
-And finally, look for the package here on GitHub.
+The JSON serializer only handles the basic data types (numerics, String, basic Lists and Maps, ...)
+To support other types, you can set type handlers to the serializer as following :
+
+```Dorm serializer rules
+	serializer.addRule(
+      DateTime,
+      (int value) => (value != null) ? new DateTime.fromMillisecondsSinceEpoch(value, isUtc:true) : null,
+      (DateTime value) => value.millisecondsSinceEpoch
+	);
+```
+
+This rule will read the date as int value from the incoming JSON data,
+and send out again the date as an int whenever the data is outgoing.
+
+When Dorm submits changes to its entities, only properties that are dirty (changed on the client) will be serialized.
+
+Serialization rules
+----------
+Dorm needs to understand the serialized JSON when it comes to cyclic references,
+one way for the server to support this, is by creating [DTO]'s for your entities,
+then when the serialization is needed, loop over the [DTO](s) and in doing so,
+keep a reference to the entities that are already serialized.
+
+If a cyclic reference is detected, then instead of serializing the [DTO] values, do this instead:
+```Dorm serializer rules
+	{
+		"?t":"path.to.entities.Foo", // the entity type, including the class path
+		"?p":true, // indicates that this is a cyclic reference
+		"foo_id":1 // primary key name and value
+	}
+```
+
+[ORM]: https://en.wikipedia.org/wiki/Object-relational_mapping
+[Hibernate]: http://en.wikipedia.org/wiki/Hibernate_(Java)
+[server]: https://github.com/frankpepermans/dorm_mockserver
+[observe]: https://github.com/dart-lang/web-ui/blob/master/lib/observe/observable.dart
+[Entity]: https://github.com/frankpepermans/dorm/blob/master/lib/src/domain/entity.dart
+[Person]: https://github.com/frankpepermans/dorm/blob/master/example/orm_domain/person.dart
+[AMF]: http://en.wikipedia.org/wiki/Action_Message_Format
+[DTO]: http://en.wikipedia.org/wiki/Data_transfer_object
+[example]: https://github.com/frankpepermans/dorm/tree/master/example
