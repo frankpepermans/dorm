@@ -1,4 +1,4 @@
-part of dorm;
+part of orm_infrastructure;
 
 class ServiceBase {
   

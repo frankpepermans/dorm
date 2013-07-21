@@ -105,7 +105,6 @@ library dorm;
 import 'dart:async';
 import 'dart:core';
 import 'dart:json';
-import 'dart:html';
 import 'dart:mirrors';
 
 import 'package:observe/observe.dart';
@@ -122,8 +121,6 @@ part 'src/core/metadata_cache.dart';
 
 part 'src/domain/entity.dart';
 part 'src/domain/meta.dart';
-
-part 'src/net/service_base.dart';
 
 part 'src/serialization/externalizable.dart';
 part 'src/serialization/serialization_type.dart';
