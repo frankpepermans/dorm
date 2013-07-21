@@ -16,8 +16,15 @@ main() {
 }
 
 _afterWarmup() {
-  String rawDataA = '[{"id":1,"name":"Test A","?t":"entities.testEntity"}]';
-  String rawDataB = '[{"id":2,"name":"Test B","?t":"entities.testEntity"}]';
+  // serializer needs this rule in order to extract dates from/to json
+  serializer.addRule(
+      DateTime,
+      (int value) => (value != null) ? new DateTime.fromMillisecondsSinceEpoch(value, isUtc:true) : null,
+      (DateTime value) => value.millisecondsSinceEpoch
+  );
+  
+  String rawDataA = '[{"id":1,"name":"Test A","date":1234567890,"?t":"entities.testEntity"}]';
+  String rawDataB = '[{"id":2,"name":"Test B","date":1234567890,"?t":"entities.testEntity"}]';
   
   test('Simple spawn test', () {
     EntityFactory<TestEntity> factory = new EntityFactory(handleConflictAcceptClient);
@@ -34,6 +41,7 @@ _afterWarmup() {
     
     expect(entity.id, 1);
     expect(entity.name, 'Test A');
+    expect(entity.date.millisecondsSinceEpoch, 1234567890);
     expect(entityShouldBePointer.id, 1);
     expect(entityShouldBePointer.name, 'Test A');
     expect(entityShouldNotBePointer.id, 2);
@@ -208,6 +216,19 @@ class TestEntity extends TestEntitySuperClass {
   set name(String value) => _name.value = notifyPropertyChange(NAME_SYMBOL, _name.value, value);
   
   //---------------------------------
+  // date
+  //---------------------------------
+
+  @Property(DATE_SYMBOL, 'date', DateTime)
+  DormProxy<DateTime> _date;
+
+  static const String DATE = 'date';
+  static const Symbol DATE_SYMBOL = const Symbol('orm_domain.TestEntity.date');
+
+  DateTime get date => _date.value;
+  set date(DateTime value) => _date.value = notifyPropertyChange(DATE_SYMBOL, _date.value, value);
+  
+  //---------------------------------
   // cyclicReference
   //---------------------------------
 
@@ -233,13 +254,17 @@ class TestEntity extends TestEntitySuperClass {
     ..property = 'name'
     ..propertySymbol = NAME_SYMBOL;
     
+    _date = new DormProxy()
+    ..property = 'date'
+    ..propertySymbol = DATE_SYMBOL;
+    
     _cyclicReference = new DormProxy()
     ..property = 'cyclicReference'
     ..propertySymbol = CYCLIC_REFERENCE_SYMBOL;
     
     assembler.registerProxies(
       this,
-      <DormProxy>[_name, _cyclicReference]
+      <DormProxy>[_name, _date, _cyclicReference]
     );
   }
   
