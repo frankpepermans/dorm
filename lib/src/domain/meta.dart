@@ -22,8 +22,9 @@ class Property {
   
   final Symbol propertySymbol;
   final String property;
+  final Type type;
   
-  const Property(this.propertySymbol, this.property);
+  const Property(this.propertySymbol, this.property, this.type);
   
   String toString() => 'property $property';
   

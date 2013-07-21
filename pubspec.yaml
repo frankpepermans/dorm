@@ -1,5 +1,5 @@
 name: dorm
-version: 0.3.7
+version: 0.3.8
 author: Frank Pepermans <frank@igindo.com>
 description: "Dorm is an ORM mapping on the client, the goal is to hook it up with\
   \ existing server-side ORM solutions (Hibernate, EntityFramework, ...)\r\n\r\nThe\

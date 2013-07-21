@@ -27,12 +27,12 @@ class EntityFactory<T> {
   //
   //---------------------------------
   
-  ObservableList<T> spawn(Iterable<Map<String, dynamic>> rawData, {DormProxy proxy}) {
+  ObservableList<T> spawn(Iterable<Map<String, dynamic>> rawData, Serializer serializer, {DormProxy proxy}) {
     ObservableList<T> results = new ObservableList<T>();
     Function spawner = _assembler._assemble;
     
     rawData.forEach(
-        (Map<String, dynamic> rawDataEntry) => results.add(spawner(rawDataEntry, proxy, _onConflict))
+        (Map<String, dynamic> rawDataEntry) => results.add(spawner(rawDataEntry, proxy, serializer, _onConflict))
     );
     
     return results;

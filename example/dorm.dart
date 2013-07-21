@@ -33,6 +33,12 @@ void main() {
   // it will run reflection on the client-side entities
   ormInitialize();
   
+  /*serializer.addRule(
+    String,
+    (String value) => 'testIn',
+    (String value) => 'testOut'
+  );*/
+  
   init();
   //benchmark();
 }

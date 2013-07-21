@@ -8,7 +8,7 @@ abstract class IExternalizable {
   //
   //-----------------------------------
   
-  void readExternal(Map<String, dynamic> data, OnConflictFunction onConflict);
-  void writeExternal(Map<String, dynamic> data);
+  void readExternal(Map<String, dynamic> data, Serializer serializer, OnConflictFunction onConflict);
+  void writeExternal(Map<String, dynamic> data, Serializer serializer);
   
 }

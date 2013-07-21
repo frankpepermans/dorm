@@ -1,6 +1,6 @@
 part of dorm;
 
-class SerializerJson<T> implements Serializer {
+class SerializerJson<T> extends SerializerBase {
   
   //-----------------------------------
   //
@@ -27,6 +27,8 @@ class SerializerJson<T> implements Serializer {
   List<Map<String, dynamic>> incoming(T data) => parse(data);
   
   String outgoing(dynamic data) {
+    Entity.serializerWorkaround = this;
+    
     if (
         (data is List) ||
         (data is Map)
@@ -35,6 +37,22 @@ class SerializerJson<T> implements Serializer {
     }
     
     return data.toString();
+  }
+  
+  dynamic convertIn(Type forType, dynamic inValue) {
+    _InternalConvertor convertor = _convertors[forType];
+    
+    if (convertor == null) return inValue;
+    
+    return _convertors[forType].incoming(inValue);
+  }
+  
+  dynamic convertOut(Type forType, dynamic outValue) {
+    _InternalConvertor convertor = _convertors[forType];
+    
+    if (convertor == null) return outValue;
+    
+    return _convertors[forType].outgoing(outValue);
   }
   
 }

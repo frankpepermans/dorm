@@ -1,6 +1,9 @@
 part of dorm;
 
-abstract class Entity extends ObservableBase implements IExternalizable {
+class Entity extends ObservableBase implements IExternalizable {
+  
+// ugly workaround because toJSON can not take in any arguments
+  static Serializer serializerWorkaround;
   
   //-----------------------------------
   //
@@ -99,7 +102,7 @@ abstract class Entity extends ObservableBase implements IExternalizable {
     return false;
   }
   
-  void readExternal(Map<String, dynamic> data, OnConflictFunction onConflict) {
+  void readExternal(Map<String, dynamic> data, Serializer serializer, OnConflictFunction onConflict) {
     EntityFactory<Entity> factory = new EntityFactory(onConflict);
     _ProxyEntry entry;
     List<_ProxyEntry> proxies;
@@ -123,23 +126,23 @@ abstract class Entity extends ObservableBase implements IExternalizable {
       if (entryValue is Map) {
         spawnList[0] = entryValue;
         
-        proxy._initialValue = factory.spawn(spawnList, proxy:proxy).first;
+        proxy._initialValue = factory.spawn(spawnList, serializer, proxy:proxy).first;
       } else if (entryValue is Iterable) {
-        proxy._initialValue = proxy.owner = new ObservableList.from(factory.spawn(entryValue));
+        proxy._initialValue = proxy.owner = new ObservableList.from(factory.spawn(entryValue, serializer));
       } else {
-        proxy._initialValue = entryValue;
+        proxy._initialValue = serializer.convertIn(entry.type, entryValue);
       }
     }
   }
   
-  void writeExternal(Map<String, dynamic> data) {
-    _writeExternalImpl(data, null);
+  void writeExternal(Map<String, dynamic> data, Serializer serializer) {
+    _writeExternalImpl(data, null, serializer);
   }
   
   String toJson({Map<String, Map<String, dynamic>> convertedEntities}) {
     Map<String, dynamic> jsonMap = new Map<String, dynamic>();
     
-    writeExternal(jsonMap);
+    writeExternal(jsonMap, serializerWorkaround);
     
     return stringify(jsonMap);
   }
@@ -184,7 +187,7 @@ abstract class Entity extends ObservableBase implements IExternalizable {
     );
   }
   
-  void _writeExternalImpl(Map<String, dynamic> data, Map<int, Map<String, dynamic>> convertedEntities) {
+  void _writeExternalImpl(Map<String, dynamic> data, Map<int, Map<String, dynamic>> convertedEntities, Serializer serializer) {
     data[SerializationType.ENTITY_TYPE] = _scan.refClassName;
     data[SerializationType.UID] = _uid;
     
@@ -221,10 +224,10 @@ abstract class Entity extends ObservableBase implements IExternalizable {
             } else {
               data[entry.property] = new Map<String, dynamic>();
               
-              subEntity._writeExternalImpl(data[entry.property], convertedEntities);
+              subEntity._writeExternalImpl(data[entry.property], convertedEntities, serializer);
             }
           } else {
-            data[entry.property] = entry.proxy.value;
+            data[entry.property] = serializer.convertOut(entry.type, entry.proxy.value);
           }
         }
       }

@@ -44,7 +44,7 @@ class ServiceBase {
             
             List<Map<String, dynamic>> result = serializer.incoming(request.responseText);
             
-            ObservableList<Entity> spawned = factory.spawn(result);
+            ObservableList<Entity> spawned = factory.spawn(result, serializer);
             
             stopwatch.stop();
             

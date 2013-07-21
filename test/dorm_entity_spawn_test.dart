@@ -22,9 +22,9 @@ _afterWarmup() {
   test('Simple spawn test', () {
     EntityFactory<TestEntity> factory = new EntityFactory(handleConflictAcceptClient);
     
-    TestEntity entity = factory.spawn(serializer.incoming(rawDataA)).first;
-    TestEntity entityShouldBePointer = factory.spawn(serializer.incoming(rawDataA)).first;
-    TestEntity entityShouldNotBePointer = factory.spawn(serializer.incoming(rawDataB)).first;
+    TestEntity entity = factory.spawn(serializer.incoming(rawDataA), serializer).first;
+    TestEntity entityShouldBePointer = factory.spawn(serializer.incoming(rawDataA), serializer).first;
+    TestEntity entityShouldNotBePointer = factory.spawn(serializer.incoming(rawDataB), serializer).first;
     
     entityShouldNotBePointer.cyclicReference = entity;
     entity.cyclicReference = entityShouldNotBePointer;
@@ -59,13 +59,13 @@ _afterWarmup() {
     TestEntity entity;
     
     // first test, after a client change, reload the entity and expect it not to be overwritten
-    entity = factory.spawn(serializer.incoming(rawDataA)).first;
+    entity = factory.spawn(serializer.incoming(rawDataA), serializer).first;
     
     entity.name = 'Test C';
     
     expect(entity.isDirty(), true);
     
-    TestEntity spawnedEntity = factory.spawn(serializer.incoming(rawDataA)).first; // reload and accept client
+    TestEntity spawnedEntity = factory.spawn(serializer.incoming(rawDataA), serializer).first; // reload and accept client
     
     expect(entity.name, 'Test C');
     expect((entity == spawnedEntity), true);
@@ -77,13 +77,13 @@ _afterWarmup() {
     TestEntity entity;
     
     // first test, after a client change, reload the entity and expect it not to be overwritten
-    entity = factory.spawn(serializer.incoming(rawDataA)).first;
+    entity = factory.spawn(serializer.incoming(rawDataA), serializer).first;
     
     entity.name = 'Test C';
     
     expect(entity.isDirty(), true);
     
-    TestEntity spawnedEntity = factory.spawn(serializer.incoming(rawDataA)).first; // reload and accept server
+    TestEntity spawnedEntity = factory.spawn(serializer.incoming(rawDataA), serializer).first; // reload and accept server
     
     expect(entity.name, 'Test A');
     expect((entity == spawnedEntity), true);
@@ -106,13 +106,11 @@ void _runBenchmark() {
   
   Stopwatch stopwatch = new Stopwatch()..start();
   
-  factory.spawn(serializer.incoming('[' + jsonRaw.join(',') + ']'));
+  factory.spawn(serializer.incoming('[' + jsonRaw.join(',') + ']'), serializer);
   
   stopwatch.stop();
   
   print('completed in ${stopwatch.elapsedMilliseconds} ms');
-  
-  new Timer(new Duration(seconds:1), _runBenchmark);
 }
 
 ConflictManager handleConflictAcceptClient(Entity serverEntity, Entity clientEntity) {
@@ -142,7 +140,7 @@ class TestEntitySuperClass extends Entity {
   // id
   //---------------------------------
 
-  @Property(ID_SYMBOL, 'id')
+  @Property(ID_SYMBOL, 'id', int)
   @Id()
   @NotNullable()
   @DefaultValue(0)
@@ -199,7 +197,7 @@ class TestEntity extends TestEntitySuperClass {
   // name
   //---------------------------------
 
-  @Property(NAME_SYMBOL, 'name')
+  @Property(NAME_SYMBOL, 'name', String)
   @LabelField()
   DormProxy<String> _name;
 
@@ -213,7 +211,7 @@ class TestEntity extends TestEntitySuperClass {
   // cyclicReference
   //---------------------------------
 
-  @Property(CYCLIC_REFERENCE_SYMBOL, 'cyclicReference')
+  @Property(CYCLIC_REFERENCE_SYMBOL, 'cyclicReference', TestEntity)
   DormProxy<TestEntity> _cyclicReference;
 
   static const String CYCLIC_REFERENCE = 'cyclicReference';

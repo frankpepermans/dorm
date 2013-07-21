@@ -130,4 +130,6 @@ part 'src/serialization/serialization_type.dart';
 part 'src/serialization/serializer.dart';
 part 'src/serialization/serializer_json.dart';
 
+typedef SerializerBase = Object with SerializerMixin;
+
 typedef ConflictManager OnConflictFunction(Entity serverEntity, Entity clientEntity);

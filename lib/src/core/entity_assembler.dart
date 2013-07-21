@@ -150,7 +150,7 @@ class EntityAssembler {
     throw new DormError('Scan for entity not found');
   }
   
-  Entity _assemble(Map<String, dynamic> rawData, DormProxy owningProxy, OnConflictFunction onConflict) {
+  Entity _assemble(Map<String, dynamic> rawData, DormProxy owningProxy, Serializer serializer, OnConflictFunction onConflict) {
     final String refClassName = rawData[SerializationType.ENTITY_TYPE];
     EntityScan scan;
     Entity spawnee, localNonPointerEntity;
@@ -169,7 +169,7 @@ class EntityAssembler {
       if (scan.refClassName == refClassName) {
         spawnee = scan._contructorMethod();
         
-        spawnee.readExternal(rawData, onConflict);
+        spawnee.readExternal(rawData, serializer, onConflict);
         spawnee._scan.buildKey();
         
         localNonPointerEntity = _existingFromSpawnRegistry(spawnee);

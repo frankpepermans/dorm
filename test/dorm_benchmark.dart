@@ -40,7 +40,7 @@ void _runBenchmark() {
   
   stopwatch = new Stopwatch()..start();
   
-  factory.spawn(parsed);
+  factory.spawn(parsed, serializer);
   
   stopwatch.stop();
   
@@ -78,7 +78,7 @@ class TestEntitySuperClass extends Entity {
   // id
   //---------------------------------
 
-  @Property(ID_SYMBOL, 'id')
+  @Property(ID_SYMBOL, 'id', int)
   @Id()
   @NotNullable()
   @DefaultValue(0)
@@ -135,7 +135,7 @@ class TestEntity extends TestEntitySuperClass {
   // name
   //---------------------------------
 
-  @Property(NAME_SYMBOL, 'name')
+  @Property(NAME_SYMBOL, 'name', String)
   @LabelField()
   DormProxy<String> _name;
 
@@ -149,7 +149,7 @@ class TestEntity extends TestEntitySuperClass {
   // type
   //---------------------------------
 
-  @Property(TYPE_SYMBOL, 'type')
+  @Property(TYPE_SYMBOL, 'type', String)
   DormProxy<String> _type;
 
   static const String TYPE = 'type';
@@ -162,7 +162,7 @@ class TestEntity extends TestEntitySuperClass {
   // cyclicReference
   //---------------------------------
 
-  @Property(CYCLIC_REFERENCE_SYMBOL, 'cyclicReference')
+  @Property(CYCLIC_REFERENCE_SYMBOL, 'cyclicReference', TestEntity)
   DormProxy<TestEntity> _cyclicReference;
 
   static const String CYCLIC_REFERENCE = 'cyclicReference';
