@@ -104,8 +104,8 @@ library dorm;
 
 import 'dart:async';
 import 'dart:core';
-import 'dart:html';
 import 'dart:json';
+import 'dart:html';
 import 'dart:mirrors';
 
 import 'package:observe/observe.dart';

@@ -11,7 +11,7 @@ abstract class Serializer<T> {
   List<Map<String, dynamic>> incoming(T data);
   String outgoing(dynamic data);
   
-  void addRule(Type forType, dynamic incoming(), dynamic outgoing());
+  void addRule(Type forType, dynamic incoming(dynamic value), dynamic outgoing(dynamic value));
   void removeRule(Type forType);
   
   dynamic convertIn(Type forType, dynamic inValue);
@@ -38,7 +38,7 @@ abstract class SerializerMixin<T> implements Serializer {
   List<Map<String, dynamic>> incoming(T data) => data;
   String outgoing(dynamic data) => data;
   
-  void addRule(Type forType, dynamic incoming(), dynamic outgoing()) {
+  void addRule(Type forType, dynamic incoming(dynamic value), dynamic outgoing(dynamic value)) {
     _convertors[forType] = new _InternalConvertor(incoming, outgoing);
   }
   
