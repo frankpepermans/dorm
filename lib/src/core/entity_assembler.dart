@@ -110,29 +110,20 @@ class EntityAssembler {
     
     EntityScan scan = entity._scan;
     List<_ProxyEntry> proxyEntryList = scan._proxies;
-    int i = proxyEntryList.length;
-    int j;
+    int i = proxies.length, len, j;
     
     while (i > 0) {
-      entry = proxyEntryList[--i];
+      proxy = proxies[--i];
       
-      j = proxies.length;
+      entry = proxyEntryList.firstWhere(
+          (_ProxyEntry entry) => (entry.property == proxy.property)
+      );
       
-      while (j > 0) {
-        proxy = proxies[--j];
-        
-        if (entry.property == proxy.property) {
-          scan.updateProxyWithMetadata(proxy);
-          
-          entry.proxy = proxy;
-          
-          entity._proxies.add(proxy);
-          
-          proxies.remove(proxy);
-          
-          break;
-        }
-      }
+      scan.updateProxyWithMetadata(proxy);
+      
+      entry.proxy = proxy;
+      
+      entity._proxies.add(proxy);
     }
   }
   
