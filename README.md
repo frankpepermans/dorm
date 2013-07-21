@@ -8,7 +8,7 @@ and load and/or commit entities asynchronously via services.
 Dorm supports :
 - cyclic references (i.e. foo.bar.listOfFoos) via pointers
 - default serializer for JSON data
-- Entities use the [observable] library, an [Entity] extends ObservableBase, and an [Entity] collection is an ObservableList
+- Entities use the [observe] library, an [Entity] extends ObservableBase, and an [Entity] collection is an ObservableList
 
 Dorm will soon support :
 - lazy loading
