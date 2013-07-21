@@ -52,7 +52,7 @@ Dorm entities support inheritance.
 Dorm entities use a proxy,
 you should generate [Entity] properties in the following way:
 
-```Dorm entity
+```
 	@Property(BAR_SYMBOL, 'bar', int)
 	@Id()
 	@NotNullable()
@@ -69,7 +69,7 @@ you should generate [Entity] properties in the following way:
 
 Then, in the [Entity] constructor body, you need to register this property as following:
 
-```Dorm entity
+```
 	EntityAssembler assembler = new EntityAssembler();
 	
 	_bar = new DormProxy()
@@ -85,7 +85,7 @@ Finally, you must also define a library file which contains all your generated e
 
 with this file, generate the following method:
 
-```Dorm domain library file
+```
 void ormInitialize() {
 	EntityAssembler assembler = new EntityAssembler();
 
@@ -103,7 +103,7 @@ By default, Dorm uses a JSON serializer, but you could write your own serializer
 Your client services must use the serializer when dealing with incoming/outgoing data,
 here's an example of a service's body:
 
-```Dorm service
+```
 	final Serializer serializer = new SerializerJson<String>();
 	
 	Future serviceMethodNameHere(String operation, Map<String, dynamic> arguments) {
@@ -134,7 +134,7 @@ here's an example of a service's body:
 The JSON serializer only handles the basic data types (numerics, String, basic Lists and Maps, ...)
 To support other types, you can set type handlers to the serializer as following :
 
-```Dorm serializer rules
+```
 	serializer.addRule(
       DateTime,
       (int value) => (value != null) ? new DateTime.fromMillisecondsSinceEpoch(value, isUtc:true) : null,
@@ -155,7 +155,7 @@ then when the serialization is needed, loop over the [DTO](s) and in doing so,
 keep a reference to the entities that are already serialized.
 
 If a cyclic reference is detected, then instead of serializing the [DTO] values, do this instead:
-```Dorm serializer rules
+```
 	{
 		"?t":"path.to.entities.Foo", // the entity type, including the class path
 		"?p":true, // indicates that this is a cyclic reference
