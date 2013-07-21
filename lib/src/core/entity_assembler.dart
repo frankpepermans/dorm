@@ -154,14 +154,9 @@ class EntityAssembler {
     final String refClassName = rawData[SerializationType.ENTITY_TYPE];
     EntityScan scan;
     Entity spawnee, localNonPointerEntity;
-    DormProxy proxy;
-    List<_ProxyEntry> entityProxies;
-    List<DormProxy> propProxies;
-    int i, j;
+    int i = _entityScans.length;
     
     if (onConflict == null) onConflict = _handleConflictAcceptClient;
-    
-    i = _entityScans.length;
     
     while (i > 0) {
       scan = _entityScans[--i];
@@ -193,17 +188,13 @@ class EntityAssembler {
           
           _keyChain.remove(spawnee);
         } else {
-          propProxies = spawnee._proxies;
-          
-          j = propProxies.length;
-          
-          while (j > 0) {
-            proxy = propProxies[--j];
-            
-            if (proxy.owner != null) {
-              _collections.add(proxy.owner);
+          spawnee._proxies.forEach(
+            (DormProxy proxy) {
+              if (proxy.owner != null) {
+                _collections.add(proxy.owner);
+              }
             }
-          }
+          );
           
           _updateCollectionsWith(spawnee);
         }

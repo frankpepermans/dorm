@@ -106,7 +106,7 @@ class Entity extends ObservableBase implements IExternalizable {
     EntityFactory<Entity> factory = new EntityFactory(onConflict);
     _ProxyEntry entry;
     List<_ProxyEntry> proxies;
-    Iterable<Map<String, dynamic>> spawnList = new List<Map<String, dynamic>>(1);
+    List<Map<String, dynamic>> spawnList = new List<Map<String, dynamic>>(1);
     DormProxy proxy;
     dynamic entryValue;
     
@@ -114,25 +114,23 @@ class Entity extends ObservableBase implements IExternalizable {
     
     proxies = _isPointer ? _scan._identityProxies : _scan._proxies;
     
-    int i = proxies.length;
-    
-    while (i > 0) {
-      entry = proxies[--i];
-      
-      entryValue = data[entry.property];
-      
-      proxy = entry.proxy;
-      
-      if (entryValue is Map) {
-        spawnList[0] = entryValue;
-        
-        proxy._initialValue = factory.spawn(spawnList, serializer, proxy:proxy).first;
-      } else if (entryValue is Iterable) {
-        proxy._initialValue = proxy.owner = new ObservableList.from(factory.spawn(entryValue, serializer));
-      } else {
-        proxy._initialValue = serializer.convertIn(entry.type, entryValue);
-      }
-    }
+    proxies.forEach(
+         (_ProxyEntry entry) {
+           entryValue = data[entry.property];
+           
+           proxy = entry.proxy;
+           
+           if (entryValue is Map) {
+             spawnList[0] = entryValue;
+             
+             proxy._initialValue = factory.spawn(spawnList, serializer, proxy:proxy).first;
+           } else if (entryValue is Iterable) {
+             proxy._initialValue = proxy.owner = new ObservableList.from(factory.spawn(entryValue, serializer));
+           } else {
+             proxy._initialValue = serializer.convertIn(entry.type, entryValue);
+           }
+         }
+    );
   }
   
   void writeExternal(Map<String, dynamic> data, Serializer serializer) {
