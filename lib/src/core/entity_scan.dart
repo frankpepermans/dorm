@@ -12,9 +12,9 @@ class EntityScan {
   MetadataCache _metadataCache = new MetadataCache();
   Function _contructorMethod;
   
-  List<_ProxyEntry> _proxies = new List<_ProxyEntry>();
-  List<_ProxyEntry> _identityProxies = new List<_ProxyEntry>();
-  List<EntityScan> _keyCollection;
+  List<_ProxyEntry> _proxies = <_ProxyEntry>[];
+  List<_ProxyEntry> _identityProxies = <_ProxyEntry>[];
+  Queue<EntityScan> _keyCollection;
   
   //---------------------------------
   //

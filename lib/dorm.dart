@@ -103,6 +103,7 @@
 library dorm;
 
 import 'dart:async';
+import 'dart:collection';
 import 'dart:core';
 import 'dart:json';
 import 'dart:mirrors';

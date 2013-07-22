@@ -16,7 +16,7 @@ class EntityKey {
   //
   //---------------------------------
   
-  List<EntityScan> entityScans = <EntityScan>[];
+  Queue<EntityScan> entityScans = new Queue<EntityScan>();
   
   //---------------------------------
   //
@@ -61,7 +61,7 @@ class EntityKey {
       (EntityScan scan) => (scan.entity != forEntity)    
   );
   
-  List<EntityScan> getExistingEntityScans(Entity forEntity) => forEntity._scan._keyCollection;
+  Queue<EntityScan> getExistingEntityScans(Entity forEntity) => forEntity._scan._keyCollection;
   
   //---------------------------------
   //
