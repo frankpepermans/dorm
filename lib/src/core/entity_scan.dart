@@ -9,7 +9,7 @@ class EntityScan {
   //---------------------------------
   
   EntityScan _original;
-  MetadataCache _metadataCache;
+  MetadataCache _metadataCache = new MetadataCache();
   Function _contructorMethod;
   
   List<_ProxyEntry> _proxies = new List<_ProxyEntry>();
@@ -32,21 +32,10 @@ class EntityScan {
   
   void buildKey() {
     EntityKey nextKey = EntityAssembler._instance._keyChain;
-    _ProxyEntry entry;
-    int code;
-    int i = _identityProxies.length;
-    dynamic value;
     
-    while (i > 0) {
-      entry = _identityProxies[--i];
-      
-      code = entry.proxy.propertySymbol.hashCode;
-      value = entry.proxy._value;
-      
-      nextKey[code] = value;
-      
-      nextKey = nextKey[[code, value]];
-    }
+    _identityProxies.forEach(
+      (_ProxyEntry entry) =>  nextKey = nextKey._setKeyValue(entry.proxy.propertySymbol.hashCode, entry.proxy._value)   
+    );
     
     if (_keyCollection != nextKey.entityScans) {
       if (_keyCollection != null) _keyCollection.remove(this);
@@ -61,15 +50,11 @@ class EntityScan {
   //
   //---------------------------------
   
-  EntityScan(this.refClassName, this._contructorMethod) {
-    _metadataCache = new MetadataCache();
-  }
+  EntityScan(this.refClassName, this._contructorMethod);
   
   EntityScan.fromScan(EntityScan original, Entity entity) {
     List<_ProxyEntry> originalProxies = original._proxies;
-    List<_ProxyEntry> originalIdentityProxies = original._identityProxies;
     _ProxyEntry clonedEntry;
-    int i = originalProxies.length;
     
     this._original = original;
     this.entity = entity;
@@ -79,13 +64,15 @@ class EntityScan {
     this.refClassName = original.refClassName;
     this.isMutableEntity = original.isMutableEntity;
     
-    while (i > 0) {
-      clonedEntry = originalProxies[--i].clone();
-      
-      this._proxies.add(clonedEntry);
-      
-      if (clonedEntry.isIdentity) this._identityProxies.add(clonedEntry);
-    }
+    originalProxies.forEach(
+       (_ProxyEntry entry) {
+         clonedEntry = entry.clone();
+         
+         this._proxies.add(clonedEntry);
+         
+         if (clonedEntry.isIdentity) this._identityProxies.add(clonedEntry);
+       }
+    );
   }
   
   //---------------------------------

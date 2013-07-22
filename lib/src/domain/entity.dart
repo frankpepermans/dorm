@@ -36,39 +36,27 @@ class Entity extends ObservableBase implements IExternalizable {
   //-----------------------------------
   
   dynamic operator [](String propertyName) {
-    _ProxyEntry entry;
-    List<_ProxyEntry> proxies = _scan._proxies;
-    int i = proxies.length;
+    _ProxyEntry result = _scan._proxies.firstWhere(
+      (_ProxyEntry entry) => (entry.property == propertyName),
+      orElse: () => null
+    );
     
-    while (i > 0) {
-      entry = proxies[--i];
-      
-      if (entry.property == propertyName) {
-        return entry.proxy.value;
-      }
-    }
-    
-    return null;
+    return (result != null) ? result.proxy._value : null;
   }
   
   void operator []=(String propertyName, dynamic propertyValue) {
-    _ProxyEntry entry;
-    List<_ProxyEntry> proxies = _scan._proxies;
-    int i = proxies.length;
+    _ProxyEntry result = _scan._proxies.firstWhere(
+        (_ProxyEntry entry) => (entry.property == propertyName),
+        orElse: () => null
+    );
     
-    while (i > 0) {
-      entry = proxies[--i];
-      
-      if (entry.property == propertyName) {
-        entry.proxy.value = notifyPropertyChange(
-            entry.proxy.propertySymbol, 
-            entry.proxy.value,
-            propertyValue
-        );
-      }
+    if (result != null) {
+      result.proxy._value = notifyPropertyChange(
+          result.proxy.propertySymbol, 
+          result.proxy._value,
+          propertyValue
+      );
     }
-    
-    return null;
   }
   
   //-----------------------------------

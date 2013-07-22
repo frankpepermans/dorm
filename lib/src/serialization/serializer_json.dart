@@ -42,17 +42,13 @@ class SerializerJson<T> extends SerializerBase {
   dynamic convertIn(Type forType, dynamic inValue) {
     _InternalConvertor convertor = _convertors[forType];
     
-    if (convertor == null) return inValue;
-    
-    return _convertors[forType].incoming(inValue);
+    return (convertor == null) ? inValue : convertor.incoming(inValue);
   }
   
   dynamic convertOut(Type forType, dynamic outValue) {
     _InternalConvertor convertor = _convertors[forType];
     
-    if (convertor == null) return outValue;
-    
-    return _convertors[forType].outgoing(outValue);
+    return (convertor == null) ? outValue : convertor.outgoing(outValue);
   }
   
 }

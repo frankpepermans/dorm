@@ -33,9 +33,7 @@ class EntityKey {
   //---------------------------------
   
   void operator []= (int key, dynamic value) {
-    if (_map[key] == null) _map[key] = new Map<dynamic, EntityKey>();
-    
-    if (_map[key][value] == null) _map[key][value] = new EntityKey();
+    _setKeyValue(key, value);
   }
   
   EntityKey operator [] (List otherKey) => _map[otherKey[0]][otherKey[1]];
@@ -64,4 +62,33 @@ class EntityKey {
   );
   
   List<EntityScan> getExistingEntityScans(Entity forEntity) => forEntity._scan._keyCollection;
+  
+  //---------------------------------
+  //
+  // Private methods
+  //
+  //---------------------------------
+  
+  EntityKey _setKeyValue(int key, dynamic value) {
+    EntityKey returnValue;
+    Map<dynamic, EntityKey> mainKey = _map[key];
+    
+    if (mainKey == null) {
+      mainKey = _map[key] = new Map<dynamic, EntityKey>();
+      
+      returnValue = new EntityKey();
+      
+      mainKey[value] = returnValue;
+      
+      return returnValue;
+    } else if (!mainKey.containsKey(value)) {
+      returnValue = new EntityKey();
+      
+      mainKey[value] = returnValue;
+      
+      return returnValue;
+    }
+    
+    return mainKey[value];
+  }
 }
