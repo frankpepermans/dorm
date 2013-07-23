@@ -40,7 +40,7 @@ class EntityScan {
     if (_keyCollection != nextKey.entityScans) {
       if (_keyCollection != null) _keyCollection.remove(this);
       
-      _keyCollection = nextKey.entityScans..add(this);
+      _keyCollection = nextKey.entityScans;
     }
   }
   

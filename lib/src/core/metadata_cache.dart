@@ -8,7 +8,7 @@ class MetadataCache {
   //
   //---------------------------------
   
-  List<_PropertyMetadataCache> propertyMetadataCacheList = <_PropertyMetadataCache>[];
+  Map<String, _PropertyMetadataCache> propertyMetadataCache = new Map<String, _PropertyMetadataCache>();
   
   //---------------------------------
   //
@@ -25,15 +25,19 @@ class MetadataCache {
   //---------------------------------
   
   void registerTagForProperty(String property, Object reflectee) {
-    _PropertyMetadataCache propertyMetadataCache = _obtainTagForProperty(property);
+    _PropertyMetadataCache cache = propertyMetadataCache[property];
+    
+    if (cache == null) {
+      cache = propertyMetadataCache[property] = new _PropertyMetadataCache(property);
+    }
     
     switch (reflectee.runtimeType) {
-      case Id:              propertyMetadataCache.isId = true;                                            break;
-      case Transient:       propertyMetadataCache.isTransient = true;                                     break;
-      case NotNullable:     propertyMetadataCache.isNullable = false;                                     break;
-      case DefaultValue:    propertyMetadataCache.initialValue = (reflectee as DefaultValue).value;       break;
-      case LabelField:      propertyMetadataCache.isLabelField = true;                                    break;
-      case Immutable:       propertyMetadataCache.isMutable = false;                                      break;
+      case Id:              cache.isId = true;                                            break;
+      case Transient:       cache.isTransient = true;                                     break;
+      case NotNullable:     cache.isNullable = false;                                     break;
+      case DefaultValue:    cache.initialValue = (reflectee as DefaultValue).value;       break;
+      case LabelField:      cache.isLabelField = true;                                    break;
+      case Immutable:       cache.isMutable = false;                                      break;
     }
   }
   
@@ -44,28 +48,19 @@ class MetadataCache {
   //---------------------------------
   
   void _updateProxyWithMetadata(DormProxy proxy, EntityScan scan) {
-    _PropertyMetadataCache propertyMetadataCache = _obtainTagForProperty(proxy.property);
+    _PropertyMetadataCache cache = propertyMetadataCache[proxy.property];
     
-    proxy.isId = propertyMetadataCache.isId;
-    proxy.isTransient = propertyMetadataCache.isTransient;
-    proxy.isNullable = propertyMetadataCache.isNullable;
-    proxy.isLabelField = propertyMetadataCache.isLabelField;
-    proxy.isMutable = (scan.isMutableEntity && propertyMetadataCache.isMutable);
+    if (cache == null) {
+      cache = propertyMetadataCache[proxy.property] = new _PropertyMetadataCache(proxy.property);
+    }
     
-    proxy._initialValue = propertyMetadataCache.initialValue;
-  }
-  
-  _PropertyMetadataCache _obtainTagForProperty(String property) {
-    return propertyMetadataCacheList.firstWhere(
-      (_PropertyMetadataCache entry) => (entry.property == property),
-      orElse: () {
-        _PropertyMetadataCache entry = new _PropertyMetadataCache(property);
-        
-        propertyMetadataCacheList.add(entry);
-        
-        return entry;
-      }
-    );
+    proxy.isId = cache.isId;
+    proxy.isTransient = cache.isTransient;
+    proxy.isNullable = cache.isNullable;
+    proxy.isLabelField = cache.isLabelField;
+    proxy.isMutable = (scan.isMutableEntity && cache.isMutable);
+    
+    proxy._initialValue = cache.initialValue;
   }
 }
 

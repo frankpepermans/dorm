@@ -100,7 +100,7 @@ class EntityAssembler {
   }
   
   void registerProxies(Entity entity, List<DormProxy> proxies) {
-    _ProxyEntry entry;
+    _ProxyEntry matchingEntry;
     DormProxy proxy;
     
     if (entity._uid == null) {
@@ -110,18 +110,18 @@ class EntityAssembler {
     
     EntityScan scan = entity._scan;
     List<_ProxyEntry> proxyEntryList = scan._proxies;
-    int i = proxies.length, len, j;
+    int i = proxies.length;
     
     while (i > 0) {
       proxy = proxies[--i];
       
-      entry = proxyEntryList.firstWhere(
+      matchingEntry = proxyEntryList.firstWhere(
           (_ProxyEntry entry) => (entry.property == proxy.property)
       );
       
       scan.updateProxyWithMetadata(proxy);
       
-      entry.proxy = proxy;
+      matchingEntry.proxy = proxy;
       
       entity._proxies.add(proxy);
     }
@@ -143,60 +143,51 @@ class EntityAssembler {
   
   Entity _assemble(Map<String, dynamic> rawData, DormProxy owningProxy, Serializer serializer, OnConflictFunction onConflict) {
     final String refClassName = rawData[SerializationType.ENTITY_TYPE];
-    EntityScan scan;
+    EntityScan entityScan;
     Entity spawnee, localNonPointerEntity;
     int i = _entityScans.length;
     
     if (onConflict == null) onConflict = _handleConflictAcceptClient;
     
-    while (i > 0) {
-      scan = _entityScans[--i];
+    entityScan = _entityScans.firstWhere(
+        (EntityScan scan) => (scan.refClassName == refClassName),
+        orElse: () {
+          throw new DormError('Scan for entity not found');
+          
+          return null;
+        }
+    );
+    
+    spawnee = entityScan._contructorMethod();
+    
+    spawnee.readExternal(rawData, serializer, onConflict);
+    spawnee._scan.buildKey();
+    
+    localNonPointerEntity = _existingFromSpawnRegistry(spawnee);
+    
+    _solveConflictsIfAny(
+        spawnee,
+        localNonPointerEntity, 
+        onConflict
+    );
+    
+    if (localNonPointerEntity != null) return localNonPointerEntity;
+    
+    if (spawnee._isPointer) {
+      if (owningProxy != null) _pendingProxies.add(owningProxy);
+    } else {
+      spawnee._scan._keyCollection.add(spawnee._scan);
       
-      if (scan.refClassName == refClassName) {
-        spawnee = scan._contructorMethod();
-        
-        spawnee.readExternal(rawData, serializer, onConflict);
-        spawnee._scan.buildKey();
-        
-        localNonPointerEntity = _existingFromSpawnRegistry(spawnee);
-        
-        _solveConflictsIfAny(
-            spawnee,
-            localNonPointerEntity, 
-            onConflict
-        );
-        
-        if (localNonPointerEntity != null) {
-          _keyChain.remove(spawnee);
-          
-          return localNonPointerEntity;
-        }
-        
-        if (spawnee._isPointer) {
-          if (owningProxy != null) {
-            _pendingProxies.add(owningProxy);
+      spawnee._proxies.forEach(
+          (DormProxy proxy) {
+            if (proxy.owner != null) _collections.add(proxy.owner);
           }
-          
-          _keyChain.remove(spawnee);
-        } else {
-          spawnee._proxies.forEach(
-            (DormProxy proxy) {
-              if (proxy.owner != null) {
-                _collections.add(proxy.owner);
-              }
-            }
-          );
-          
-          _updateCollectionsWith(spawnee);
-        }
-        
-        return spawnee;
-      }
+      );
+      
+      _updateCollectionsWith(spawnee);
     }
     
-    throw new DormError('Scan for entity not found');
-    
-    return null;
+    return spawnee;
   }
   
   void _solveConflictsIfAny(Entity spawnee, Entity existingEntity, OnConflictFunction onConflict) {
