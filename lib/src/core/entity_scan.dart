@@ -34,7 +34,7 @@ class EntityScan {
     EntityKey nextKey = EntityAssembler._instance._keyChain;
     
     _identityProxies.forEach(
-      (_ProxyEntry entry) =>  nextKey = nextKey._setKeyValue(entry.proxy.propertySymbol.hashCode, entry.proxy._value)   
+      (_ProxyEntry entry) =>  nextKey = nextKey._setKeyValue(entry.propertySymbol, entry.proxy._value)   
     );
     
     if (_keyCollection != nextKey.entityScans) {
@@ -81,16 +81,9 @@ class EntityScan {
   //
   //---------------------------------
   
-  void addProxy(Property property, bool isIdentity) {
-    _ProxyEntry entry = new _ProxyEntry(property.property, property.type, isIdentity);
-    
-    _proxies.add(entry);
-    
-    if (isIdentity) _identityProxies.add(entry);
-  }
-  
   void registerMetadataUsing(VariableMirror mirror) {
     InstanceMirror instanceMirror;
+    _ProxyEntry entry;
     Property property;
     int i = mirror.metadata.length;
     int j;
@@ -103,6 +96,8 @@ class EntityScan {
       if (instanceMirror.reflectee is Property) {
         property = instanceMirror.reflectee as Property;
         
+        entry = new _ProxyEntry(property.property, property.propertySymbol, property.type);
+        
         isIdentity = false;
         
         j = mirror.metadata.length;
@@ -110,17 +105,19 @@ class EntityScan {
         while (j > 0) {
           metatag = mirror.metadata[--j].reflectee;
           
-          _metadataCache.registerTagForProperty(property.property, metatag);
+          _metadataCache.registerTagForProperty(entry, metatag);
           
           if (metatag is Id) isIdentity = true;
         }
         
-        addProxy(property, isIdentity);
+        entry.isIdentity = isIdentity;
+        
+        _proxies.add(entry);
+        
+        if (isIdentity) _identityProxies.add(entry);
       }
     }
   }
-  
-  void updateProxyWithMetadata(DormProxy proxy) => _metadataCache._updateProxyWithMetadata(proxy, this);
 }
 
 //---------------------------------
@@ -136,13 +133,15 @@ class EntityScan {
 class _ProxyEntry {
   
   final String property;
+  final Symbol propertySymbol;
   final Type type;
-  final bool isIdentity;
   
+  bool isIdentity;
   DormProxy proxy;
+  _PropertyMetadataCache metadataCache;
   
-  _ProxyEntry(this.property, this.type, this.isIdentity);
+  _ProxyEntry(this.property, this.propertySymbol, this.type);
   
-  _ProxyEntry clone() => new _ProxyEntry(property, type, isIdentity);
+  _ProxyEntry clone() => new _ProxyEntry(property, propertySymbol, type)..metadataCache = metadataCache..isIdentity = isIdentity;
   
 }

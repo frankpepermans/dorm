@@ -15,7 +15,7 @@ class Entity extends ObservableBase implements IExternalizable {
   Map _source;
   EntityScan _scan;
   bool _isPointer;
-  int _uid;
+  int get _uid => hashCode;
   
   //-----------------------------------
   //

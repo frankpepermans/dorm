@@ -4,14 +4,6 @@ class MetadataCache {
   
   //---------------------------------
   //
-  // Public properties
-  //
-  //---------------------------------
-  
-  Map<String, _PropertyMetadataCache> propertyMetadataCache = new Map<String, _PropertyMetadataCache>();
-  
-  //---------------------------------
-  //
   // Constructor
   //
   //---------------------------------
@@ -24,20 +16,16 @@ class MetadataCache {
   //
   //---------------------------------
   
-  void registerTagForProperty(String property, Object reflectee) {
-    _PropertyMetadataCache cache = propertyMetadataCache[property];
-    
-    if (cache == null) {
-      cache = propertyMetadataCache[property] = new _PropertyMetadataCache(property);
-    }
+  void registerTagForProperty(_ProxyEntry entry, Object reflectee) {
+    if (entry.metadataCache == null) entry.metadataCache = new _PropertyMetadataCache(entry.property);
     
     switch (reflectee.runtimeType) {
-      case Id:              cache.isId = true;                                            break;
-      case Transient:       cache.isTransient = true;                                     break;
-      case NotNullable:     cache.isNullable = false;                                     break;
-      case DefaultValue:    cache.initialValue = (reflectee as DefaultValue).value;       break;
-      case LabelField:      cache.isLabelField = true;                                    break;
-      case Immutable:       cache.isMutable = false;                                      break;
+      case Id:              entry.metadataCache.isId = true;                                            break;
+      case Transient:       entry.metadataCache.isTransient = true;                                     break;
+      case NotNullable:     entry.metadataCache.isNullable = false;                                     break;
+      case DefaultValue:    entry.metadataCache.initialValue = (reflectee as DefaultValue).value;       break;
+      case LabelField:      entry.metadataCache.isLabelField = true;                                    break;
+      case Immutable:       entry.metadataCache.isMutable = false;                                      break;
     }
   }
   
@@ -47,20 +35,16 @@ class MetadataCache {
   //
   //---------------------------------
   
-  void _updateProxyWithMetadata(DormProxy proxy, EntityScan scan) {
-    _PropertyMetadataCache cache = propertyMetadataCache[proxy.property];
+  void _updateProxyWithMetadata(_ProxyEntry entry, EntityScan scan) {
+    if (entry.metadataCache == null) entry.metadataCache = new _PropertyMetadataCache(entry.property);
     
-    if (cache == null) {
-      cache = propertyMetadataCache[proxy.property] = new _PropertyMetadataCache(proxy.property);
-    }
+    entry.proxy.isId = entry.metadataCache.isId;
+    entry.proxy.isTransient = entry.metadataCache.isTransient;
+    entry.proxy.isNullable = entry.metadataCache.isNullable;
+    entry.proxy.isLabelField = entry.metadataCache.isLabelField;
+    entry.proxy.isMutable = (scan.isMutableEntity && entry.metadataCache.isMutable);
     
-    proxy.isId = cache.isId;
-    proxy.isTransient = cache.isTransient;
-    proxy.isNullable = cache.isNullable;
-    proxy.isLabelField = cache.isLabelField;
-    proxy.isMutable = (scan.isMutableEntity && cache.isMutable);
-    
-    proxy._initialValue = cache.initialValue;
+    entry.proxy._initialValue = entry.metadataCache.initialValue;
   }
 }
 

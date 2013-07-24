@@ -8,7 +8,7 @@ class EntityKey {
   //
   //---------------------------------
   
-  Map<int, Map<dynamic, EntityKey>> _map = new Map<int, Map<dynamic, EntityKey>>();
+  Map<Symbol, Map<dynamic, EntityKey>> _map = new Map<Symbol, Map<dynamic, EntityKey>>();
   
   //---------------------------------
   //
@@ -32,7 +32,7 @@ class EntityKey {
   //
   //---------------------------------
   
-  void operator []= (int key, dynamic value) {
+  void operator []= (Symbol key, dynamic value) {
     _setKeyValue(key, value);
   }
   
@@ -69,7 +69,7 @@ class EntityKey {
   //
   //---------------------------------
   
-  EntityKey _setKeyValue(int key, dynamic value) {
+  EntityKey _setKeyValue(Symbol key, dynamic value) {
     EntityKey returnValue;
     Map<dynamic, EntityKey> mainKey = _map[key];
     

@@ -103,8 +103,7 @@ class EntityAssembler {
     _ProxyEntry matchingEntry;
     DormProxy proxy;
     
-    if (entity._uid == null) {
-      entity._uid = entity.hashCode;
+    if (entity._scan == null) {
       entity._scan = _createEntityScan(entity);
     }
     
@@ -119,9 +118,9 @@ class EntityAssembler {
           (_ProxyEntry entry) => (entry.property == proxy.property)
       );
       
-      scan.updateProxyWithMetadata(proxy);
-      
       matchingEntry.proxy = proxy;
+      
+      scan._metadataCache._updateProxyWithMetadata(matchingEntry, scan);
       
       entity._proxies.add(proxy);
     }
