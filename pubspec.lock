@@ -6,10 +6,8 @@ packages:
     source: hosted
     version: "0.6.3+1"
   dart_flex:
-    description:
-      path: "C:\\work\\production\\igindo\\dart\\dorm\\../dart_flex"
-      relative: true
-    source: path
+    description: dart_flex
+    source: hosted
     version: "0.5.1"
   meta:
     description: meta
