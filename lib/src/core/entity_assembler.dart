@@ -148,14 +148,9 @@ class EntityAssembler {
     
     if (onConflict == null) onConflict = _handleConflictAcceptClient;
     
-    entityScan = _entityScans.firstWhere(
-        (EntityScan scan) => (scan.refClassName == refClassName),
-        orElse: () {
-          throw new DormError('Scan for entity not found');
-          
-          return null;
-        }
-    );
+    entityScan = _existingFromScanRegistry(refClassName);
+    
+    if (entityScan == null) throw new DormError('Scan for entity not found');
     
     spawnee = entityScan._contructorMethod();
     

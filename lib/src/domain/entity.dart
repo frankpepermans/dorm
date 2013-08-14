@@ -92,11 +92,7 @@ class Entity extends ObservableBase implements IExternalizable {
   
   void readExternal(Map<String, dynamic> data, Serializer serializer, OnConflictFunction onConflict) {
     EntityFactory<Entity> factory = new EntityFactory(onConflict);
-    _ProxyEntry entry;
     List<_ProxyEntry> proxies;
-    List<Map<String, dynamic>> spawnList = new List<Map<String, dynamic>>(1);
-    DormProxy proxy;
-    dynamic entryValue;
     
     _isPointer = data.containsKey(SerializationType.POINTER);
     
@@ -104,14 +100,12 @@ class Entity extends ObservableBase implements IExternalizable {
     
     proxies.forEach(
          (_ProxyEntry entry) {
-           entryValue = data[entry.property];
+           dynamic entryValue = data[entry.property];
            
-           proxy = entry.proxy;
+           DormProxy proxy = entry.proxy;
            
            if (entryValue is Map) {
-             spawnList[0] = entryValue;
-             
-             proxy._initialValue = factory.spawn(spawnList, serializer, proxy:proxy).first;
+             proxy._initialValue = factory.spawnSingle(entryValue, serializer, proxy:proxy);
            } else if (entryValue is Iterable) {
              proxy._initialValue = proxy.owner = new ObservableList.from(factory.spawn(entryValue, serializer));
            } else {
@@ -138,9 +132,7 @@ class Entity extends ObservableBase implements IExternalizable {
     
     _scan._proxies.forEach(
       (_ProxyEntry entry) {
-        if (entry.proxy.isLabelField) {
-          result.add(entry.proxy.value.toString());
-        }
+        if (entry.proxy.isLabelField) result.add(entry.proxy.value.toString());
       }
     );
     
@@ -165,9 +157,7 @@ class Entity extends ObservableBase implements IExternalizable {
             if (
                 (result != null) &&
                 result.proxy.isId
-            ) {
-              _scan.buildKey();
-            }
+            ) _scan.buildKey();
           }
         }
     );

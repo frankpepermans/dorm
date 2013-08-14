@@ -38,4 +38,6 @@ class EntityFactory<T> {
     return results;
   }
   
+  T spawnSingle(Map<String, dynamic> rawData, Serializer serializer, {DormProxy proxy}) =>
+    _assembler._assemble(rawData, proxy, serializer, _onConflict);
 }
