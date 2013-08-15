@@ -51,9 +51,7 @@ class EntityAssembler {
   static EntityAssembler _instance;
 
   factory EntityAssembler() {
-    if (_instance == null) {
-      _instance = new EntityAssembler._construct();
-    }
+    if (_instance == null) _instance = new EntityAssembler._construct();
 
     return _instance;
   }
@@ -136,7 +134,6 @@ class EntityAssembler {
     final String refClassName = rawData[SerializationType.ENTITY_TYPE];
     EntityScan entityScan;
     Entity spawnee, localNonPointerEntity;
-    int i = _entityScans.length;
     
     if (onConflict == null) onConflict = _handleConflictAcceptClient;
     

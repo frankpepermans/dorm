@@ -8,7 +8,7 @@ class EntityKey {
   //
   //---------------------------------
   
-  Map<Symbol, Map<dynamic, EntityKey>> _map = new Map<Symbol, Map<dynamic, EntityKey>>();
+  final Map<Symbol, Map<dynamic, EntityKey>> _map = new Map<Symbol, Map<dynamic, EntityKey>>();
   
   //---------------------------------
   //
@@ -16,7 +16,7 @@ class EntityKey {
   //
   //---------------------------------
   
-  Queue<EntityScan> entityScans = new Queue<EntityScan>();
+  final List<EntityScan> entityScans = new List<EntityScan>();
   
   //---------------------------------
   //
@@ -61,7 +61,7 @@ class EntityKey {
       (EntityScan scan) => (scan.entity != forEntity)    
   );
   
-  Queue<EntityScan> getExistingEntityScans(Entity forEntity) => forEntity._scan._keyCollection;
+  List<EntityScan> getExistingEntityScans(Entity forEntity) => forEntity._scan._keyCollection;
   
   //---------------------------------
   //

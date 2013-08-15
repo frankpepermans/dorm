@@ -9,14 +9,14 @@ class EntityScan {
   //---------------------------------
   
   EntityScan _original;
-  MetadataCache _metadataCache = new MetadataCache();
   Function _contructorMethod;
   Entity _unusedInstance;
+  List<EntityScan> _keyCollection;
+  MetadataCache _metadataCache = new MetadataCache();
   
-  List<_ProxyEntry> _proxies = <_ProxyEntry>[];
-  Map<String, _ProxyEntry> _proxyMap = new Map<String, _ProxyEntry>();
-  List<_ProxyEntry> _identityProxies = <_ProxyEntry>[];
-  Queue<EntityScan> _keyCollection;
+  final List<_ProxyEntry> _proxies = <_ProxyEntry>[];
+  final Map<String, _ProxyEntry> _proxyMap = new Map<String, _ProxyEntry>();
+  final List<_ProxyEntry> _identityProxies = <_ProxyEntry>[];
   
   //---------------------------------
   //
@@ -54,21 +54,15 @@ class EntityScan {
   
   EntityScan(this.refClassName, this._contructorMethod);
   
-  EntityScan.fromScan(EntityScan original, Entity entity) {
-    List<_ProxyEntry> originalProxies = original._proxies;
-    _ProxyEntry clonedEntry;
+  EntityScan.fromScan(this._original, this.entity) {
+    this._contructorMethod = _original._contructorMethod;
+    this._metadataCache = _original._metadataCache;
+    this.refClassName = _original.refClassName;
+    this.isMutableEntity = _original.isMutableEntity;
     
-    this._original = original;
-    this.entity = entity;
-    
-    this._contructorMethod = original._contructorMethod;
-    this._metadataCache = original._metadataCache;
-    this.refClassName = original.refClassName;
-    this.isMutableEntity = original.isMutableEntity;
-    
-    originalProxies.forEach(
+    _original._proxies.forEach(
        (_ProxyEntry entry) {
-         clonedEntry = entry.clone();
+         _ProxyEntry clonedEntry = entry.clone();
          
          this._proxies.add(clonedEntry);
          this._proxyMap[entry.property] = clonedEntry;
