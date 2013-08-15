@@ -173,11 +173,7 @@ class EntityAssembler {
     }
     
     if (spawnee._isPointer) {
-      if (owningProxy != null) {
-        _pendingProxies.add(owningProxy);
-      } else {
-        entityScan._unusedInstance = spawnee;
-      }
+      if (owningProxy != null) _pendingProxies.add(owningProxy);
     } else {
       spawnee._scan._keyCollection.add(spawnee._scan);
       
