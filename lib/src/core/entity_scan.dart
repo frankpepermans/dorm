@@ -60,7 +60,6 @@ class EntityScan {
     
     this._original = original;
     this.entity = entity;
-
     
     this._contructorMethod = original._contructorMethod;
     this._metadataCache = original._metadataCache;
@@ -89,8 +88,7 @@ class EntityScan {
     InstanceMirror instanceMirror;
     _ProxyEntry entry;
     Property property;
-    int i = mirror.metadata.length;
-    int j;
+    int i = mirror.metadata.length, j;
     bool isIdentity;
     dynamic metatag;
     

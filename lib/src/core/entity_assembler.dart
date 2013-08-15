@@ -102,11 +102,15 @@ class EntityAssembler {
   void registerProxies(Entity entity, List<DormProxy> proxies) {
     if (entity._scan == null) entity._scan = _createEntityScan(entity);
     
+    final EntityScan scan = entity._scan;
+    final Function updateProxyWithMetadata = scan._metadataCache._updateProxyWithMetadata;
+    final Map<String, _ProxyEntry> proxyMap = scan._proxyMap;
+    
     proxies.forEach(
       (DormProxy proxy) {
-        entity._scan._metadataCache._updateProxyWithMetadata(
-            entity._scan._proxyMap[proxy.property]..proxy = proxy, 
-            entity._scan
+        updateProxyWithMetadata(
+          proxyMap[proxy.property]..proxy = proxy, 
+          scan
         );
         
         entity._proxies.add(proxy);
@@ -169,7 +173,11 @@ class EntityAssembler {
     }
     
     if (spawnee._isPointer) {
-      if (owningProxy != null) _pendingProxies.add(owningProxy);
+      if (owningProxy != null) {
+        _pendingProxies.add(owningProxy);
+      } else {
+        entityScan._unusedInstance = spawnee;
+      }
     } else {
       spawnee._scan._keyCollection.add(spawnee._scan);
       
