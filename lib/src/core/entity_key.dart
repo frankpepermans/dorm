@@ -74,11 +74,13 @@ class EntityKey {
     Map<dynamic, EntityKey> mainKey = _map[key];
     
     if (mainKey == null) {
-      mainKey = _map[key] = new Map<dynamic, EntityKey>();
+      mainKey = new Map<dynamic, EntityKey>();
       
       returnValue = new EntityKey();
       
       mainKey[value] = returnValue;
+      
+      _map[key] = mainKey;
       
       return returnValue;
     } else if (!mainKey.containsKey(value)) {

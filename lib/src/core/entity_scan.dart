@@ -13,6 +13,7 @@ class EntityScan {
   Function _contructorMethod;
   
   List<_ProxyEntry> _proxies = <_ProxyEntry>[];
+  Map<String, _ProxyEntry> _proxyMap = new Map<String, _ProxyEntry>();
   List<_ProxyEntry> _identityProxies = <_ProxyEntry>[];
   Queue<EntityScan> _keyCollection;
   
@@ -58,6 +59,7 @@ class EntityScan {
     
     this._original = original;
     this.entity = entity;
+
     
     this._contructorMethod = original._contructorMethod;
     this._metadataCache = original._metadataCache;
@@ -69,6 +71,7 @@ class EntityScan {
          clonedEntry = entry.clone();
          
          this._proxies.add(clonedEntry);
+         this._proxyMap[entry.property] = clonedEntry;
          
          if (clonedEntry.isIdentity) this._identityProxies.add(clonedEntry);
        }
@@ -113,6 +116,8 @@ class EntityScan {
         entry.isIdentity = isIdentity;
         
         _proxies.add(entry);
+        
+        _proxyMap[property.property] = entry;
         
         if (isIdentity) _identityProxies.add(entry);
       }

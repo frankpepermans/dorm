@@ -100,12 +100,9 @@ class EntityAssembler {
   }
   
   void registerProxies(Entity entity, List<DormProxy> proxies) {
-    _ProxyEntry matchingEntry;
     DormProxy proxy;
     
-    if (entity._scan == null) {
-      entity._scan = _createEntityScan(entity);
-    }
+    if (entity._scan == null) entity._scan = _createEntityScan(entity);
     
     EntityScan scan = entity._scan;
     List<_ProxyEntry> proxyEntryList = scan._proxies;
@@ -114,13 +111,10 @@ class EntityAssembler {
     while (i > 0) {
       proxy = proxies[--i];
       
-      matchingEntry = proxyEntryList.firstWhere(
-          (_ProxyEntry entry) => (entry.property == proxy.property)
+      scan._metadataCache._updateProxyWithMetadata(
+          scan._proxyMap[proxy.property]..proxy = proxy, 
+          scan
       );
-      
-      matchingEntry.proxy = proxy;
-      
-      scan._metadataCache._updateProxyWithMetadata(matchingEntry, scan);
       
       entity._proxies.add(proxy);
     }
