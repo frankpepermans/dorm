@@ -100,24 +100,18 @@ class EntityAssembler {
   }
   
   void registerProxies(Entity entity, List<DormProxy> proxies) {
-    DormProxy proxy;
-    
     if (entity._scan == null) entity._scan = _createEntityScan(entity);
     
-    EntityScan scan = entity._scan;
-    List<_ProxyEntry> proxyEntryList = scan._proxies;
-    int i = proxies.length;
-    
-    while (i > 0) {
-      proxy = proxies[--i];
-      
-      scan._metadataCache._updateProxyWithMetadata(
-          scan._proxyMap[proxy.property]..proxy = proxy, 
-          scan
-      );
-      
-      entity._proxies.add(proxy);
-    }
+    proxies.forEach(
+      (DormProxy proxy) {
+        entity._scan._metadataCache._updateProxyWithMetadata(
+            entity._scan._proxyMap[proxy.property]..proxy = proxy, 
+            entity._scan
+        );
+        
+        entity._proxies.add(proxy);
+      }
+    );
   }
   
   //---------------------------------
@@ -146,20 +140,33 @@ class EntityAssembler {
     
     if (entityScan == null) throw new DormError('Scan for entity not found');
     
-    spawnee = entityScan._contructorMethod();
+    if (entityScan._unusedInstance != null) {
+      spawnee = entityScan._unusedInstance;
+      
+      entityScan._unusedInstance = null;
+    } else {
+      spawnee = entityScan._contructorMethod();
+    }
     
     spawnee.readExternal(rawData, serializer, onConflict);
     spawnee._scan.buildKey();
     
     localNonPointerEntity = _existingFromSpawnRegistry(spawnee);
     
-    _solveConflictsIfAny(
+    if (
+        !spawnee._isPointer &&
+        (localNonPointerEntity != null)
+    ) _solveConflictsIfAny(
         spawnee,
         localNonPointerEntity, 
         onConflict
     );
     
-    if (localNonPointerEntity != null) return localNonPointerEntity;
+    if (localNonPointerEntity != null) {
+      entityScan._unusedInstance = spawnee;
+      
+      return localNonPointerEntity;
+    }
     
     if (spawnee._isPointer) {
       if (owningProxy != null) _pendingProxies.add(owningProxy);
@@ -179,14 +186,8 @@ class EntityAssembler {
   }
   
   void _solveConflictsIfAny(Entity spawnee, Entity existingEntity, OnConflictFunction onConflict) {
-    if (
-        spawnee._isPointer ||
-        (existingEntity == null)
-    ) return;
-    
     ConflictManager conflictManager;
-    List<_ProxyEntry> entryProxies;
-    List<_ProxyEntry> spawneeProxies;
+    List<_ProxyEntry> entryProxies, spawneeProxies;
     _ProxyEntry entryA, entryB;
     int i, j;
     

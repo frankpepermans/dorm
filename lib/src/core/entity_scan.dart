@@ -11,6 +11,7 @@ class EntityScan {
   EntityScan _original;
   MetadataCache _metadataCache = new MetadataCache();
   Function _contructorMethod;
+  Entity _unusedInstance;
   
   List<_ProxyEntry> _proxies = <_ProxyEntry>[];
   Map<String, _ProxyEntry> _proxyMap = new Map<String, _ProxyEntry>();
