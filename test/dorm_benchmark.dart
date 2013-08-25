@@ -3,16 +3,13 @@ library dorm_entity_spawn_test;
 import 'package:dorm/dorm.dart';
 import 'dart:async';
 import 'dart:html';
-import 'dart:json';
 
 Serializer serializer = new SerializerJson();
 
 DivElement out = query("#out");
 
 main() {
-  EntityAssembler assembler = new EntityAssembler();
-  
-  assembler.scan(TestEntity, 'entities.testEntity', TestEntity.construct);
+  Entity.ASSEMBLER.scan(TestEntity, 'entities.testEntity', TestEntity.construct);
   
   _runBenchmark();
 }
@@ -83,7 +80,7 @@ class TestEntitySuperClass extends Entity {
   @NotNullable()
   @DefaultValue(0)
   @Immutable()
-  DormProxy<int> _id;
+  final DormProxy<int> _id = new DormProxy<int>(ID);
 
   static const String ID = 'id';
   static const Symbol ID_SYMBOL = const Symbol('orm_domain.TestEntitySuperClass.id');
@@ -98,21 +95,13 @@ class TestEntitySuperClass extends Entity {
   //---------------------------------
 
   TestEntitySuperClass() : super() {
-    EntityAssembler assembler = new EntityAssembler();
-    
-    _id = new DormProxy()
-    ..property = 'id'
-    ..propertySymbol = ID_SYMBOL;
-    
-    assembler.registerProxies(
+    Entity.ASSEMBLER.registerProxies(
         this,
         <DormProxy>[_id]    
     );
   }
   
-  static TestEntitySuperClass construct() {
-    return new TestEntitySuperClass();
-  }
+  static TestEntitySuperClass construct() => new TestEntitySuperClass();
 
 }
 
@@ -137,7 +126,7 @@ class TestEntity extends TestEntitySuperClass {
 
   @Property(NAME_SYMBOL, 'name', String)
   @LabelField()
-  DormProxy<String> _name;
+  final DormProxy<String> _name = new DormProxy<String>(NAME);
 
   static const String NAME = 'name';
   static const Symbol NAME_SYMBOL = const Symbol('orm_domain.TestEntity.name');
@@ -150,7 +139,7 @@ class TestEntity extends TestEntitySuperClass {
   //---------------------------------
 
   @Property(TYPE_SYMBOL, 'type', String)
-  DormProxy<String> _type;
+  final DormProxy<String> _type = new DormProxy<String>(TYPE);
 
   static const String TYPE = 'type';
   static const Symbol TYPE_SYMBOL = const Symbol('orm_domain.TestEntity.type');
@@ -163,7 +152,7 @@ class TestEntity extends TestEntitySuperClass {
   //---------------------------------
 
   @Property(CYCLIC_REFERENCE_SYMBOL, 'cyclicReference', TestEntity)
-  DormProxy<TestEntity> _cyclicReference;
+  final DormProxy<TestEntity> _cyclicReference = new DormProxy<TestEntity>(CYCLIC_REFERENCE);
 
   static const String CYCLIC_REFERENCE = 'cyclicReference';
   static const Symbol CYCLIC_REFERENCE_SYMBOL = const Symbol('orm_domain.TestEntity.cyclicReference');
@@ -178,28 +167,12 @@ class TestEntity extends TestEntitySuperClass {
   //---------------------------------
 
   TestEntity() : super() {
-    EntityAssembler assembler = new EntityAssembler();
-    
-    _name = new DormProxy()
-    ..property = 'name'
-    ..propertySymbol = NAME_SYMBOL;
-    
-    _type = new DormProxy()
-    ..property = 'type'
-    ..propertySymbol = TYPE_SYMBOL;
-    
-    _cyclicReference = new DormProxy()
-    ..property = 'cyclicReference'
-    ..propertySymbol = CYCLIC_REFERENCE_SYMBOL;
-    
-    assembler.registerProxies(
+    Entity.ASSEMBLER.registerProxies(
       this,
       <DormProxy>[_name, _type, _cyclicReference]    
     );
   }
   
-  static TestEntity construct() {
-    return new TestEntity();
-  }
+  static TestEntity construct() => new TestEntity();
 
 }

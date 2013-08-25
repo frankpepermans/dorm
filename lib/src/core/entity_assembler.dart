@@ -115,6 +115,8 @@ class EntityAssembler {
       
       scanProxy = scan._proxyMap[proxy.property]..proxy = proxy;
       
+      proxy.propertySymbol = scanProxy.propertySymbol;
+      
       updateProxyWithMetadata(scanProxy, scan);
       
       entity._proxies.add(proxy);

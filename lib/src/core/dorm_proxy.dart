@@ -29,7 +29,8 @@ class DormProxy<T> {
   T get value => _value;
   set value(T newValue) => _value = newValue;
   
-  String property;
+  final String property;
+  
   Symbol propertySymbol;
   List<dynamic> owner;
   bool isId = false;
@@ -54,7 +55,7 @@ class DormProxy<T> {
   //
   //-----------------------------------
   
-  DormProxy();
+  DormProxy(this.property);
   
   //-----------------------------------
   //

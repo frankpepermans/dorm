@@ -153,7 +153,7 @@ class TestEntitySuperClass extends Entity {
   @NotNullable()
   @DefaultValue(0)
   @Immutable()
-  DormProxy<int> _id;
+  final DormProxy<int> _id = new DormProxy<int>('id');
 
   static const String ID = 'id';
   static const Symbol ID_SYMBOL = const Symbol('orm_domain.TestEntitySuperClass.id');
@@ -168,13 +168,7 @@ class TestEntitySuperClass extends Entity {
   //---------------------------------
 
   TestEntitySuperClass() : super() {
-    EntityAssembler assembler = new EntityAssembler();
-    
-    _id = new DormProxy()
-    ..property = 'id'
-    ..propertySymbol = ID_SYMBOL;
-    
-    assembler.registerProxies(
+    Entity.ASSEMBLER.registerProxies(
         this,
         <DormProxy>[_id]    
     );
@@ -207,7 +201,7 @@ class TestEntity extends TestEntitySuperClass {
 
   @Property(NAME_SYMBOL, 'name', String)
   @LabelField()
-  DormProxy<String> _name;
+  final DormProxy<String> _name = new DormProxy<String>('name');
 
   static const String NAME = 'name';
   static const Symbol NAME_SYMBOL = const Symbol('orm_domain.TestEntity.name');
@@ -220,7 +214,7 @@ class TestEntity extends TestEntitySuperClass {
   //---------------------------------
 
   @Property(DATE_SYMBOL, 'date', DateTime)
-  DormProxy<DateTime> _date;
+  final DormProxy<DateTime> _date = new DormProxy<DateTime>('date');
 
   static const String DATE = 'date';
   static const Symbol DATE_SYMBOL = const Symbol('orm_domain.TestEntity.date');
@@ -233,7 +227,7 @@ class TestEntity extends TestEntitySuperClass {
   //---------------------------------
 
   @Property(CYCLIC_REFERENCE_SYMBOL, 'cyclicReference', TestEntity)
-  DormProxy<TestEntity> _cyclicReference;
+  final DormProxy<TestEntity> _cyclicReference = new DormProxy<TestEntity>('cyclicReference');
 
   static const String CYCLIC_REFERENCE = 'cyclicReference';
   static const Symbol CYCLIC_REFERENCE_SYMBOL = const Symbol('orm_domain.TestEntity.cyclicReference');
@@ -248,28 +242,11 @@ class TestEntity extends TestEntitySuperClass {
   //---------------------------------
 
   TestEntity() : super() {
-    EntityAssembler assembler = new EntityAssembler();
-    
-    _name = new DormProxy()
-    ..property = 'name'
-    ..propertySymbol = NAME_SYMBOL;
-    
-    _date = new DormProxy()
-    ..property = 'date'
-    ..propertySymbol = DATE_SYMBOL;
-    
-    _cyclicReference = new DormProxy()
-    ..property = 'cyclicReference'
-    ..propertySymbol = CYCLIC_REFERENCE_SYMBOL;
-    
-    assembler.registerProxies(
+    Entity.ASSEMBLER.registerProxies(
       this,
       <DormProxy>[_name, _date, _cyclicReference]
     );
   }
   
-  static TestEntity construct() {
-    return new TestEntity();
-  }
-
+  static TestEntity construct() => new TestEntity();
 }

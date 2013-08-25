@@ -2,6 +2,8 @@ part of dorm;
 
 class Entity extends ObservableBase implements IExternalizable {
   
+  static final EntityAssembler ASSEMBLER = new EntityAssembler();
+  
   // ugly workaround because toJSON can not take in any arguments
   static Serializer serializerWorkaround;
   
