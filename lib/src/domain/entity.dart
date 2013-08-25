@@ -2,8 +2,12 @@ part of dorm;
 
 class Entity extends ObservableBase implements IExternalizable {
   
-// ugly workaround because toJSON can not take in any arguments
+  // ugly workaround because toJSON can not take in any arguments
   static Serializer serializerWorkaround;
+  
+  // TO_DO: remove these
+  int encReference;
+  int encType;
   
   //-----------------------------------
   //
@@ -22,6 +26,12 @@ class Entity extends ObservableBase implements IExternalizable {
   // Public properties
   //
   //-----------------------------------
+  
+  //-----------------------------------
+  // isMutable
+  //-----------------------------------
+  
+  bool get isMutable => _scan.isMutableEntity;
   
   //-----------------------------------
   // refClassName
@@ -64,6 +74,85 @@ class Entity extends ObservableBase implements IExternalizable {
   // Public methods
   //
   //-----------------------------------
+  
+  bool setDefaultPropertyValue(String propertyName, dynamic propertyValue) {
+    _ProxyEntry result = _scan._proxies.firstWhere(
+        (_ProxyEntry entry) => (entry.property == propertyName),
+        orElse: () => null
+    );
+    
+    if (result != null) {
+      result.proxy._defaultValue = propertyValue;
+      result.proxy._value = propertyValue;
+      
+      return true;
+    }
+    
+    return false;
+  }
+  
+  List<Entity> getEntityTree({List<Entity> traversedEntities}) {
+    List<Entity> tree = (traversedEntities != null) ? traversedEntities : <Entity>[];
+    
+    tree.add(this);
+    
+    _scan._proxies.forEach(
+        (_ProxyEntry entry) {
+          if (entry.proxy._value is Entity) {
+            Entity entity = entry.proxy._value as Entity;
+            
+            if (!tree.contains(entity)) {
+              List<Entity> subTree = entity.getEntityTree(traversedEntities: tree);
+            }
+          } else if (entry.proxy._value is ObservableList) {
+            ObservableList subList = entry.proxy._value as ObservableList;
+          
+            subList.forEach(
+              (dynamic subListEntry) {
+                if (subListEntry is Entity) {
+                  Entity subListEntity = subListEntry as Entity;
+                  
+                  if (!tree.contains(subListEntity)) {
+                    List<Entity> subTree = subListEntity.getEntityTree(traversedEntities: tree);
+                  }
+                }
+              }
+            );
+          }
+        }
+    );
+    
+    return tree;
+  }
+  
+  List<String> getIdentityFields() {
+    List<String> result = <String>[];
+    
+    _scan._identityProxies.forEach(
+      (_ProxyEntry entry) => result.add(entry.property) 
+    );
+    
+    return result;
+  }
+  
+  List<String> getPropertyList() {
+    List<String> result = <String>[];
+    
+    _scan._proxies.forEach(
+      (_ProxyEntry entry) => result.add(entry.property)
+    );
+    
+    return result;
+  }
+  
+  MetadataExternalized getMetadata(String propertyName) {
+    _ProxyEntry result = _scan._proxies.firstWhere(
+        (_ProxyEntry entry) => (entry.property == propertyName),
+        orElse: () => null
+    );
+    
+    result.metadataCache._getMetadataExternal();
+  }
   
   void validate() {
     List<_ProxyEntry> proxies = _scan._proxies;
@@ -132,7 +221,7 @@ class Entity extends ObservableBase implements IExternalizable {
     
     _scan._proxies.forEach(
       (_ProxyEntry entry) {
-        if (entry.proxy.isLabelField) result.add(entry.proxy.value.toString());
+        if (entry.proxy.isLabelField) result.add(entry.proxy._value.toString());
       }
     );
     
@@ -150,7 +239,7 @@ class Entity extends ObservableBase implements IExternalizable {
         (ChangeRecord change) {
           if (change is PropertyChangeRecord) {
             _ProxyEntry result = _scan._identityProxies.firstWhere(
-                (_ProxyEntry entry) => (entry.proxy.propertySymbol == change.field),
+                (_ProxyEntry entry) => (entry.proxy.propertySymbol == (change as PropertyChangeRecord).field),
                 orElse: () => null
             );
             
@@ -179,8 +268,8 @@ class Entity extends ObservableBase implements IExternalizable {
             entry.proxy.isId ||
             (entry.proxy._value != entry.proxy._defaultValue)
         ) {
-          if (entry.proxy.value is Entity) {
-            Entity subEntity = entry.proxy.value;
+          if (entry.proxy._value is Entity) {
+            Entity subEntity = entry.proxy._value;
             
             if (convertedEntities.containsKey(subEntity._uid)) {
               Map<String, dynamic> pointerMap = new Map<String, dynamic>();
@@ -191,7 +280,7 @@ class Entity extends ObservableBase implements IExternalizable {
               subEntity._scan._proxies.forEach(
                   (_ProxyEntry subEntry) {
                     if (subEntry.proxy.isId) {
-                      pointerMap[subEntry.property] = subEntry.proxy.value;
+                      pointerMap[subEntry.property] = subEntry.proxy._value;
                     }
                   }
               );
@@ -203,7 +292,7 @@ class Entity extends ObservableBase implements IExternalizable {
               subEntity._writeExternalImpl(data[entry.property], convertedEntities, serializer);
             }
           } else {
-            data[entry.property] = serializer.convertOut(entry.type, entry.proxy.value);
+            data[entry.property] = serializer.convertOut(entry.type, entry.proxy._value);
           }
         }
       }

@@ -1,6 +1,6 @@
 part of dorm;
 
-class DormManager {
+class DormManager extends ObservableBase {
   
   //-----------------------------------
   //
@@ -8,6 +8,7 @@ class DormManager {
   //
   //-----------------------------------
   
+  List<Entity> _observeList = <Entity>[];
   List<Entity> _queue = <Entity>[];
   List<Entity> _deleteQueue = <Entity>[];
   
@@ -17,7 +18,20 @@ class DormManager {
   //
   //-----------------------------------
   
+  //-----------------------------------
+  // id
+  //-----------------------------------
+  
   String id;
+  
+  //-----------------------------------
+  // queueLength
+  //-----------------------------------
+  
+  static const Symbol QUEUE_LENGTH = const Symbol('dorm.core.DormManager.queueLength');
+  
+  int _queueLength;
+  int get queueLength => _queue.length + _deleteQueue.length;
   
   //-----------------------------------
   //
@@ -41,6 +55,10 @@ class DormManager {
         !_deleteQueue.contains(entity)
     ) {
       _deleteQueue.add(entity);
+      
+      notifyChange(
+          new PropertyChangeRecord(QUEUE_LENGTH)    
+      );
     }
   }
   
@@ -51,7 +69,36 @@ class DormManager {
         entity.isDirty()
     ) {
       _queue.add(entity);
+      
+      notifyChange(
+          new PropertyChangeRecord(QUEUE_LENGTH)    
+      );
     }
+  }
+  
+  void unqueue(Entity entity) {
+    if (entity._scan.isMutableEntity) {
+      if (_queue.contains(entity)) _queue.remove(entity);
+      if (_deleteQueue.contains(entity)) _deleteQueue.remove(entity);
+      
+      notifyChange(
+          new PropertyChangeRecord(QUEUE_LENGTH)    
+      );
+    }
+  }
+  
+  void queueAll(Iterable<Entity> entities) {
+    entities.forEach(
+      (Entity entity) => queue(entity)    
+    );
+  }
+  
+  void clear() {
+    _flushInternal();
+    
+    notifyChange(
+        new PropertyChangeRecord(QUEUE_LENGTH)    
+    );
   }
   
   DormManagerCommitStructure getCommitStructure() {

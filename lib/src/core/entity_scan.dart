@@ -13,6 +13,7 @@ class EntityScan {
   Entity _unusedInstance;
   List<EntityScan> _keyCollection;
   MetadataCache _metadataCache = new MetadataCache();
+  List<int> _proxyIndices;
   
   final List<_ProxyEntry> _proxies = <_ProxyEntry>[];
   final Map<String, _ProxyEntry> _proxyMap = new Map<String, _ProxyEntry>();
@@ -77,6 +78,18 @@ class EntityScan {
   // Public methods
   //
   //---------------------------------
+  
+  void detectIfMutable(ClassMirror classMirror) {
+    if (
+        isMutableEntity &&
+        classMirror.metadata.firstWhere(
+            (InstanceMirror classMetaData) => (classMetaData.reflectee is Immutable),
+            orElse: () => null
+        ) != null
+    ) {
+      isMutableEntity = false;
+    }
+  }
   
   void registerMetadataUsing(VariableMirror mirror) {
     InstanceMirror instanceMirror;

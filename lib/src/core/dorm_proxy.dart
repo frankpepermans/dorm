@@ -38,6 +38,8 @@ class DormProxy<T> {
   bool isNullable = true;
   bool isLabelField = false;
   
+  int dataType = 0;
+  
   //-----------------------------------
   //
   // Operator overloads

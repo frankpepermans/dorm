@@ -68,4 +68,25 @@ class _PropertyMetadataCache {
   
   _PropertyMetadataCache(this.property);
   
+  MetadataExternalized _getMetadataExternal() {
+    return new MetadataExternalized(
+        isId, 
+        isTransient, 
+        isNullable, 
+        isLabelField, 
+        isMutable
+    );
+  }
+}
+
+class MetadataExternalized {
+  
+  final bool isId;
+  final bool isTransient;
+  final bool isNullable;
+  final bool isLabelField;
+  final bool isMutable;
+  
+  const MetadataExternalized(this.isId, this.isTransient, this.isNullable, this.isLabelField, this.isMutable);
+  
 }
