@@ -106,20 +106,14 @@ class EntityAssembler {
     
     final EntityScan scan = entity._scan;
     final Function updateProxyWithMetadata = scan._metadataCache._updateProxyWithMetadata;
-    final int len = scan._proxies.length;
     DormProxy proxy;
     _ProxyEntry scanProxy;
-    int i = proxies.length, j;
+    int i = proxies.length;
     
     while (i > 0) {
       proxy = proxies[--i];
-      j = len;
       
-      while (j > 0) {
-        scanProxy = scan._proxies[--j];
-        
-        if (scanProxy.property == proxy.property) break;
-      }
+      scanProxy = scan._proxyMap[proxy.property];
       
       updateProxyWithMetadata(
           scanProxy..proxy = proxy, 
