@@ -105,46 +105,28 @@ class EntityAssembler {
     if (entity._scan == null) entity._scan = _createEntityScan(entity);
     
     final EntityScan scan = entity._scan;
-    final EntityScan originalScan = scan._original;
     final Function updateProxyWithMetadata = scan._metadataCache._updateProxyWithMetadata;
     final int len = scan._proxies.length;
     DormProxy proxy;
     _ProxyEntry scanProxy;
     int i = proxies.length, j;
     
-    if (originalScan._proxyIndices == null) {
-      originalScan._proxyIndices = new List<int>(proxies.length);
+    while (i > 0) {
+      proxy = proxies[--i];
+      j = len;
       
-      while (i > 0) {
-        proxy = proxies[--i];
-        j = len;
+      while (j > 0) {
+        scanProxy = scan._proxies[--j];
         
-        while (j > 0) {
-          scanProxy = scan._proxies[--j];
-          
-          if (scanProxy.property == proxy.property) break;
-        }
-        
-        originalScan._proxyIndices[i] = j;
-        
-        updateProxyWithMetadata(
-            scanProxy..proxy = proxy, 
-            scan
-        );
-        
-        entity._proxies.add(proxy);
+        if (scanProxy.property == proxy.property) break;
       }
-    } else {
-      while (i > 0) {
-        proxy = proxies[--i];
-        
-        scanProxy = scan._proxies[originalScan._proxyIndices[i]];
-        
-        updateProxyWithMetadata(
-            scanProxy..proxy = proxy, 
-            scan
-        );
-      }
+      
+      updateProxyWithMetadata(
+          scanProxy..proxy = proxy, 
+          scan
+      );
+      
+      entity._proxies.add(proxy);
     }
   }
   
