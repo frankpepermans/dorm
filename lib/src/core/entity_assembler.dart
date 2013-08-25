@@ -113,12 +113,9 @@ class EntityAssembler {
     while (i > 0) {
       proxy = proxies[--i];
       
-      scanProxy = scan._proxyMap[proxy.property];
+      scanProxy = scan._proxyMap[proxy.property]..proxy = proxy;
       
-      updateProxyWithMetadata(
-          scanProxy..proxy = proxy, 
-          scan
-      );
+      updateProxyWithMetadata(scanProxy, scan);
       
       entity._proxies.add(proxy);
     }
