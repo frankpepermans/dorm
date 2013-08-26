@@ -8,7 +8,7 @@ abstract class Serializer<T> {
   //
   //-----------------------------------
   
-  List<Map<String, dynamic>> incoming(T data);
+  Iterable incoming(T data);
   String outgoing(dynamic data);
   
   void addRule(Type forType, dynamic incoming(dynamic value), dynamic outgoing(dynamic value));
@@ -35,7 +35,7 @@ abstract class SerializerMixin<T> implements Serializer {
   //
   //-----------------------------------
   
-  List<Map<String, dynamic>> incoming(T data) => data;
+  Iterable incoming(T data) => data;
   String outgoing(dynamic data) => data;
   
   void addRule(Type forType, dynamic incoming(dynamic value), dynamic outgoing(dynamic value)) {
