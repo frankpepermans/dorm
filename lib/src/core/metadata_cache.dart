@@ -8,7 +8,7 @@ class MetadataCache {
   //
   //---------------------------------
   
-  MetadataCache();
+  const MetadataCache();
   
   //---------------------------------
   //

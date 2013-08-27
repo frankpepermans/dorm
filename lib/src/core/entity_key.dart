@@ -44,9 +44,12 @@ class EntityKey {
   //
   //---------------------------------
   
-  Entity getFirstSibling(Entity forEntity) {
+  Entity getFirstSibling(Entity forEntity, {bool allowPointers: true}) {
     EntityScan result = forEntity._scan._keyCollection.firstWhere(
-      (EntityScan scan) => (scan.entity != forEntity),
+      (EntityScan scan) => (
+          (scan.entity != forEntity) && 
+          (allowPointers || !scan.entity._isPointer)
+      ),
       orElse: () => null
     );
     

@@ -4,9 +4,7 @@ class DormError extends Error {
   
   final String message;
 
-  DormError(this.message);
+  const DormError(this.message);
 
-  String toString() {
-    return message;
-  }
+  String toString() => message;
 }

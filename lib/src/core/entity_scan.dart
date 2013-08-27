@@ -12,7 +12,7 @@ class EntityScan {
   Function _contructorMethod;
   Entity _unusedInstance;
   List<EntityScan> _keyCollection;
-  MetadataCache _metadataCache = new MetadataCache();
+  MetadataCache _metadataCache;
   
   final List<_ProxyEntry> _proxies = <_ProxyEntry>[];
   final Map<String, _ProxyEntry> _proxyMap = new Map<String, _ProxyEntry>();
@@ -97,6 +97,8 @@ class EntityScan {
     int i = mirror.metadata.length, j;
     bool isIdentity;
     dynamic metatag;
+    
+    _metadataCache = new MetadataCache();
     
     while (i > 0) {
       instanceMirror = mirror.metadata[--i];

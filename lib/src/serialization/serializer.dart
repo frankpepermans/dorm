@@ -27,7 +27,7 @@ abstract class SerializerMixin<T> implements Serializer {
   //
   //-----------------------------------
   
-  Map<Type, _InternalConvertor> _convertors = new Map<Type, _InternalConvertor>();
+  List<_InternalConvertor> _convertors = <_InternalConvertor>[];
   
   //-----------------------------------
   //
@@ -38,13 +38,12 @@ abstract class SerializerMixin<T> implements Serializer {
   Iterable incoming(T data) => data;
   String outgoing(dynamic data) => data;
   
-  void addRule(Type forType, dynamic incoming(dynamic value), dynamic outgoing(dynamic value)) {
-    _convertors[forType] = new _InternalConvertor(incoming, outgoing);
-  }
+  void addRule(Type forType, dynamic incoming(dynamic value), dynamic outgoing(dynamic value)) =>
+    _convertors.add(new _InternalConvertor(forType, incoming, outgoing));
   
-  void removeRule(Type forType) {
-    _convertors.remove(forType);
-  }
+  void removeRule(Type forType) => _convertors.removeWhere(
+      (_InternalConvertor convertor) => (convertor.forType == forType)
+  );
   
   dynamic convertIn(Type forType, dynamic inValue) => inValue;
   dynamic convertOut(Type forType, dynamic outValue) => outValue;
@@ -53,9 +52,10 @@ abstract class SerializerMixin<T> implements Serializer {
 
 class _InternalConvertor {
   
+  final Type forType;
   final Function incoming;
   final Function outgoing;
   
-  _InternalConvertor(this.incoming, this.outgoing);
+  const _InternalConvertor(this.forType, this.incoming, this.outgoing);
   
 }

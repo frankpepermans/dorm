@@ -5,7 +5,7 @@ class Entity extends ObservableBase implements IExternalizable {
   static final EntityAssembler ASSEMBLER = new EntityAssembler();
   
   // ugly workaround because toJSON can not take in any arguments
-  static Serializer serializerWorkaround;
+  static Serializer _serializerWorkaround;
   
   // TO_DO: remove these
   int encReference;
@@ -213,7 +213,7 @@ class Entity extends ObservableBase implements IExternalizable {
   String toJson({Map<String, Map<String, dynamic>> convertedEntities}) {
     Map<String, dynamic> jsonMap = new Map<String, dynamic>();
     
-    writeExternal(jsonMap, serializerWorkaround);
+    writeExternal(jsonMap, _serializerWorkaround);
     
     return JSON.encode(jsonMap);
   }

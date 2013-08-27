@@ -40,7 +40,7 @@ class EntityAssembler {
   //
   //---------------------------------
   
-  EntityAssembler._construct();
+  const EntityAssembler._construct();
   
   //---------------------------------
   //
@@ -159,7 +159,7 @@ class EntityAssembler {
     spawnee.readExternal(rawData, serializer, onConflict);
     spawnee._scan.buildKey();
     
-    localNonPointerEntity = _existingFromSpawnRegistry(spawnee);
+    localNonPointerEntity = _keyChain.getFirstSibling(spawnee, allowPointers: false);
     
     if (
         !spawnee._isPointer &&
@@ -268,15 +268,6 @@ class EntityAssembler {
       
       if (!collectionEntryHasPointers) _collections.remove(collectionEntry);
     }
-  }
-  
-  Entity _existingFromSpawnRegistry(Entity entity) {
-    Entity registeredEntity = _keyChain.getFirstSibling(entity);
-    
-    return (
-        (registeredEntity != null) &&
-        !registeredEntity._isPointer
-    ) ? registeredEntity : null;
   }
   
   EntityScan _existingFromScanRegistry(String refClassName) {

@@ -8,8 +8,8 @@ class ConflictManager {
   //
   //-----------------------------------
   
-  static final ConflictManager ACCEPT_SERVER = new ConflictManager._acceptServer();
-  static final ConflictManager ACCEPT_CLIENT = new ConflictManager._acceptClient();
+  static const ConflictManager ACCEPT_SERVER = const ConflictManager(1);
+  static const ConflictManager ACCEPT_CLIENT = const ConflictManager(2);
   
   //-----------------------------------
   //
@@ -21,24 +21,10 @@ class ConflictManager {
   
   //-----------------------------------
   //
-  // Factories
-  //
-  //-----------------------------------
-  
-  factory ConflictManager._acceptServer() {
-    return const ConflictManager._construct(1);
-  }
-  
-  factory ConflictManager._acceptClient() {
-    return const ConflictManager._construct(2);
-  }
-  
-  //-----------------------------------
-  //
   // Constructor
   //
   //-----------------------------------
 
-  const ConflictManager._construct(this.type);
+  const ConflictManager(this.type);
   
 }
