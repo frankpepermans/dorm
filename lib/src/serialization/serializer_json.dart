@@ -24,7 +24,7 @@ class SerializerJson<T> extends SerializerBase {
   //
   //-----------------------------------
   
-  List<Map<String, dynamic>> incoming(T data) => parse(data);
+  List<Map<String, dynamic>> incoming(T data) => JSON.decode(data);
   
   String outgoing(dynamic data) {
     Entity.serializerWorkaround = this;
@@ -33,7 +33,7 @@ class SerializerJson<T> extends SerializerBase {
         (data is List) ||
         (data is Map)
     ) {
-      return stringify(data);
+      return JSON.encode(data);
     }
     
     return data.toString();

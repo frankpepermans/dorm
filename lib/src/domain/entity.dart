@@ -215,7 +215,7 @@ class Entity extends ObservableBase implements IExternalizable {
     
     writeExternal(jsonMap, serializerWorkaround);
     
-    return stringify(jsonMap);
+    return JSON.encode(jsonMap);
   }
   
   String toString() {

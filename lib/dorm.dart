@@ -103,8 +103,8 @@
 library dorm;
 
 import 'dart:collection';
+import 'dart:convert';
 import 'dart:core';
-import 'dart:json';
 import 'dart:mirrors';
 
 import 'package:observe/observe.dart';
