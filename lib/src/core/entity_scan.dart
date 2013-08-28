@@ -14,7 +14,6 @@ class EntityScan {
   List<EntityScan> _keyCollection;
   MetadataCache _metadataCache;
   
-  final List<_ProxyEntry> _proxies = <_ProxyEntry>[];
   final Map<String, _ProxyEntry> _proxyMap = new Map<String, _ProxyEntry>();
   final List<_ProxyEntry> _identityProxies = <_ProxyEntry>[];
   
@@ -27,6 +26,12 @@ class EntityScan {
   Entity entity;
   String refClassName;
   bool isMutableEntity = true;
+  
+  //---------------------------------
+  // proxies
+  //---------------------------------
+  
+  Iterable<_ProxyEntry> get _proxies => _proxyMap.values;
   
   //---------------------------------
   // key
@@ -64,7 +69,6 @@ class EntityScan {
        (_ProxyEntry entry) {
          _ProxyEntry clonedEntry = entry.clone();
          
-         this._proxies.add(clonedEntry);
          this._proxyMap[entry.property] = clonedEntry;
          
          if (clonedEntry.isIdentity) this._identityProxies.add(clonedEntry);
@@ -121,8 +125,6 @@ class EntityScan {
         }
         
         entry.isIdentity = isIdentity;
-        
-        _proxies.add(entry);
         
         _proxyMap[property.property] = entry;
         

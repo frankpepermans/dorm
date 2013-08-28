@@ -195,8 +195,7 @@ class EntityAssembler {
   
   void _solveConflictsIfAny(Entity spawnee, Entity existingEntity, OnConflictFunction onConflict) {
     ConflictManager conflictManager;
-    List<_ProxyEntry> entryProxies, spawneeProxies;
-    _ProxyEntry entryA, entryB;
+    Iterable<_ProxyEntry> entryProxies, spawneeProxies;
     int i, j;
     
     if (onConflict == null) throw new DormError('Conflict was detected, but no onConflict method is available');
@@ -209,25 +208,18 @@ class EntityAssembler {
     if (conflictManager == ConflictManager.ACCEPT_SERVER) {
       entryProxies = existingEntity._scan._proxies;
       
-      i = entryProxies.length;
-      
-      while (i > 0) {
-        entryA = entryProxies[--i];
-        
-        spawneeProxies = spawnee._scan._proxies;
-        
-        j = spawneeProxies.length;
-        
-        while (j > 0) {
-          entryB = spawneeProxies[--j];
-          
-          if (entryA.property == entryB.property) {
-            entryA.proxy._initialValue = existingEntity.notifyPropertyChange(entryA.proxy.propertySymbol, entryA.proxy._value, entryB.proxy._value);
+      entryProxies.forEach(
+          (_ProxyEntry entryA) {
+            spawneeProxies = spawnee._scan._proxies;
             
-            break;
+            _ProxyEntry entryMatch = spawneeProxies.firstWhere(
+              (_ProxyEntry entryB) => (entryA.property == entryB.property),
+              orElse: () => null
+            );
+            
+            if (entryMatch != null) entryA.proxy._initialValue = existingEntity.notifyPropertyChange(entryA.proxy.propertySymbol, entryA.proxy._value, entryMatch.proxy._value);
           }
-        }
-      }
+      );
     }
   }
   

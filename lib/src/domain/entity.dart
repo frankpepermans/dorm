@@ -156,34 +156,20 @@ class Entity extends ObservableBase implements IExternalizable {
     result.metadataCache._getMetadataExternal();
   }
   
-  void validate() {
-    List<_ProxyEntry> proxies = _scan._proxies;
-    int i = proxies.length;
-    
-    while (i > 0) {
-      proxies[--i].proxy.validate();
-    }
-  }
+  void validate() => _scan._proxies.forEach(
+      (_ProxyEntry entry) => entry.proxy.validate()
+  );
   
-  bool isDirty() {
-    _ProxyEntry entry;
-    List<_ProxyEntry> proxies = _scan._proxies;
-    int i = proxies.length;
-    
-    while (i > 0) {
-      entry = proxies[--i];
-      
-      if (entry.proxy._value != entry.proxy._defaultValue) {
-        return true;
-      }
-    }
-    
-    return false;
-  }
+  bool isDirty() => (
+      _scan._proxies.firstWhere(
+          (_ProxyEntry entry) => (entry.proxy._value != entry.proxy._defaultValue),
+          orElse: () => null
+      ) != null
+  );
   
   void readExternal(Map<String, dynamic> data, Serializer serializer, OnConflictFunction onConflict) {
     EntityFactory<Entity> factory = new EntityFactory(onConflict);
-    List<_ProxyEntry> proxies;
+    Iterable<_ProxyEntry> proxies;
     
     _isPointer = data.containsKey(SerializationType.POINTER);
     
@@ -198,7 +184,9 @@ class Entity extends ObservableBase implements IExternalizable {
            if (entryValue is Map) {
              proxy._initialValue = factory.spawnSingle(entryValue, serializer, proxy:proxy);
            } else if (entryValue is Iterable) {
-             proxy._initialValue = proxy.owner = new ObservableList.from(factory.spawn(entryValue, serializer));
+             proxy.owner = factory.spawn(entryValue, serializer);
+             
+             proxy._initialValue = proxy.owner;
            } else {
              proxy._initialValue = serializer.convertIn(entry.type, entryValue);
            }
@@ -258,9 +246,7 @@ class Entity extends ObservableBase implements IExternalizable {
     data[SerializationType.ENTITY_TYPE] = _scan.refClassName;
     data[SerializationType.UID] = _uid;
     
-    if (convertedEntities == null) {
-      convertedEntities = new Map<int, Map<String, dynamic>>();
-    }
+    if (convertedEntities == null) convertedEntities = new Map<int, Map<String, dynamic>>();
     
     convertedEntities[_uid] = data;
     
