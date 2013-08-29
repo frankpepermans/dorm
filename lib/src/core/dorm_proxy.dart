@@ -63,13 +63,17 @@ class DormProxy<T> {
   //
   //-----------------------------------
   
-  void validate() {
-    if (!isMutable) throw new DormError('$property is immutable');
+  MetadataValidationResult validate(Entity entity) {
+    if (!entity.isMutable) return new MetadataValidationResult(entity, property, propertySymbol, MetadataValidationReason.ENTITY_NOT_MUTABLE);
+    
+    if (!isMutable) return new MetadataValidationResult(entity, property, propertySymbol, MetadataValidationReason.PROPERTY_NOT_MUTABLE);
     
     if (
       !isNullable &&
       (_value == null)
-    ) throw new DormError('$property is not nullable');
+    ) return new MetadataValidationResult(entity, property, propertySymbol, MetadataValidationReason.PROPERTY_NOT_NULLABLE);
+    
+    return null;
   }
   
 }

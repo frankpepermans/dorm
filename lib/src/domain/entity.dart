@@ -156,9 +156,20 @@ class Entity extends ObservableBase implements IExternalizable {
     result.metadataCache._getMetadataExternal();
   }
   
-  void validate() => _scan._proxies.forEach(
-      (_ProxyEntry entry) => entry.proxy.validate()
-  );
+  List<MetadataValidationResult> validate() {
+    MetadataValidationResult validationResult;
+    List<MetadataValidationResult> validationResultList = <MetadataValidationResult>[];
+    
+    _scan._proxies.forEach(
+        (_ProxyEntry entry) {
+          validationResult = entry.proxy.validate(this);
+          
+          if (validationResult != null) validationResultList.add(validationResult);
+        }
+    );
+    
+    return validationResultList;
+  }
   
   bool isDirty() => (
       _scan._proxies.firstWhere(
