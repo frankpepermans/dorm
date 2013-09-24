@@ -77,6 +77,15 @@ class Entity extends ObservableBase implements IExternalizable {
   //
   //-----------------------------------
   
+  String getPropertyNameFromSymbol(Symbol propertySymbol) {
+    _ProxyEntry match = _scan._proxies.firstWhere(
+        (_ProxyEntry entry) => (entry.propertySymbol == propertySymbol),
+        orElse: () => null
+    );
+    
+    return (match != null) ? match.property : null;
+  }
+  
   bool setDefaultPropertyValue(String propertyName, dynamic propertyValue) {
     _ProxyEntry result = _scan._proxies.firstWhere(
         (_ProxyEntry entry) => (entry.property == propertyName),
@@ -153,7 +162,7 @@ class Entity extends ObservableBase implements IExternalizable {
         orElse: () => null
     );
     
-    result.metadataCache._getMetadataExternal();
+    return (result != null) ? result.metadataCache._getMetadataExternal() : null;
   }
   
   List<MetadataValidationResult> validate() {
@@ -188,18 +197,22 @@ class Entity extends ObservableBase implements IExternalizable {
     
     proxies.forEach(
          (_ProxyEntry entry) {
-           dynamic entryValue = data[entry.property];
-           
            DormProxy proxy = entry.proxy;
            
-           if (entryValue is Map) {
-             proxy._initialValue = factory.spawnSingle(entryValue, serializer, proxy:proxy);
-           } else if (entryValue is Iterable) {
-             proxy.owner = factory.spawn(entryValue, serializer);
+           if (data.containsKey(entry.property)) {
+             dynamic entryValue = data[entry.property];
              
-             proxy._initialValue = proxy.owner;
-           } else {
-             proxy._initialValue = serializer.convertIn(entry.type, entryValue);
+             if (entryValue is Map) {
+               proxy._initialValue = factory.spawnSingle(entryValue, serializer, proxy:proxy);
+             } else if (entryValue is Iterable) {
+               proxy.owner = factory.spawn(entryValue, serializer);
+               
+               proxy._initialValue = proxy.owner;
+             } else {
+               proxy._initialValue = serializer.convertIn(entry.type, entryValue);
+             }
+             
+             proxy.hasDelta = true;
            }
          }
     );

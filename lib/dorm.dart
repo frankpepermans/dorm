@@ -102,6 +102,7 @@
  */
 library dorm;
 
+import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
 import 'dart:core';
@@ -117,6 +118,7 @@ part 'src/core/dorm_manager.dart';
 part 'src/core/dorm_proxy.dart';
 part 'src/core/entity_key.dart';
 part 'src/core/entity_scan.dart';
+part 'src/core/lazy_loader.dart';
 part 'src/core/metadata_cache.dart';
 part 'src/core/metadata_validation_result.dart';
 
@@ -128,6 +130,10 @@ part 'src/serialization/serialization_type.dart';
 part 'src/serialization/serializer.dart';
 part 'src/serialization/serializer_json.dart';
 
+final LazyLoader lazyLoader = new LazyLoader();
+
 typedef SerializerBase = Object with SerializerMixin;
 
 typedef ConflictManager OnConflictFunction(Entity serverEntity, Entity clientEntity);
+
+typedef Future LazyLoaderMethod(Entity entity, Symbol symbol);

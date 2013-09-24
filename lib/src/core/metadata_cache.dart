@@ -26,6 +26,7 @@ class MetadataCache {
       case DefaultValue:    entry.metadataCache.initialValue = (reflectee as DefaultValue).value;       break;
       case LabelField:      entry.metadataCache.isLabelField = true;                                    break;
       case Immutable:       entry.metadataCache.isMutable = false;                                      break;
+      case Lazy:            entry.metadataCache.isLazy = true;                                          break;
     }
   }
   
@@ -43,6 +44,7 @@ class MetadataCache {
     entry.proxy.isNullable = entry.metadataCache.isNullable;
     entry.proxy.isLabelField = entry.metadataCache.isLabelField;
     entry.proxy.isMutable = (scan.isMutableEntity && entry.metadataCache.isMutable);
+    entry.proxy.isLazy = entry.metadataCache.isLazy;
     
     entry.proxy._initialValue = entry.metadataCache.initialValue;
   }
@@ -63,6 +65,7 @@ class _PropertyMetadataCache {
   bool isNullable = true;
   bool isLabelField = false;
   bool isMutable = true;
+  bool isLazy = false;
   
   dynamic initialValue = null;
   
@@ -74,7 +77,8 @@ class _PropertyMetadataCache {
         isTransient, 
         isNullable, 
         isLabelField, 
-        isMutable
+        isMutable,
+        isLazy
     );
   }
 }
@@ -86,7 +90,8 @@ class MetadataExternalized {
   final bool isNullable;
   final bool isLabelField;
   final bool isMutable;
+  final bool isLazy;
   
-  const MetadataExternalized(this.isId, this.isTransient, this.isNullable, this.isLabelField, this.isMutable);
+  const MetadataExternalized(this.isId, this.isTransient, this.isNullable, this.isLabelField, this.isMutable, this.isLazy);
   
 }

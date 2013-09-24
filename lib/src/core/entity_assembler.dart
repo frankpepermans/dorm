@@ -36,6 +36,12 @@ class EntityAssembler {
   
   //---------------------------------
   //
+  // Public properties
+  //
+  //---------------------------------
+  
+  //---------------------------------
+  //
   // Singleton Constructor
   //
   //---------------------------------
@@ -217,7 +223,7 @@ class EntityAssembler {
               orElse: () => null
             );
             
-            if (entryMatch != null) entryA.proxy._initialValue = existingEntity.notifyPropertyChange(entryA.proxy.propertySymbol, entryA.proxy._value, entryMatch.proxy._value);
+            if (entryMatch != null && entryMatch.proxy.hasDelta) entryA.proxy._initialValue = existingEntity.notifyPropertyChange(entryA.proxy.propertySymbol, entryA.proxy._value, entryMatch.proxy._value);
           }
       );
     }

@@ -10,6 +10,7 @@ class DormProxy<T> {
 
   T _defaultValue;
   T _value;
+  Future<T> _lazyFuture;
   
   set _initialValue(T value) {
     _defaultValue = value;
@@ -29,15 +30,20 @@ class DormProxy<T> {
   T get value => _value;
   set value(T newValue) => _value = newValue;
   
+  Future<T> get lazyFuture => _lazyFuture;
+  set lazyFuture(Future<T> newValue) => _lazyFuture = newValue;
+  
   final String property;
   
   Symbol propertySymbol;
   ObservableList<dynamic> owner;
+  bool hasDelta = false;
   bool isId = false;
   bool isTransient = false;
   bool isMutable = true;
   bool isNullable = true;
   bool isLabelField = false;
+  bool isLazy = false;
   
   int dataType = 0;
   
