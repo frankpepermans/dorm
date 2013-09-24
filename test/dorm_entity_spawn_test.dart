@@ -25,6 +25,8 @@ _afterWarmup() {
   
   String rawDataA = '[{"id":1,"name":"Test A","date":1234567890,"?t":"entities.testEntity"}]';
   String rawDataB = '[{"id":2,"name":"Test B","date":1234567890,"?t":"entities.testEntity"}]';
+  String rawDataC = '[{"id":3,"name":"Test C","date":1234567890,"?t":"entities.testEntity"}]';
+  String rawDataD = '[{"id":4,"name":"Test D","date":1234567890,"?t":"entities.testEntity"}]';
   
   test('Simple spawn test', () {
     EntityFactory<TestEntity> factory = new EntityFactory(handleConflictAcceptClient);
@@ -67,15 +69,15 @@ _afterWarmup() {
     TestEntity entity;
     
     // first test, after a client change, reload the entity and expect it not to be overwritten
-    entity = factory.spawn(serializer.incoming(rawDataA), serializer).first;
+    entity = factory.spawn(serializer.incoming(rawDataC), serializer).first;
     
-    entity.name = 'Test C';
+    entity.name = 'Test C edited';
     
     expect(entity.isDirty(), true);
     
-    TestEntity spawnedEntity = factory.spawn(serializer.incoming(rawDataA), serializer).first; // reload and accept client
+    TestEntity spawnedEntity = factory.spawn(serializer.incoming(rawDataC), serializer).first; // reload and accept client
     
-    expect(entity.name, 'Test C');
+    expect(entity.name, 'Test C edited');
     expect((entity == spawnedEntity), true);
     expect(entity.isDirty(), true);
   });
@@ -85,15 +87,15 @@ _afterWarmup() {
     TestEntity entity;
     
     // first test, after a client change, reload the entity and expect it not to be overwritten
-    entity = factory.spawn(serializer.incoming(rawDataA), serializer).first;
+    entity = factory.spawn(serializer.incoming(rawDataD), serializer).first;
     
-    entity.name = 'Test C';
+    entity.name = 'Test D edited';
     
     expect(entity.isDirty(), true);
     
-    TestEntity spawnedEntity = factory.spawn(serializer.incoming(rawDataA), serializer).first; // reload and accept server
+    TestEntity spawnedEntity = factory.spawn(serializer.incoming(rawDataD), serializer).first; // reload and accept server
     
-    expect(entity.name, 'Test A');
+    expect(entity.name, 'Test D');
     expect((entity == spawnedEntity), true);
     expect(entity.isDirty(), false);
   });
