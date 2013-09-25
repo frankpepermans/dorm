@@ -159,7 +159,7 @@ class EntityAssembler {
       
       entityScan._unusedInstance = null;
     } else {
-      spawnee = entityScan._contructorMethod();
+      spawnee = entityScan._entityCtor();
     }
     
     spawnee.readExternal(rawData, serializer, onConflict);
@@ -216,9 +216,9 @@ class EntityAssembler {
       
       entryProxies.forEach(
           (_ProxyEntry entryA) {
-            spawneeProxies = spawnee._scan._proxies;
+            final spawneeProxies = spawnee._scan._proxies;
             
-            _ProxyEntry entryMatch = spawneeProxies.firstWhere(
+            final _ProxyEntry entryMatch = spawneeProxies.firstWhere(
               (_ProxyEntry entryB) => (entryA.property == entryB.property),
               orElse: () => null
             );
@@ -270,7 +270,7 @@ class EntityAssembler {
   
   EntityScan _existingFromScanRegistry(String refClassName) {
     return _entityScans.firstWhere(
-      (EntityScan scan) => (scan.refClassName == refClassName),
+      (EntityScan scan) => (scan.refClassName.compareTo(refClassName) == 0),
       orElse: () => null
     );
   }

@@ -32,9 +32,7 @@ class EntityKey {
   //
   //---------------------------------
   
-  void operator []= (Symbol key, dynamic value) {
-    _setKeyValue(key, value);
-  }
+  void operator []= (Symbol key, dynamic value) => _setKeyValueNoReturn(key, value);
   
   EntityKey operator [] (List otherKey) => _map[otherKey[0]][otherKey[1]];
   
@@ -95,5 +93,17 @@ class EntityKey {
     }
     
     return mainKey[value];
+  }
+  
+  void _setKeyValueNoReturn(Symbol key, dynamic value) {
+    Map<dynamic, EntityKey> mainKey = _map[key];
+    
+    if (mainKey == null) {
+      mainKey = <dynamic, EntityKey>{value: new EntityKey()};
+      
+      _map[key] = mainKey;
+    } else if (!mainKey.containsKey(value)) {
+      mainKey[value] = new EntityKey();
+    }
   }
 }

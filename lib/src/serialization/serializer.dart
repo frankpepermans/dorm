@@ -35,8 +35,8 @@ abstract class SerializerMixin<T> implements Serializer {
   //
   //-----------------------------------
   
-  Iterable incoming(T data) => data;
-  String outgoing(dynamic data) => data;
+  Iterable incoming(T data);
+  T outgoing(dynamic data);
   
   void addRule(Type forType, dynamic incoming(dynamic value), dynamic outgoing(dynamic value)) =>
     _convertors.add(new _InternalConvertor(forType, incoming, outgoing));

@@ -29,15 +29,15 @@ class LazyLoader {
       orElse: () => null
     );
     
-    return (handler == null) ? null : handler.handler(entity, forSymbol);
+    return (handler == null) ? null : handler.method(entity, forSymbol);
   }
 }
 
 class _InternalLazyLoaderHandler {
   
   final Symbol forSymbol;
-  final LazyLoaderMethod handler;
+  final LazyLoaderMethod method;
   
-  const _InternalLazyLoaderHandler(this.forSymbol, this.handler);
+  const _InternalLazyLoaderHandler(this.forSymbol, this.method);
   
 }

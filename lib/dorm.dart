@@ -137,3 +137,5 @@ typedef SerializerBase = Object with SerializerMixin;
 typedef ConflictManager OnConflictFunction(Entity serverEntity, Entity clientEntity);
 
 typedef Future LazyLoaderMethod(Entity entity, Symbol symbol);
+
+typedef Entity EntityCtor();

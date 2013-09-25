@@ -9,7 +9,7 @@ class EntityScan {
   //---------------------------------
   
   EntityScan _original;
-  Function _contructorMethod;
+  EntityCtor _entityCtor;
   Entity _unusedInstance;
   List<EntityScan> _keyCollection;
   MetadataCache _metadataCache;
@@ -57,17 +57,17 @@ class EntityScan {
   //
   //---------------------------------
   
-  EntityScan(this.refClassName, this._contructorMethod);
+  EntityScan(this.refClassName, this._entityCtor);
   
   EntityScan.fromScan(this._original, this.entity) {
-    this._contructorMethod = _original._contructorMethod;
+    this._entityCtor = _original._entityCtor;
     this._metadataCache = _original._metadataCache;
     this.refClassName = _original.refClassName;
     this.isMutableEntity = _original.isMutableEntity;
     
     _original._proxies.forEach(
        (_ProxyEntry entry) {
-         _ProxyEntry clonedEntry = entry.clone();
+         final _ProxyEntry clonedEntry = entry.clone();
          
          this._proxyMap[entry.property] = clonedEntry;
          
@@ -89,9 +89,7 @@ class EntityScan {
             (InstanceMirror classMetaData) => (classMetaData.reflectee is Immutable),
             orElse: () => null
         ) != null
-    ) {
-      isMutableEntity = false;
-    }
+    ) isMutableEntity = false;
   }
   
   void registerMetadataUsing(VariableMirror mirror) {

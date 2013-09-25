@@ -1,6 +1,6 @@
 part of dorm;
 
-class EntityFactory<T> {
+class EntityFactory<T extends Entity> {
   
   //---------------------------------
   //

@@ -16,7 +16,7 @@ class SerializerJson<T> extends SerializerBase {
   //
   //-----------------------------------
   
-  factory SerializerJson() => new SerializerJson<String>._contruct();
+  factory SerializerJson() => new SerializerJson<T>._contruct();
   
   //-----------------------------------
   //
@@ -26,7 +26,7 @@ class SerializerJson<T> extends SerializerBase {
   
   List<Map<String, dynamic>> incoming(T data) => JSON.decode(data);
   
-  String outgoing(dynamic data) {
+  T outgoing(dynamic data) {
     Entity._serializerWorkaround = this;
     
     if (
