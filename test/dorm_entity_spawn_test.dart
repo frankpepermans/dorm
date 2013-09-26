@@ -29,11 +29,11 @@ _afterWarmup() {
   String rawDataD = '[{"id":4,"name":"Test D","date":1234567890,"?t":"entities.testEntity"}]';
   
   test('Simple spawn test', () {
-    EntityFactory<TestEntity> factory = new EntityFactory(handleConflictAcceptClient);
+    EntityFactory<TestEntity> factory = new EntityFactory();
     
-    TestEntity entity = factory.spawn(serializer.incoming(rawDataA), serializer).first;
-    TestEntity entityShouldBePointer = factory.spawn(serializer.incoming(rawDataA), serializer).first;
-    TestEntity entityShouldNotBePointer = factory.spawn(serializer.incoming(rawDataB), serializer).first;
+    TestEntity entity = factory.spawn(serializer.incoming(rawDataA), serializer, handleConflictAcceptClient).first;
+    TestEntity entityShouldBePointer = factory.spawn(serializer.incoming(rawDataA), serializer, handleConflictAcceptClient).first;
+    TestEntity entityShouldNotBePointer = factory.spawn(serializer.incoming(rawDataB), serializer, handleConflictAcceptClient).first;
     
     entityShouldNotBePointer.cyclicReference = entity;
     entity.cyclicReference = entityShouldNotBePointer;
@@ -65,17 +65,17 @@ _afterWarmup() {
   });
   
   test('Conflict manager, accept client test', () {
-    EntityFactory<TestEntity> factory = new EntityFactory(handleConflictAcceptClient);
+    EntityFactory<TestEntity> factory = new EntityFactory();
     TestEntity entity;
     
     // first test, after a client change, reload the entity and expect it not to be overwritten
-    entity = factory.spawn(serializer.incoming(rawDataC), serializer).first;
+    entity = factory.spawn(serializer.incoming(rawDataC), serializer, handleConflictAcceptClient).first;
     
     entity.name = 'Test C edited';
     
     expect(entity.isDirty(), true);
     
-    TestEntity spawnedEntity = factory.spawn(serializer.incoming(rawDataC), serializer).first; // reload and accept client
+    TestEntity spawnedEntity = factory.spawn(serializer.incoming(rawDataC), serializer, handleConflictAcceptClient).first; // reload and accept client
     
     expect(entity.name, 'Test C edited');
     expect((entity == spawnedEntity), true);
@@ -83,17 +83,17 @@ _afterWarmup() {
   });
   
   test('Conflict manager, accept server test', () {
-    EntityFactory<TestEntity> factory = new EntityFactory(handleConflictAcceptServer);
+    EntityFactory<TestEntity> factory = new EntityFactory();
     TestEntity entity;
     
     // first test, after a client change, reload the entity and expect it not to be overwritten
-    entity = factory.spawn(serializer.incoming(rawDataD), serializer).first;
+    entity = factory.spawn(serializer.incoming(rawDataD), serializer, handleConflictAcceptServer).first;
     
     entity.name = 'Test D edited';
     
     expect(entity.isDirty(), true);
     
-    TestEntity spawnedEntity = factory.spawn(serializer.incoming(rawDataD), serializer).first; // reload and accept server
+    TestEntity spawnedEntity = factory.spawn(serializer.incoming(rawDataD), serializer, handleConflictAcceptServer).first; // reload and accept server
     
     expect(entity.name, 'Test D');
     expect((entity == spawnedEntity), true);
@@ -104,7 +104,7 @@ _afterWarmup() {
 }
 
 void _runBenchmark() {
-  EntityFactory<TestEntity> factory = new EntityFactory(handleConflictAcceptClient);
+  EntityFactory<TestEntity> factory = new EntityFactory();
   List<String> jsonRaw = <String>[];
   int loopCount = 1000;
   int i = loopCount;
@@ -116,7 +116,7 @@ void _runBenchmark() {
   
   Stopwatch stopwatch = new Stopwatch()..start();
   
-  factory.spawn(serializer.incoming('[' + jsonRaw.join(',') + ']'), serializer);
+  factory.spawn(serializer.incoming('[' + jsonRaw.join(',') + ']'), serializer, handleConflictAcceptClient);
   
   stopwatch.stop();
   

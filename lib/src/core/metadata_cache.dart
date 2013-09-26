@@ -46,7 +46,7 @@ class MetadataCache {
     entry.proxy.isMutable = (scan.isMutableEntity && entry.metadataCache.isMutable);
     entry.proxy.isLazy = entry.metadataCache.isLazy;
     
-    entry.proxy._initialValue = entry.metadataCache.initialValue;
+    entry.proxy.setInitialValue(entry.metadataCache.initialValue);
   }
 }
 

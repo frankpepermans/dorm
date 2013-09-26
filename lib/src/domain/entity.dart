@@ -188,7 +188,7 @@ class Entity extends ObservableBase implements IExternalizable {
   );
   
   void readExternal(Map<String, dynamic> data, Serializer serializer, OnConflictFunction onConflict) {
-    EntityFactory<Entity> factory = new EntityFactory(onConflict);
+    EntityFactory<Entity> factory = new EntityFactory();
     Iterable<_ProxyEntry> proxies;
     
     _isPointer = data.containsKey(SerializationType.POINTER);
@@ -196,31 +196,25 @@ class Entity extends ObservableBase implements IExternalizable {
     proxies = _isPointer ? _scan._identityProxies : _scan._proxies;
     
     proxies.forEach(
-         (_ProxyEntry entry) {
-           DormProxy proxy = entry.proxy;
+       (_ProxyEntry entry) {
+         DormProxy proxy = entry.proxy..hasDelta = true;
+         
+         dynamic entryValue = data[entry.property];
+         
+         if (entryValue is Map) {
+           proxy.setInitialValue(factory.spawnSingle(entryValue, serializer, onConflict, proxy:proxy));
+         } else if (entryValue is Iterable) {
+           proxy.owner = factory.spawn(entryValue, serializer, onConflict);
            
-           if (data.containsKey(entry.property)) {
-             dynamic entryValue = data[entry.property];
-             
-             if (entryValue is Map) {
-               proxy._initialValue = factory.spawnSingle(entryValue, serializer, proxy:proxy);
-             } else if (entryValue is Iterable) {
-               proxy.owner = factory.spawn(entryValue, serializer);
-               
-               proxy._initialValue = proxy.owner;
-             } else {
-               proxy._initialValue = serializer.convertIn(entry.type, entryValue);
-             }
-             
-             proxy.hasDelta = true;
-           }
+           proxy.setInitialValue(proxy.owner);
+         } else if (entryValue != null) {
+           proxy.setInitialValue(serializer.convertIn(entry.type, entryValue));
          }
+       }
     );
   }
   
-  void writeExternal(Map<String, dynamic> data, Serializer serializer) {
-    _writeExternalImpl(data, null, serializer);
-  }
+  void writeExternal(Map<String, dynamic> data, Serializer serializer) => _writeExternalImpl(data, null, serializer);
   
   String toJson({Map<String, Map<String, dynamic>> convertedEntities}) {
     Map<String, dynamic> jsonMap = new Map<String, dynamic>();

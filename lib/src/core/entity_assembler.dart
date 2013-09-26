@@ -223,7 +223,7 @@ class EntityAssembler {
               orElse: () => null
             );
             
-            if (entryMatch != null && entryMatch.proxy.hasDelta) entryA.proxy._initialValue = existingEntity.notifyPropertyChange(entryA.proxy.propertySymbol, entryA.proxy._value, entryMatch.proxy._value);
+            if (entryMatch != null && entryMatch.proxy.hasDelta) entryA.proxy.setInitialValue(existingEntity.notifyPropertyChange(entryA.proxy.propertySymbol, entryA.proxy._value, entryMatch.proxy._value));
           }
       );
     }
@@ -239,7 +239,7 @@ class EntityAssembler {
       proxy = _pendingProxies[--i];
       
       if (_keyChain.areSameKeySignature(proxy._value, actualEntity)) {
-        proxy._initialValue = actualEntity;
+        proxy.setInitialValue(actualEntity);
         
         _pendingProxies.remove(proxy);
       }

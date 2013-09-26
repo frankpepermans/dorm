@@ -12,11 +12,6 @@ class DormProxy<T> {
   T _value;
   Future<T> _lazyFuture;
   
-  set _initialValue(T value) {
-    _defaultValue = value;
-    _value = value;
-  }
-  
   //-----------------------------------
   //
   // Public properties
@@ -82,4 +77,8 @@ class DormProxy<T> {
     return null;
   }
   
+  void setInitialValue(T value) {
+    _defaultValue = value;
+    _value = value;
+  }
 }
