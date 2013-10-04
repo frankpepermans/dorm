@@ -20,7 +20,8 @@ class MetadataCache {
     if (entry.metadataCache == null) entry.metadataCache = new _PropertyMetadataCache(entry.property);
     
     switch (reflectee.runtimeType) {
-      case Id:              entry.metadataCache.isId = true;                                            break;
+      case Id:              entry.metadataCache.isId = true;
+                            entry.metadataCache.insertValue = (reflectee as Id).insertValue;            break;
       case Transient:       entry.metadataCache.isTransient = true;                                     break;
       case NotNullable:     entry.metadataCache.isNullable = false;                                     break;
       case DefaultValue:    entry.metadataCache.initialValue = (reflectee as DefaultValue).value;       break;
@@ -46,6 +47,7 @@ class MetadataCache {
     entry.proxy.isMutable = (scan.isMutableEntity && entry.metadataCache.isMutable);
     entry.proxy.isLazy = entry.metadataCache.isLazy;
     
+    entry.proxy.setInsertValue(entry.metadataCache.insertValue);
     entry.proxy.setInitialValue(entry.metadataCache.initialValue);
   }
 }
@@ -67,6 +69,7 @@ class _PropertyMetadataCache {
   bool isMutable = true;
   bool isLazy = false;
   
+  dynamic insertValue = null;
   dynamic initialValue = null;
   
   _PropertyMetadataCache(this.property);

@@ -74,9 +74,11 @@ class Transient {
 
 class Id {
   
-  const Id();
+  final dynamic insertValue;
   
-  String toString() => 'id';
+  const Id(this.insertValue);
+  
+  String toString() => 'id $insertValue';
   
 }
 

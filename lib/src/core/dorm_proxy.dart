@@ -7,7 +7,8 @@ class DormProxy<T> {
   // Private properties
   //
   //-----------------------------------
-
+  
+  T _insertValue;
   T _defaultValue;
   T _value;
   Future<T> _lazyFuture;
@@ -75,6 +76,10 @@ class DormProxy<T> {
     ) return new MetadataValidationResult(entity, property, propertySymbol, MetadataValidationReason.PROPERTY_NOT_NULLABLE);
     
     return null;
+  }
+  
+  void setInsertValue(T value) {
+    _insertValue = value;
   }
   
   void setInitialValue(T value) {

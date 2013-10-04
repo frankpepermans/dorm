@@ -71,7 +71,23 @@ class EntityScan {
          
          this._proxyMap[entry.property] = clonedEntry;
          
-         if (clonedEntry.isIdentity) this._identityProxies.add(clonedEntry);
+         if (clonedEntry.isIdentity) {
+           this._identityProxies.add(clonedEntry);
+           
+           entity.changes.listen(
+            (List<ChangeRecord> changes)  {
+              PropertyChangeRecord matchingChange = changes.firstWhere(
+                    (ChangeRecord change) => ((change is PropertyChangeRecord) && ((change as PropertyChangeRecord).field == clonedEntry.propertySymbol)),
+                    orElse: () => null
+              );
+              
+              if (
+                  (matchingChange != null) &&
+                  !entity.isUnsaved()
+              ) buildKey();
+            }
+           );
+         }
        }
     );
   }

@@ -1,6 +1,6 @@
 part of dorm;
 
-class Entity extends ObservableBase implements IExternalizable {
+class Entity extends ObservableBase implements Externalizable {
   
   static final EntityAssembler ASSEMBLER = new EntityAssembler();
   
@@ -146,6 +146,35 @@ class Entity extends ObservableBase implements IExternalizable {
     return result;
   }
   
+  Map<String, dynamic> getInsertValues() {
+    Map<String, dynamic> result = <String, dynamic>{};
+    
+    _scan._identityProxies.forEach(
+      (_ProxyEntry entry) => result[entry.property] = entry.proxy._insertValue 
+    );
+    
+    return result;
+  }
+  
+  bool isUnsaved() {
+    _ProxyEntry nonInsertIdentityProxy = _scan._identityProxies.firstWhere(
+        (_ProxyEntry entry) => (entry.proxy._value != entry.proxy._insertValue),
+        orElse: () => null
+    );
+    
+    return (nonInsertIdentityProxy == null);
+  }
+  
+  void setUnsaved() {
+    _scan._identityProxies.forEach(
+        (_ProxyEntry entry) => entry.proxy._value = notifyPropertyChange(
+            entry.proxy.propertySymbol, 
+            entry.proxy._value,
+            entry.proxy._insertValue
+        )
+    );
+  }
+  
   List<String> getPropertyList() {
     List<String> result = <String>[];
     
@@ -188,7 +217,8 @@ class Entity extends ObservableBase implements IExternalizable {
   );
   
   void readExternal(Map<String, dynamic> data, Serializer serializer, OnConflictFunction onConflict) {
-    EntityFactory<Entity> factory = new EntityFactory();
+    final EntityFactory<Entity> factory = new EntityFactory();
+    
     Iterable<_ProxyEntry> proxies;
     
     _isPointer = data.containsKey(SerializationType.POINTER);
@@ -241,24 +271,6 @@ class Entity extends ObservableBase implements IExternalizable {
   // Private methods
   //
   //---------------------------------
-  
-  void _identityKeyListener(List<ChangeRecord> changes) {
-    changes.forEach(
-        (ChangeRecord change) {
-          if (change is PropertyChangeRecord) {
-            _ProxyEntry result = _scan._identityProxies.firstWhere(
-                (_ProxyEntry entry) => (entry.proxy.propertySymbol == (change as PropertyChangeRecord).field),
-                orElse: () => null
-            );
-            
-            if (
-                (result != null) &&
-                result.proxy.isId
-            ) _scan.buildKey();
-          }
-        }
-    );
-  }
   
   void _writeExternalImpl(Map<String, dynamic> data, Map<int, Map<String, dynamic>> convertedEntities, Serializer serializer) {
     data[SerializationType.ENTITY_TYPE] = _scan.refClassName;

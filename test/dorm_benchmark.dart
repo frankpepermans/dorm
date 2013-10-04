@@ -15,7 +15,7 @@ main() {
 }
 
 void _runBenchmark() {
-  EntityFactory<TestEntity> factory = new EntityFactory(handleConflictAcceptClient);
+  EntityFactory<TestEntity> factory = new EntityFactory();
   List<String> jsonRaw = <String>[];
   int loopCount = 10000;
   int i = loopCount;
@@ -37,7 +37,7 @@ void _runBenchmark() {
   
   stopwatch = new Stopwatch()..start();
   
-  factory.spawn(parsed, serializer);
+  factory.spawn(parsed, serializer, handleConflictAcceptClient);
   
   stopwatch.stop();
   
@@ -76,7 +76,7 @@ class TestEntitySuperClass extends Entity {
   //---------------------------------
 
   @Property(ID_SYMBOL, 'id', int)
-  @Id()
+  @Id(0)
   @NotNullable()
   @DefaultValue(0)
   @Immutable()

@@ -163,6 +163,17 @@ class EntityAssembler {
     }
     
     spawnee.readExternal(rawData, serializer, onConflict);
+    
+    final bool isSpawneeUnsaved = spawnee.isUnsaved();
+    
+    if (isSpawneeUnsaved) {
+      if (spawnee._isPointer) {
+        throw new DormError('Ambiguous reference, entity is unsaved and is also a pointer');
+      } else {
+        return spawnee;
+      }
+    }
+    
     spawnee._scan.buildKey();
     
     localNonPointerEntity = _keyChain.getFirstSibling(spawnee, allowPointers: false);

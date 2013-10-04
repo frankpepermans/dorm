@@ -37,14 +37,14 @@ class ServiceBase {
     ).then(
         (HttpRequest request) {
           if (request.responseText.length > 0) {
-            EntityFactory<Entity> factory = new EntityFactory(onConflict);
+            EntityFactory<Entity> factory = new EntityFactory();
             Stopwatch stopwatch;
             
             stopwatch = new Stopwatch()..start();
             
             List<Map<String, dynamic>> result = serializer.incoming(request.responseText);
             
-            ObservableList<Entity> spawned = factory.spawn(result, serializer);
+            ObservableList<Entity> spawned = factory.spawn(result, serializer, onConflict);
             
             stopwatch.stop();
             

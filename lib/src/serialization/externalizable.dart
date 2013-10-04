@@ -1,6 +1,6 @@
 part of dorm;
 
-abstract class IExternalizable {
+abstract class Externalizable {
   
   //-----------------------------------
   //
