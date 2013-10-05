@@ -9,6 +9,7 @@ class EntityFactory<T extends Entity> {
   //---------------------------------
   
   final EntityAssembler _assembler = new EntityAssembler();
+  final List<EntityPostProcessor> _postProcessors = <EntityPostProcessor>[];
   
   //---------------------------------
   //
@@ -38,18 +39,47 @@ class EntityFactory<T extends Entity> {
   //
   //---------------------------------
   
+  void addPostProcessor(EntityPostProcessor postProcessor) {
+    
+  }
+  
+  void removePostProcessor(EntityPostProcessor postProcessor) {
+    
+  }
+  
   ObservableList<T> spawn(Iterable<Map<String, dynamic>> rawData, Serializer serializer, OnConflictFunction onConflict, {DormProxy proxy}) {
     ObservableList<T> results = new ObservableList<T>();
-    final Function spawner = _assembler._assemble;
-    final Function include = results.add;
     
     rawData.forEach(
-        (Map<String, dynamic> rawDataEntry) => include(spawner(rawDataEntry, proxy, serializer, onConflict))
+        (Map<String, dynamic> rawDataEntry) {
+          Entity entity = _assembler._assemble(rawDataEntry, proxy, serializer, onConflict);
+          
+          _postProcessors.forEach(
+            (EntityPostProcessor postProcessor) => postProcessor.handler(entity)
+          );
+          
+          results.add(entity);
+        }
     );
     
     return results;
   }
   
-  T spawnSingle(Map<String, dynamic> rawData, Serializer serializer, OnConflictFunction onConflict, {DormProxy proxy}) =>
-    _assembler._assemble(rawData, proxy, serializer, onConflict);
+  T spawnSingle(Map<String, dynamic> rawData, Serializer serializer, OnConflictFunction onConflict, {DormProxy proxy}) {
+      Entity entity = _assembler._assemble(rawData, proxy, serializer, onConflict);
+      
+      _postProcessors.forEach(
+          (EntityPostProcessor postProcessor) => postProcessor.handler(entity)
+      );
+      
+      return entity;
+  }
+}
+
+class EntityPostProcessor {
+  
+  final PostProcessorMethod handler;
+  
+  const EntityPostProcessor(this.handler);
+  
 }

@@ -138,4 +138,6 @@ typedef ConflictManager OnConflictFunction(Entity serverEntity, Entity clientEnt
 
 typedef Future LazyLoaderMethod(Entity entity, Symbol symbol);
 
+typedef void PostProcessorMethod(Entity entity);
+
 typedef Entity EntityCtor();
