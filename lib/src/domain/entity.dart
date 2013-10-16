@@ -282,39 +282,68 @@ class Entity extends ObservableBase implements Externalizable {
     
     _scan._proxies.forEach(
       (_ProxyEntry entry) {
-        if (
-            entry.proxy.isId ||
-            (entry.proxy._value != entry.proxy._defaultValue)
-        ) {
-          if (entry.proxy._value is Entity) {
-            Entity subEntity = entry.proxy._value;
+        if (entry.proxy._value is Entity) {
+          Entity subEntity = entry.proxy._value;
+          
+          if (convertedEntities.containsKey(subEntity._uid)) {
+            Map<String, dynamic> pointerMap = new Map<String, dynamic>();
             
-            if (convertedEntities.containsKey(subEntity._uid)) {
-              Map<String, dynamic> pointerMap = new Map<String, dynamic>();
-              
-              pointerMap[SerializationType.POINTER] = subEntity._uid;
-              pointerMap[SerializationType.ENTITY_TYPE] = subEntity._scan.refClassName;
-              
-              subEntity._scan._proxies.forEach(
-                  (_ProxyEntry subEntry) {
-                    if (subEntry.proxy.isId) {
-                      pointerMap[subEntry.property] = subEntry.proxy._value;
-                    }
+            pointerMap[SerializationType.POINTER] = subEntity._uid;
+            pointerMap[SerializationType.ENTITY_TYPE] = subEntity._scan.refClassName;
+            
+            subEntity._scan._proxies.forEach(
+                (_ProxyEntry subEntry) {
+                  if (subEntry.proxy.isId) pointerMap[subEntry.property] = subEntry.proxy._value;
+                }
+            );
+            
+            data[entry.property] = pointerMap;
+          } else {
+            data[entry.property] = new Map<String, dynamic>();
+            
+            subEntity._writeExternalImpl(data[entry.property], convertedEntities, serializer);
+          }
+        } else if (entry.proxy._value is List) {
+          List<dynamic> subList = entry.proxy._value as List;
+          List<dynamic> dataList = <dynamic>[];
+          
+          subList.forEach(
+              (dynamic listEntry) {
+                if (listEntry is Entity) {
+                  Entity subEntity = listEntry as Entity;
+                  Map<String, dynamic> entryData;
+                  
+                  if (convertedEntities.containsKey(subEntity._uid)) {
+                    Map<String, dynamic> pointerMap = new Map<String, dynamic>();
+                    
+                    pointerMap[SerializationType.POINTER] = subEntity._uid;
+                    pointerMap[SerializationType.ENTITY_TYPE] = subEntity._scan.refClassName;
+                    
+                    subEntity._scan._proxies.forEach(
+                        (_ProxyEntry subEntry) {
+                          if (subEntry.proxy.isId) pointerMap[subEntry.property] = subEntry.proxy._value;
+                        }
+                    );
+                    
+                    dataList.add(pointerMap);
+                  } else {
+                    entryData = new Map<String, dynamic>();
+                    
+                    subEntity._writeExternalImpl(entryData, convertedEntities, serializer);
+                    
+                    dataList.add(entryData);
                   }
-              );
-              
-              data[entry.property] = pointerMap;
-            } else {
-              data[entry.property] = new Map<String, dynamic>();
-              
-              subEntity._writeExternalImpl(data[entry.property], convertedEntities, serializer);
-            }
+                } else {
+                  dataList.add(serializer.convertOut(entry.type, entry.proxy._value));
+                }
+              }
+            );
+            
+            data[entry.property] = dataList;
           } else {
             data[entry.property] = serializer.convertOut(entry.type, entry.proxy._value);
           }
-        }
       }
     );
   }
-  
 }
