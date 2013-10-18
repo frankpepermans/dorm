@@ -194,6 +194,8 @@ class Entity extends ObservableBase implements Externalizable {
     return (result != null) ? result.metadataCache._getMetadataExternal() : null;
   }
   
+  Entity duplicate() => _duplicateImpl(<_ClonedEntityEntry>[]);
+  
   List<MetadataValidationResult> validate() {
     MetadataValidationResult validationResult;
     List<MetadataValidationResult> validationResultList = <MetadataValidationResult>[];
@@ -211,7 +213,13 @@ class Entity extends ObservableBase implements Externalizable {
   
   bool isDirty() => (
       _scan._proxies.firstWhere(
-          (_ProxyEntry entry) => (entry.proxy._value != entry.proxy._defaultValue),
+          (_ProxyEntry entry) => (
+              (entry.proxy._value != entry.proxy._defaultValue) ||
+              (
+                  entry.isIdentity && 
+                  (entry.proxy._value == entry.proxy._insertValue)
+              )
+          ),
           orElse: () => null
       ) != null
   );
@@ -271,6 +279,72 @@ class Entity extends ObservableBase implements Externalizable {
   // Private methods
   //
   //---------------------------------
+  
+  Entity _duplicateImpl(List<_ClonedEntityEntry> clonedEntities) {
+    if (_scan.isMutableEntity) {
+      _ClonedEntityEntry clonedEntity = clonedEntities.firstWhere(
+         (_ClonedEntityEntry cloneEntry) => (cloneEntry.original == this),
+         orElse: () => null
+      );
+      
+      if (clonedEntity != null) return clonedEntity.clone;
+      
+      Entity clone = _scan._entityCtor();
+      
+      clonedEntities.add(new _ClonedEntityEntry(this, clone));
+      
+      clone._scan._proxies.forEach(
+          (_ProxyEntry entry) {
+            if (entry.isIdentity) {
+              entry.proxy.setInitialValue(entry.proxy._insertValue);
+            } else {
+              dynamic value = this[entry.proxy.property];
+              
+              if (value is ObservableList) {
+                ObservableList listCast = value as ObservableList;
+                ObservableList listClone = new ObservableList();
+                
+                listCast.forEach(
+                  (dynamic listEntry) {
+                    if (listEntry is Entity) {
+                      Entity listEntryCast = listEntry as Entity;
+                      
+                      listClone.add(listEntryCast._duplicateImpl(clonedEntities));
+                    } else if (listEntry is DateTime) {
+                      listClone.add(clone._cloneDateTime(listEntry as DateTime));
+                    } else {
+                      try {
+                        listClone.add(listEntry.toClone());
+                      } catch (error) {
+                        listClone.add(listEntry);
+                      }
+                    }
+                  }
+                );
+                
+                entry.proxy.setInitialValue(listClone);
+              } else if (value is Entity) {
+                Entity entryCast = value as Entity;
+                
+                entry.proxy.setInitialValue(entryCast._duplicateImpl(clonedEntities));
+              } else if (value is DateTime) {
+                entry.proxy.setInitialValue(clone._cloneDateTime(value as DateTime));
+              } else {
+                try {
+                  entry.proxy.setInitialValue(value.toClone());
+                } catch (error) {
+                  entry.proxy.setInitialValue(value);
+                }
+              }
+            }
+          }
+      );
+      
+      return clone;
+    }
+    
+    return this;
+  }
   
   void _writeExternalImpl(Map<String, dynamic> data, Map<int, Map<String, dynamic>> convertedEntities, Serializer serializer) {
     data[SerializationType.ENTITY_TYPE] = _scan.refClassName;
@@ -346,4 +420,19 @@ class Entity extends ObservableBase implements Externalizable {
       }
     );
   }
+  
+  DateTime _cloneDateTime(DateTime value) {
+    final DateTime valueClone = new DateTime.fromMillisecondsSinceEpoch(value.millisecondsSinceEpoch, isUtc: value.isUtc);
+    
+    return valueClone;
+  }
+}
+
+class _ClonedEntityEntry {
+  
+  final Entity original;
+  final Entity clone;
+  
+  _ClonedEntityEntry(this.original, this.clone);
+  
 }

@@ -3,7 +3,7 @@ library dorm_entity_spawn_test;
 import 'package:unittest/unittest.dart';
 import 'package:dorm/dorm.dart';
 import 'package:dorm/dorm_test.dart';
-import 'dart:json';
+import 'dart:convert';
 
 Serializer serializer;
 int nextId = 1;
@@ -45,7 +45,7 @@ void run() {
     entity.cyclicReference = entityShouldNotBePointer;
     
     String outgoing = serializer.outgoing(<Entity>[entity, entityShouldNotBePointer]);
-    List<String> outgoingToComplexData = parse(outgoing);
+    List<String> outgoingToComplexData = JSON.decode(outgoing);
     
     expect(entity.id, 1);
     expect(entity.name, 'Test A');
@@ -60,7 +60,7 @@ void run() {
     
     outgoingToComplexData.forEach(
       (String entry) {
-        Map<String, dynamic> map = parse(entry);
+        Map<String, dynamic> map = JSON.decode(entry);
         
         expect(map.containsKey('id'), true);
         expect(map.containsKey(SerializationType.UID), true);
@@ -119,6 +119,16 @@ void run() {
     TestEntity entity = factory.spawnSingle(serializer.incoming(rawDataE).first, serializer, handleConflictAcceptServer);
   
     expect(entity.id, 1000);
+  });
+  
+  test('Cloning', ()  {
+    String rawDataE = generateJSONData('Test F', now);
+    EntityFactory<TestEntity> factory = new EntityFactory();
+    TestEntity entity = factory.spawnSingle(serializer.incoming(rawDataE).first, serializer, handleConflictAcceptServer);
+    TestEntity entityClone = entity.duplicate();
+  
+    expect(entityClone.name, 'Test F');
+    expect(entityClone.date.millisecondsSinceEpoch, entity.date.millisecondsSinceEpoch);
   });
 }
 

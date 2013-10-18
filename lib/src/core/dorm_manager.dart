@@ -11,6 +11,7 @@ class DormManager extends ObservableBase {
   List<Entity> _observeList = <Entity>[];
   List<Entity> _queue = <Entity>[];
   List<Entity> _deleteQueue = <Entity>[];
+  bool _forcedDirtyStatus = false;
   
   //-----------------------------------
   //
@@ -28,10 +29,23 @@ class DormManager extends ObservableBase {
   // queueLength
   //-----------------------------------
   
-  static const Symbol QUEUE_LENGTH = const Symbol('dorm.core.DormManager.queueLength');
+  static const Symbol IS_COMMIT_REQUIRED = const Symbol('dorm.core.DormManager.isCommitRequired');
   
-  int _queueLength;
-  int get queueLength => _queue.length + _deleteQueue.length;
+  bool _isCommitRequired = false;
+  
+  bool get isCommitRequired => _isCommitRequired;
+  
+  void _updateIsCommitRequired() {
+    bool status = (_forcedDirtyStatus || (_queue.length + _deleteQueue.length) > 0);
+    
+    if (status != _isCommitRequired) {
+      _isCommitRequired = status;
+      
+      notifyChange(
+          new PropertyChangeRecord(IS_COMMIT_REQUIRED)    
+      );
+    }
+  }
   
   //-----------------------------------
   //
@@ -49,6 +63,18 @@ class DormManager extends ObservableBase {
   //
   //-----------------------------------
   
+  void forceDirtyStatus(bool value) {
+    _forcedDirtyStatus = value;
+    
+    _updateIsCommitRequired();
+  }
+  
+  bool isQueued(Entity entity, {bool forDelete: false}) {
+    if (forDelete) return _deleteQueue.contains(entity);
+    
+    return _queue.contains(entity);
+  }
+  
   void queueAsDeleted(Entity entity) {
     if (
         entity._scan.isMutableEntity &&
@@ -56,9 +82,7 @@ class DormManager extends ObservableBase {
     ) {
       _deleteQueue.add(entity);
       
-      notifyChange(
-          new PropertyChangeRecord(QUEUE_LENGTH)    
-      );
+      _updateIsCommitRequired();
     }
   }
   
@@ -70,9 +94,7 @@ class DormManager extends ObservableBase {
     ) {
       _queue.add(entity);
       
-      notifyChange(
-          new PropertyChangeRecord(QUEUE_LENGTH)    
-      );
+      _updateIsCommitRequired();
     }
   }
   
@@ -81,9 +103,7 @@ class DormManager extends ObservableBase {
       if (_queue.contains(entity)) _queue.remove(entity);
       if (_deleteQueue.contains(entity)) _deleteQueue.remove(entity);
       
-      notifyChange(
-          new PropertyChangeRecord(QUEUE_LENGTH)    
-      );
+      _updateIsCommitRequired();
     }
   }
   
@@ -94,11 +114,11 @@ class DormManager extends ObservableBase {
   }
   
   void clear() {
+    _forcedDirtyStatus = false;
+    
     _flushInternal();
     
-    notifyChange(
-        new PropertyChangeRecord(QUEUE_LENGTH)    
-    );
+    _updateIsCommitRequired();
   }
   
   DormManagerCommitStructure getCommitStructure() {
