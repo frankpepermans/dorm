@@ -238,15 +238,22 @@ class Entity extends ObservableBase implements Externalizable {
          DormProxy proxy = entry.proxy..hasDelta = true;
          
          dynamic entryValue = data[entry.property];
+         dynamic value;
          
          if (entryValue is Map) {
-           proxy.setInitialValue(factory.spawnSingle(entryValue, serializer, onConflict, proxy:proxy));
+           value = factory.spawnSingle(entryValue, serializer, onConflict, proxy:proxy);
          } else if (entryValue is Iterable) {
            proxy.owner = factory.spawn(entryValue, serializer, onConflict);
            
-           proxy.setInitialValue(proxy.owner);
+           value = proxy.owner;
          } else if (entryValue != null) {
-           proxy.setInitialValue(serializer.convertIn(entry.type, entryValue));
+           value = serializer.convertIn(entry.type, entryValue);
+         }
+         
+         try {
+           proxy.setInitialValue(value);
+         } catch (error) {
+           throw new DormError('Could not set the value of ${proxy.property} using the value ${value}, perhaps you need to add a rule to the serializer?');
          }
        }
     );
