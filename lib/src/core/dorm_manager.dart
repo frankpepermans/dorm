@@ -30,6 +30,7 @@ class DormManager extends ObservableBase {
   //-----------------------------------
   
   static const Symbol IS_COMMIT_REQUIRED = const Symbol('dorm.core.DormManager.isCommitRequired');
+  static const Symbol IS_COMMIT_NOT_REQUIRED = const Symbol('dorm.core.DormManager.isCommitNotRequired');
   
   bool _isCommitRequired = false;
   
@@ -42,7 +43,7 @@ class DormManager extends ObservableBase {
       _isCommitRequired = status;
       
       notifyChange(
-          new PropertyChangeRecord(IS_COMMIT_REQUIRED)    
+          new PropertyChangeRecord(status ? IS_COMMIT_REQUIRED : IS_COMMIT_NOT_REQUIRED)    
       );
     }
   }
@@ -115,6 +116,7 @@ class DormManager extends ObservableBase {
   
   void clear() {
     _forcedDirtyStatus = false;
+    _isCommitRequired = false;
     
     _flushInternal();
     

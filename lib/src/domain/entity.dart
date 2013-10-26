@@ -47,18 +47,18 @@ class Entity extends ObservableBase implements Externalizable {
   //
   //-----------------------------------
   
-  dynamic operator [](String propertyName) {
+  dynamic operator [](dynamic propertyNameOrField) {
     _ProxyEntry result = _scan._proxies.firstWhere(
-      (_ProxyEntry entry) => (entry.property == propertyName),
+      (_ProxyEntry entry) => ((entry.propertySymbol == propertyNameOrField) || (entry.property == propertyNameOrField)),
       orElse: () => null
     );
     
     return (result != null) ? result.proxy._value : null;
   }
   
-  void operator []=(String propertyName, dynamic propertyValue) {
+  void operator []=(dynamic propertyNameOrField, dynamic propertyValue) {
     _ProxyEntry result = _scan._proxies.firstWhere(
-        (_ProxyEntry entry) => (entry.property == propertyName),
+        (_ProxyEntry entry) => ((entry.propertySymbol == propertyNameOrField) || (entry.property == propertyNameOrField)),
         orElse: () => null
     );
     
@@ -86,6 +86,15 @@ class Entity extends ObservableBase implements Externalizable {
     return (match != null) ? match.property : null;
   }
   
+  Symbol getSymbolFromPropertyName(String propertyName) {
+    _ProxyEntry match = _scan._proxies.firstWhere(
+        (_ProxyEntry entry) => (entry.property == propertyName),
+        orElse: () => null
+    );
+    
+    return (match != null) ? match.propertySymbol : null;
+  }
+  
   bool setDefaultPropertyValue(String propertyName, dynamic propertyValue) {
     _ProxyEntry result = _scan._proxies.firstWhere(
         (_ProxyEntry entry) => (entry.property == propertyName),
@@ -100,6 +109,12 @@ class Entity extends ObservableBase implements Externalizable {
     }
     
     return false;
+  }
+  
+  void setCurrentStatusIsDefaultStatus() {
+    _scan._proxies.forEach(
+        (_ProxyEntry entry) => entry.proxy._defaultValue = entry.proxy._value
+    );
   }
   
   List<Entity> getEntityTree({List<Entity> traversedEntities}) {
