@@ -77,7 +77,10 @@ class EntityScan {
            entity.changes.listen(
             (List<ChangeRecord> changes)  {
               PropertyChangeRecord matchingChange = changes.firstWhere(
-                    (ChangeRecord change) => ((change is PropertyChangeRecord) && ((change as PropertyChangeRecord).field == clonedEntry.propertySymbol)),
+                    (ChangeRecord change) => (
+                        (change is PropertyChangeRecord) && 
+                        change.changes(clonedEntry.propertySymbol)
+                    ),
                     orElse: () => null
               );
               

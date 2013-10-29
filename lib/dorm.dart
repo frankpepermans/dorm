@@ -132,7 +132,7 @@ part 'src/serialization/serializer_json.dart';
 
 final LazyLoader lazyLoader = new LazyLoader();
 
-typedef SerializerBase = Object with SerializerMixin;
+class SerializerBase = Object with SerializerMixin;
 
 typedef ConflictManager OnConflictFunction(Entity serverEntity, Entity clientEntity);
 
