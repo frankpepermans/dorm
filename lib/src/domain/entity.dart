@@ -227,16 +227,19 @@ class Entity extends ObservableBase implements Externalizable {
   }
   
   bool isDirty() => (
-      _scan._proxies.firstWhere(
-          (_ProxyEntry entry) => (
-              (entry.proxy._value != entry.proxy._defaultValue) ||
-              (
-                  entry.isIdentity && 
-                  (entry.proxy._value == entry.proxy._insertValue)
-              )
-          ),
-          orElse: () => null
-      ) != null
+      isMutable &&
+      (
+          _scan._proxies.firstWhere(
+              (_ProxyEntry entry) => (
+                  (entry.proxy._value != entry.proxy._defaultValue) ||
+                  (
+                      entry.isIdentity && 
+                      (entry.proxy._value == entry.proxy._insertValue)
+                  )
+              ),
+              orElse: () => null
+          ) != null
+      )    
   );
   
   void readExternal(Map<String, dynamic> data, Serializer serializer, OnConflictFunction onConflict) {

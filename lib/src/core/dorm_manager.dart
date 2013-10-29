@@ -81,6 +81,7 @@ class DormManager extends ObservableBase {
         entity._scan.isMutableEntity &&
         !_deleteQueue.contains(entity)
     ) {
+      _queue.remove(entity);
       _deleteQueue.add(entity);
       
       _updateIsCommitRequired();
@@ -93,6 +94,7 @@ class DormManager extends ObservableBase {
         !_queue.contains(entity) &&
         entity.isDirty()
     ) {
+      _deleteQueue.remove(entity);
       _queue.add(entity);
       
       _updateIsCommitRequired();

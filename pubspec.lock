@@ -16,12 +16,20 @@ packages:
   meta:
     description: meta
     source: hosted
-    version: "0.6.3+1"
+    version: "0.8.7"
   observe:
     description: observe
     source: hosted
     version: "0.6.3+1"
+  path:
+    description: path
+    source: hosted
+    version: "0.8.7"
+  stack_trace:
+    description: stack_trace
+    source: hosted
+    version: "0.8.7"
   unittest:
     description: unittest
     source: hosted
-    version: "0.6.3+1"
+    version: "0.8.7"
