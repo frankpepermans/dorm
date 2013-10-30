@@ -117,6 +117,12 @@ class Entity extends ObservableBase implements Externalizable {
     );
   }
   
+  void revertChanges() {
+    _scan._proxies.forEach(
+        (_ProxyEntry entry) => this[entry.proxy.propertySymbol] = entry.proxy._defaultValue
+    );
+  }
+  
   List<Entity> getEntityTree({List<Entity> traversedEntities}) {
     List<Entity> tree = (traversedEntities != null) ? traversedEntities : <Entity>[];
     
