@@ -342,7 +342,7 @@ class Entity extends ObservableBase implements Externalizable {
                       
                       listClone.add(listEntryCast._duplicateImpl(clonedEntities));
                     } else if (listEntry is DateTime) {
-                      listClone.add(clone._cloneDateTime(listEntry as DateTime));
+                      listClone.add(listEntry as DateTime);
                     } else {
                       /*try {
                         listClone.add(listEntry.toClone());
@@ -359,7 +359,7 @@ class Entity extends ObservableBase implements Externalizable {
                 
                 entry.proxy.setInitialValue(entryCast._duplicateImpl(clonedEntities));
               } else if (value is DateTime) {
-                entry.proxy.setInitialValue(clone._cloneDateTime(value as DateTime));
+                entry.proxy.setInitialValue(value as DateTime);
               } else {
                 /*try {
                   entry.proxy.setInitialValue(value.toClone());
@@ -450,12 +450,6 @@ class Entity extends ObservableBase implements Externalizable {
           }
       }
     );
-  }
-  
-  DateTime _cloneDateTime(DateTime value) {
-    final DateTime valueClone = new DateTime.fromMillisecondsSinceEpoch(value.millisecondsSinceEpoch, isUtc: value.isUtc);
-    
-    return valueClone;
   }
 }
 
