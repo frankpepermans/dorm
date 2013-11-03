@@ -253,7 +253,7 @@ class Entity extends ObservableBase implements Externalizable {
     
     Iterable<_ProxyEntry> proxies;
     
-    _isPointer = data.containsKey(SerializationType.POINTER);
+    _isPointer = (data[SerializationType.POINTER] != null);
     
     proxies = _isPointer ? _scan._identityProxies : _scan._proxies;
     
@@ -390,7 +390,7 @@ class Entity extends ObservableBase implements Externalizable {
         if (entry.proxy._value is Entity) {
           Entity subEntity = entry.proxy._value;
           
-          if (convertedEntities.containsKey(subEntity._uid)) {
+          if (convertedEntities[subEntity._uid] != null) {
             Map<String, dynamic> pointerMap = new Map<String, dynamic>();
             
             pointerMap[SerializationType.POINTER] = subEntity._uid;
@@ -418,7 +418,7 @@ class Entity extends ObservableBase implements Externalizable {
                   Entity subEntity = listEntry as Entity;
                   Map<String, dynamic> entryData;
                   
-                  if (convertedEntities.containsKey(subEntity._uid)) {
+                  if (convertedEntities[subEntity._uid] != null) {
                     Map<String, dynamic> pointerMap = new Map<String, dynamic>();
                     
                     pointerMap[SerializationType.POINTER] = subEntity._uid;

@@ -84,7 +84,7 @@ class EntityKey {
       _map[key] = mainKey;
       
       return returnValue;
-    } else if (!mainKey.containsKey(value)) {
+    } else if (mainKey[value] == null) {
       returnValue = new EntityKey();
       
       mainKey[value] = returnValue;
@@ -102,7 +102,7 @@ class EntityKey {
       mainKey = <dynamic, EntityKey>{value: new EntityKey()};
       
       _map[key] = mainKey;
-    } else if (!mainKey.containsKey(value)) {
+    } else if (mainKey[value] == null) {
       mainKey[value] = new EntityKey();
     }
   }
