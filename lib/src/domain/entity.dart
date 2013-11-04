@@ -3,6 +3,7 @@ part of dorm;
 class Entity extends ObservableBase implements Externalizable {
   
   static final EntityAssembler ASSEMBLER = new EntityAssembler();
+  static final EntityFactory FACTORY = new EntityFactory();
   
   // ugly workaround because toJSON can not take in any arguments
   static Serializer _serializerWorkaround;
@@ -249,13 +250,9 @@ class Entity extends ObservableBase implements Externalizable {
   );
   
   void readExternal(Map<String, dynamic> data, Serializer serializer, OnConflictFunction onConflict) {
-    final EntityFactory<Entity> factory = new EntityFactory();
-    
-    Iterable<_ProxyEntry> proxies;
-    
     _isPointer = (data[SerializationType.POINTER] != null);
     
-    proxies = _isPointer ? _scan._identityProxies : _scan._proxies;
+    final Iterable<_ProxyEntry> proxies = _isPointer ? _scan._identityProxies : _scan._proxies;
     
     proxies.forEach(
        (_ProxyEntry entry) {
@@ -265,9 +262,9 @@ class Entity extends ObservableBase implements Externalizable {
          dynamic value;
          
          if (entryValue is Map) {
-           value = factory.spawnSingle(entryValue, serializer, onConflict, proxy:proxy);
+           value = FACTORY.spawnSingle(entryValue, serializer, onConflict, proxy:proxy);
          } else if (entryValue is Iterable) {
-           proxy.owner = factory.spawn(entryValue, serializer, onConflict);
+           proxy.owner = FACTORY.spawn(entryValue, serializer, onConflict);
            
            value = proxy.owner;
          } else if (entryValue != null) {
