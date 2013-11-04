@@ -341,14 +341,8 @@ class Entity extends ObservableBase implements Externalizable {
                       Entity listEntryCast = listEntry as Entity;
                       
                       listClone.add(listEntryCast._duplicateImpl(clonedEntities));
-                    } else if (listEntry is DateTime) {
-                      listClone.add(listEntry as DateTime);
                     } else {
-                      /*try {
-                        listClone.add(listEntry.toClone());
-                      } catch (error) {*/
-                        listClone.add(listEntry);
-                      /*}*/
+                      listClone.add(listEntry);
                     }
                   }
                 );
@@ -358,14 +352,8 @@ class Entity extends ObservableBase implements Externalizable {
                 Entity entryCast = value as Entity;
                 
                 entry.proxy.setInitialValue(entryCast._duplicateImpl(clonedEntities));
-              } else if (value is DateTime) {
-                entry.proxy.setInitialValue(value as DateTime);
               } else {
-                /*try {
-                  entry.proxy.setInitialValue(value.toClone());
-                } catch (error) {*/
-                  entry.proxy.setInitialValue(value);
-                /*}*/
+                entry.proxy.setInitialValue(value);
               }
             }
           }
