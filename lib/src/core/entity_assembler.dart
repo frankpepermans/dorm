@@ -101,7 +101,6 @@ class EntityAssembler {
     if (entity._scan == null) entity._scan = _createEntityScan(entity);
     
     final EntityScan scan = entity._scan;
-    final Function updateProxyWithMetadata = scan._metadataCache._updateProxyWithMetadata;
     DormProxy proxy;
     _ProxyEntry scanProxy;
     int i = proxies.length;
@@ -113,7 +112,7 @@ class EntityAssembler {
       
       proxy.propertySymbol = scanProxy.propertySymbol;
       
-      if (!scanProxy.isClone) updateProxyWithMetadata(scanProxy, scan);
+      if (!scanProxy.isClone) scan._metadataCache._updateProxyWithMetadata(scanProxy, scan);
     }
     
     entity._proxies = proxies;
