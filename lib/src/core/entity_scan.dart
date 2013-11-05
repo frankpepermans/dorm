@@ -167,12 +167,13 @@ class _ProxyEntry {
   final Symbol propertySymbol;
   final Type type;
   
-  bool isIdentity;
+  bool isIdentity = false;
+  bool isClone = false;
   DormProxy proxy;
   _PropertyMetadataCache metadataCache;
   
   _ProxyEntry(this.property, this.propertySymbol, this.type);
   
-  _ProxyEntry clone() => new _ProxyEntry(property, propertySymbol, type)..metadataCache = metadataCache..isIdentity = isIdentity;
+  _ProxyEntry clone() => new _ProxyEntry(property, propertySymbol, type)..metadataCache = metadataCache..isIdentity = isIdentity..isClone = true;
   
 }

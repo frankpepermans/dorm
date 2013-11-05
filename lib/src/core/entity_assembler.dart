@@ -79,29 +79,18 @@ class EntityAssembler {
     scan = new EntityScan(refClassName, constructorMethod);
     
     ClassMirror classMirror = reflectClass(forType);
-    List<Mirror> members = (classMirror.members.values).where(
-      (Mirror mirror) => (mirror is VariableMirror)
-    ).toList(growable: true);
-    
-    scan.detectIfMutable(classMirror);
-    
-    classMirror = classMirror.superclass;
     
     while (classMirror.qualifiedName != ENTITY_SYMBOL) {
-      scan.detectIfMutable(classMirror);
+      if (scan.isMutableEntity) scan.detectIfMutable(classMirror);
       
-      members.addAll(
-          classMirror.members.values.where(
-              (Mirror mirror) => (mirror is VariableMirror)  
-          )
+      classMirror.declarations.forEach(
+          (_, Mirror mirror) {
+            if ((mirror is VariableMirror) && !mirror.isStatic && mirror.isPrivate) scan.registerMetadataUsing(mirror);
+          }
       );
       
       classMirror = classMirror.superclass;
     }
-    
-    members.forEach(
-      (VariableMirror mirror) => scan.registerMetadataUsing(mirror)   
-    );
     
     _entityScans.add(scan);
     
@@ -124,10 +113,10 @@ class EntityAssembler {
       
       proxy.propertySymbol = scanProxy.propertySymbol;
       
-      updateProxyWithMetadata(scanProxy, scan);
-      
-      entity._proxies.add(proxy);
+      if (!scanProxy.isClone) updateProxyWithMetadata(scanProxy, scan);
     }
+    
+    entity._proxies = proxies;
   }
   
   //---------------------------------
