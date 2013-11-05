@@ -9,7 +9,7 @@ description: "Dorm is an ORM mapping on the client, the goal is to hook it up wi
 homepage: https://github.com/frankpepermans/dorm
 documentation: http://igindo.com/dart/dorm/index.html
 dependencies:
-  observe: any
+  observe: '>=0.8.10+3'
   unittest: any
 dev_dependencies:
   benchmark_harness: any

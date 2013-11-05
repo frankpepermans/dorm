@@ -1,6 +1,6 @@
 part of dorm;
 
-class Entity extends ObservableBase implements Externalizable {
+class Entity extends Observable implements Externalizable {
   
   static final EntityAssembler ASSEMBLER = new EntityAssembler();
   static final EntityFactory FACTORY = new EntityFactory();

@@ -79,7 +79,7 @@ class EntityScan {
               PropertyChangeRecord matchingChange = changes.firstWhere(
                     (ChangeRecord change) => (
                         (change is PropertyChangeRecord) && 
-                        change.changes(clonedEntry.propertySymbol)
+                        (change.name == clonedEntry.propertySymbol)
                     ),
                     orElse: () => null
               );

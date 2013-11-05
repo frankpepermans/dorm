@@ -79,7 +79,9 @@ class EntityAssembler {
     scan = new EntityScan(refClassName, constructorMethod);
     
     ClassMirror classMirror = reflectClass(forType);
-    List<Mirror> members = new List<Mirror>.from(classMirror.members.values);
+    List<Mirror> members = (classMirror.members.values).where(
+      (Mirror mirror) => (mirror is VariableMirror)
+    ).toList(growable: true);
     
     scan.detectIfMutable(classMirror);
     
@@ -88,19 +90,18 @@ class EntityAssembler {
     while (classMirror.qualifiedName != ENTITY_SYMBOL) {
       scan.detectIfMutable(classMirror);
       
-      members.addAll(classMirror.members.values);
+      members.addAll(
+          classMirror.members.values.where(
+              (Mirror mirror) => (mirror is VariableMirror)  
+          )
+      );
       
       classMirror = classMirror.superclass;
     }
     
-    Mirror mirror;
-    int i = members.length;
-    
-    while (i > 0) {
-      mirror = members[--i];
-      
-      if (mirror is VariableMirror) scan.registerMetadataUsing(mirror);
-    }
+    members.forEach(
+      (VariableMirror mirror) => scan.registerMetadataUsing(mirror)   
+    );
     
     _entityScans.add(scan);
     

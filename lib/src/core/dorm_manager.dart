@@ -1,6 +1,6 @@
 part of dorm;
 
-class DormManager extends ObservableBase {
+class DormManager extends Observable {
   
   //-----------------------------------
   //
@@ -43,7 +43,11 @@ class DormManager extends ObservableBase {
       _isCommitRequired = status;
       
       notifyChange(
-          new PropertyChangeRecord(status ? IS_COMMIT_REQUIRED : IS_COMMIT_NOT_REQUIRED)    
+          new PropertyChangeRecord(
+              this,
+              status ? IS_COMMIT_REQUIRED : IS_COMMIT_NOT_REQUIRED,
+              false, true
+          )    
       );
     }
   }
