@@ -86,29 +86,29 @@ void init() {
                   [
                      new DataGridColumn()
                      ..width = 80
-                     ..headerData = { 'label' : Person.ID, 'property' : Person.ID }
-                     ..field = Person.ID
+                     ..headerData = const HeaderData(Person.ID_SYMBOL, 'id', 'person id')
+                     ..field = Person.ID_SYMBOL
                      ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
                      ..columnItemRendererFactory = new ClassFactory(constructorMethod: LabelItemRenderer.construct),
 
                      new DataGridColumn()
                      ..width=280
-                     ..headerData = { 'label' : 'employee.${Person.NAME}', 'property' : Person.NAME }
-                     ..field = Person.NAME
+                     ..headerData = const HeaderData(Person.NAME_SYMBOL, 'name', 'person name')
+                     ..field = Person.NAME_SYMBOL
                      ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
                      ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct),
 
                      new DataGridColumn()
                      ..width=280
-                     ..headerData = { 'label' : 'employee.${Employee.JOB}', 'property' : Employee.JOB }
-                     ..field = Employee.JOB
+                     ..headerData = const HeaderData(Employee.JOB_SYMBOL, 'job', 'person job')
+                     ..field = Employee.JOB_SYMBOL
                      ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
                      ..columnItemRendererFactory = new ClassFactory(constructorMethod: DropdownItemRenderer.construct),
                      
                      new DataGridColumn()
                      ..percentWidth=100.0
-                     ..headerData = { 'label' : 'employee.job.employees (cyclic)', 'property' : Employee.JOB }
-                     ..field = Employee.JOB
+                     ..headerData = const HeaderData(Employee.JOB_SYMBOL, 'job cyclic', 'person job cyclic')
+                     ..field = Employee.JOB_SYMBOL
                      ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
                      ..columnItemRendererFactory = new ClassFactory(constructorMethod: RelatedEmployeesItemRenderer.construct)
             ]
