@@ -112,7 +112,7 @@ class EntityAssembler {
       
       proxy.propertySymbol = scanProxy.propertySymbol;
       
-      if (!scanProxy.isClone) scan._metadataCache._updateProxyWithMetadata(scanProxy, scan);
+      scan._metadataCache._updateProxyWithMetadata(scanProxy, scan);
     }
     
     entity._proxies = proxies;

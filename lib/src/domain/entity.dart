@@ -7,6 +7,7 @@ class Entity extends Observable implements Externalizable {
   
   // ugly workaround because toJSON can not take in any arguments
   static Serializer _serializerWorkaround;
+  static Timer _observableDirtyCheckTimeout;
   
   // TO_DO: remove these
   int encReference;
@@ -77,6 +78,24 @@ class Entity extends Observable implements Externalizable {
   // Public methods
   //
   //-----------------------------------
+  
+  @override
+  dynamic notifyPropertyChange(Symbol field, Object oldValue, Object newValue) {
+    dynamic result = super.notifyPropertyChange(field, oldValue, newValue);
+    
+    if (_observableDirtyCheckTimeout == null) {
+      _observableDirtyCheckTimeout = new Timer(
+        new Duration(milliseconds: 30),
+        () {
+          _observableDirtyCheckTimeout = null;
+          
+          Observable.dirtyCheck();
+        }
+      );
+    }
+    
+    return result;
+  }
   
   String getPropertyNameFromSymbol(Symbol propertySymbol) {
     _ProxyEntry match = _scan._proxies.firstWhere(
