@@ -4,14 +4,11 @@ class Entity extends Observable implements Externalizable {
   
   static final EntityAssembler ASSEMBLER = new EntityAssembler();
   static final EntityFactory FACTORY = new EntityFactory();
-  
-  // ugly workaround because toJSON can not take in any arguments
   static Serializer _serializerWorkaround;
   static Timer _observableDirtyCheckTimeout;
   
-  // TO_DO: remove these
-  int encReference;
-  int encType;
+  // TODO: find better solution
+  int encReference, encType;
   
   //-----------------------------------
   //
@@ -80,23 +77,21 @@ class Entity extends Observable implements Externalizable {
   //-----------------------------------
   
   @override
-  dynamic notifyPropertyChange(Symbol field, Object oldValue, Object newValue) {
-    dynamic result = super.notifyPropertyChange(field, oldValue, newValue);
-    
-    if (_observableDirtyCheckTimeout == null) {
-      _observableDirtyCheckTimeout = new Timer(
-        new Duration(milliseconds: 30),
-        () {
-          _observableDirtyCheckTimeout = null;
-          
-          Observable.dirtyCheck();
-        }
-      );
-    }
-    
-    return result;
-  }
+  /**
+   * Notify that the field [name] of this object has been changed.
+   *
+   * The [oldValue] and [newValue] are also recorded. If the two values are
+   * equal, no change will be recorded.
+   *
+   * For convenience this returns [newValue].
+   */
+  dynamic notifyPropertyChange(Symbol field, Object oldValue, Object newValue) => _scheduleDirtyCheck(
+    super.notifyPropertyChange(field, oldValue, newValue)    
+  );
   
+  /**
+   * Returns the property name equivalent to the [Symbol] [propertySymbol].
+   */
   String getPropertyNameFromSymbol(Symbol propertySymbol) {
     _ProxyEntry match = _scan._proxies.firstWhere(
         (_ProxyEntry entry) => (entry.propertySymbol == propertySymbol),
@@ -106,6 +101,9 @@ class Entity extends Observable implements Externalizable {
     return (match != null) ? match.property : null;
   }
   
+  /**
+   * Returns the property symbol equivalent to the [String] [propertyName].
+   */
   Symbol getSymbolFromPropertyName(String propertyName) {
     _ProxyEntry match = _scan._proxies.firstWhere(
         (_ProxyEntry entry) => (entry.property == propertyName),
@@ -115,6 +113,19 @@ class Entity extends Observable implements Externalizable {
     return (match != null) ? match.propertySymbol : null;
   }
   
+  /**
+   * Updates the default value for the field [propertyName] to [propertyValue] on the [Entity].
+   * 
+   * Use this feature to clear the [Entity]'s dirty state, typically after the [Entity]
+   * was persisted.
+   * 
+   * Example:
+   *  - Entity entity = new Entity();
+   *  - entity.foo = bar;
+   *  - print(entity.isDirty()); //true
+   *  - entity.setDefaultPropertyValue('foo', bar);
+   *  - print(entity.isDirty()); //false
+   */
   bool setDefaultPropertyValue(String propertyName, dynamic propertyValue) {
     _ProxyEntry result = _scan._proxies.firstWhere(
         (_ProxyEntry entry) => (entry.property == propertyName),
@@ -131,18 +142,40 @@ class Entity extends Observable implements Externalizable {
     return false;
   }
   
+  /**
+   * Updates all [Entity] properties' default values to the current values.
+   * 
+   * Similar to [setDefaultPropertyValue], except this method will run on all fields.
+   */
   void setCurrentStatusIsDefaultStatus() {
     _scan._proxies.forEach(
         (_ProxyEntry entry) => entry.proxy._defaultValue = entry.proxy._value
     );
   }
   
+  /**
+   * Resets all [Entity] properties so that all fields are again equal to the default values.
+   * 
+   * Use this feature to revert any changes to the [Entity]'s fields.
+   */
   void revertChanges() {
     _scan._proxies.forEach(
         (_ProxyEntry entry) => this[entry.proxy.propertySymbol] = entry.proxy._defaultValue
     );
   }
   
+  /**
+   * Unrolls all [Entity] properties and collections to a one-dimensional [List].
+   * 
+   * This feature is very handy when preparing an [Entity] and all its related [Entity] instances
+   * for data persistance.
+   * 
+   * Example:
+   *  - Entity foo = new Entity();
+   *  - foo.bar = new Bar();
+   *  - foo.bar.bazList = <Baz>[new Baz(), new Baz()];
+   *  - foo.getEntityTree(); // List containing [foo, bar, bazA, bazB]
+   */
   List<Entity> getEntityTree({List<Entity> traversedEntities}) {
     List<Entity> tree = (traversedEntities != null) ? traversedEntities : <Entity>[];
     
@@ -177,6 +210,9 @@ class Entity extends Observable implements Externalizable {
     return tree;
   }
   
+  /**
+   * Unrolls all [Entity] identity fields to a one-dimensional [List]
+   */
   List<String> getIdentityFields() {
     List<String> result = <String>[];
     
@@ -187,6 +223,16 @@ class Entity extends Observable implements Externalizable {
     return result;
   }
   
+  /**
+   * Returns a [Map] of all identity fields where the key is the field's name
+   * and the value is the corresponding insert value.
+   * 
+   * Example:
+   *  - entity Foo has an identity field fooId
+   *  - Hibernate will create an insert statement when the value of fooId = 0
+   *  - Hibernate will create an update statement when the value of fooId != 0
+   *  - foo.getInsertValues() // key: 'fooId', value: 0
+   */
   Map<String, dynamic> getInsertValues() {
     Map<String, dynamic> result = <String, dynamic>{};
     
@@ -197,6 +243,17 @@ class Entity extends Observable implements Externalizable {
     return result;
   }
   
+  /**
+   * Will return [true] when all identity fields are equal to the corresponding insert values.
+   * 
+   * Will return [false] when at least one identity field does not match its insert value.
+   * 
+   * Example:
+   *  - Entity entity = new Entity()..entityId = 0; // inserts when entityId = 0
+   *  - print(entity.isUnsaved()); // true
+   *  - entity.entityId = 1;
+   *  - print(entity.isUnsaved()); // false
+   */
   bool isUnsaved() {
     _ProxyEntry nonInsertIdentityProxy = _scan._identityProxies.firstWhere(
         (_ProxyEntry entry) => (entry.proxy._value != entry.proxy._insertValue),
@@ -206,6 +263,13 @@ class Entity extends Observable implements Externalizable {
     return (nonInsertIdentityProxy == null);
   }
   
+  /**
+   * Resets all identity fields to their corresponding insert values so that this [Entity]
+   * 
+   * will be treated as a new [Entity] with an insert statement rather than an update statement.
+   * 
+   * Use this to quickly create a duplicate of one [Entity].
+   */
   void setUnsaved() {
     _scan._identityProxies.forEach(
         (_ProxyEntry entry) => entry.proxy._value = notifyPropertyChange(
@@ -326,6 +390,21 @@ class Entity extends Observable implements Externalizable {
   // Private methods
   //
   //---------------------------------
+  
+  dynamic _scheduleDirtyCheck(dynamic newValue) {
+    if (_observableDirtyCheckTimeout == null) {
+      _observableDirtyCheckTimeout = new Timer(
+        new Duration(milliseconds: 30),
+        () {
+          _observableDirtyCheckTimeout = null;
+          
+          Observable.dirtyCheck();
+        }
+      );
+    }
+    
+    return newValue;
+  }
   
   Entity _duplicateImpl(List<_ClonedEntityEntry> clonedEntities) {
     if (_scan.isMutableEntity) {
