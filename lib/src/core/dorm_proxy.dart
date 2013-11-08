@@ -29,9 +29,9 @@ class DormProxy<T> {
   Future<T> get lazyFuture => _lazyFuture;
   set lazyFuture(Future<T> newValue) => _lazyFuture = newValue;
   
-  final String property;
+  final String _property;
+  final Symbol _propertySymbol;
   
-  Symbol propertySymbol;
   ObservableList<dynamic> owner;
   bool hasDelta = false;
   bool isId = false;
@@ -57,7 +57,7 @@ class DormProxy<T> {
   //
   //-----------------------------------
   
-  DormProxy(this.property);
+  DormProxy(this._property, this._propertySymbol);
   
   //-----------------------------------
   //
@@ -66,14 +66,14 @@ class DormProxy<T> {
   //-----------------------------------
   
   MetadataValidationResult validate(Entity entity) {
-    if (!entity.isMutable) return new MetadataValidationResult(entity, property, propertySymbol, MetadataValidationReason.ENTITY_NOT_MUTABLE);
+    if (!entity.isMutable) return new MetadataValidationResult(entity, _property, _propertySymbol, MetadataValidationReason.ENTITY_NOT_MUTABLE);
     
-    if (!isMutable) return new MetadataValidationResult(entity, property, propertySymbol, MetadataValidationReason.PROPERTY_NOT_MUTABLE);
+    if (!isMutable) return new MetadataValidationResult(entity, _property, _propertySymbol, MetadataValidationReason.PROPERTY_NOT_MUTABLE);
     
     if (
       !isNullable &&
       (_value == null)
-    ) return new MetadataValidationResult(entity, property, propertySymbol, MetadataValidationReason.PROPERTY_NOT_NULLABLE);
+    ) return new MetadataValidationResult(entity, _property, _propertySymbol, MetadataValidationReason.PROPERTY_NOT_NULLABLE);
     
     return null;
   }

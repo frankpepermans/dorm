@@ -11,7 +11,7 @@ import 'orm_infrastructure/orm_infrastructure.dart';
 
 final String url = '127.0.0.1';
 final String port = '8080';
-final Serializer serializer = new SerializerJson<String>();
+final Serializer serializer = new SerializerJson();
 
 FetchService fetchService;
 CommitService commitService;

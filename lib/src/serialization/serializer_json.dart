@@ -1,6 +1,6 @@
 part of dorm;
 
-class SerializerJson<T> extends SerializerBase {
+class SerializerJson extends SerializerBase {
   
   //-----------------------------------
   //
@@ -16,7 +16,7 @@ class SerializerJson<T> extends SerializerBase {
   //
   //-----------------------------------
   
-  factory SerializerJson() => new SerializerJson<T>._contruct();
+  factory SerializerJson() => new SerializerJson._contruct();
   
   //-----------------------------------
   //
@@ -24,9 +24,9 @@ class SerializerJson<T> extends SerializerBase {
   //
   //-----------------------------------
   
-  List<Map<String, dynamic>> incoming(T data) => JSON.decode(data);
+  List<Map<String, dynamic>> incoming(String data) => JSON.decode(data);
   
-  T outgoing(dynamic data) {
+  String outgoing(dynamic data) {
     Entity._serializerWorkaround = this;
     
     if (

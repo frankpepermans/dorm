@@ -46,24 +46,24 @@ class Entity extends Observable implements Externalizable {
   //
   //-----------------------------------
   
-  dynamic operator [](dynamic propertyNameOrField) {
+  dynamic operator [](Symbol propertyField) {
     _ProxyEntry result = _scan._proxies.firstWhere(
-      (_ProxyEntry entry) => ((entry.propertySymbol == propertyNameOrField) || (entry.property == propertyNameOrField)),
+      (_ProxyEntry entry) => (entry.propertySymbol == propertyField),
       orElse: () => null
     );
     
     return (result != null) ? result.proxy._value : null;
   }
   
-  void operator []=(dynamic propertyNameOrField, dynamic propertyValue) {
+  void operator []=(Symbol propertyField, dynamic propertyValue) {
     _ProxyEntry result = _scan._proxies.firstWhere(
-        (_ProxyEntry entry) => ((entry.propertySymbol == propertyNameOrField) || (entry.property == propertyNameOrField)),
+        (_ProxyEntry entry) => (entry.propertySymbol == propertyField),
         orElse: () => null
     );
     
     if (result != null) {
       result.proxy._value = notifyPropertyChange(
-          result.proxy.propertySymbol, 
+          result.proxy._propertySymbol, 
           result.proxy._value,
           propertyValue
       );
@@ -90,30 +90,6 @@ class Entity extends Observable implements Externalizable {
   );
   
   /**
-   * Returns the property name equivalent to the [Symbol] [propertySymbol].
-   */
-  String getPropertyNameFromSymbol(Symbol propertySymbol) {
-    _ProxyEntry match = _scan._proxies.firstWhere(
-        (_ProxyEntry entry) => (entry.propertySymbol == propertySymbol),
-        orElse: () => null
-    );
-    
-    return (match != null) ? match.property : null;
-  }
-  
-  /**
-   * Returns the property symbol equivalent to the [String] [propertyName].
-   */
-  Symbol getSymbolFromPropertyName(String propertyName) {
-    _ProxyEntry match = _scan._proxies.firstWhere(
-        (_ProxyEntry entry) => (entry.property == propertyName),
-        orElse: () => null
-    );
-    
-    return (match != null) ? match.propertySymbol : null;
-  }
-  
-  /**
    * Updates the default value for the field [propertyName] to [propertyValue] on the [Entity].
    * 
    * Use this feature to clear the [Entity]'s dirty state, typically after the [Entity]
@@ -126,9 +102,9 @@ class Entity extends Observable implements Externalizable {
    *  - entity.setDefaultPropertyValue('foo', bar);
    *  - print(entity.isDirty()); //false
    */
-  bool setDefaultPropertyValue(String propertyName, dynamic propertyValue) {
+  bool setDefaultPropertyValue(Symbol propertyField, dynamic propertyValue) {
     _ProxyEntry result = _scan._proxies.firstWhere(
-        (_ProxyEntry entry) => (entry.property == propertyName),
+        (_ProxyEntry entry) => (entry.propertySymbol == propertyField),
         orElse: () => null
     );
     
@@ -160,7 +136,7 @@ class Entity extends Observable implements Externalizable {
    */
   void revertChanges() {
     _scan._proxies.forEach(
-        (_ProxyEntry entry) => this[entry.proxy.propertySymbol] = entry.proxy._defaultValue
+        (_ProxyEntry entry) => this[entry.proxy._propertySymbol] = entry.proxy._defaultValue
     );
   }
   
@@ -213,11 +189,11 @@ class Entity extends Observable implements Externalizable {
   /**
    * Unrolls all [Entity] identity fields to a one-dimensional [List]
    */
-  List<String> getIdentityFields() {
-    List<String> result = <String>[];
+  List<Symbol> getIdentityFields() {
+    List<Symbol> result = <Symbol>[];
     
     _scan._identityProxies.forEach(
-      (_ProxyEntry entry) => result.add(entry.property) 
+      (_ProxyEntry entry) => result.add(entry.propertySymbol) 
     );
     
     return result;
@@ -233,11 +209,11 @@ class Entity extends Observable implements Externalizable {
    *  - Hibernate will create an update statement when the value of fooId != 0
    *  - foo.getInsertValues() // key: 'fooId', value: 0
    */
-  Map<String, dynamic> getInsertValues() {
-    Map<String, dynamic> result = <String, dynamic>{};
+  Map<Symbol, dynamic> getInsertValues() {
+    Map<Symbol, dynamic> result = <Symbol, dynamic>{};
     
     _scan._identityProxies.forEach(
-      (_ProxyEntry entry) => result[entry.property] = entry.proxy._insertValue 
+      (_ProxyEntry entry) => result[entry.propertySymbol] = entry.proxy._insertValue 
     );
     
     return result;
@@ -273,26 +249,26 @@ class Entity extends Observable implements Externalizable {
   void setUnsaved() {
     _scan._identityProxies.forEach(
         (_ProxyEntry entry) => entry.proxy._value = notifyPropertyChange(
-            entry.proxy.propertySymbol, 
+            entry.proxy._propertySymbol, 
             entry.proxy._value,
             entry.proxy._insertValue
         )
     );
   }
   
-  List<String> getPropertyList() {
-    List<String> result = <String>[];
+  List<Symbol> getPropertyList() {
+    List<Symbol> result = <Symbol>[];
     
     _scan._proxies.forEach(
-      (_ProxyEntry entry) => result.add(entry.property)
+      (_ProxyEntry entry) => result.add(entry.propertySymbol)
     );
     
     return result;
   }
   
-  MetadataExternalized getMetadata(String propertyName) {
+  MetadataExternalized getMetadata(Symbol propertyField) {
     _ProxyEntry result = _scan._proxies.firstWhere(
-        (_ProxyEntry entry) => (entry.property == propertyName),
+        (_ProxyEntry entry) => (entry.propertySymbol == propertyField),
         orElse: () => null
     );
     
@@ -357,7 +333,7 @@ class Entity extends Observable implements Externalizable {
          try {
            proxy.setInitialValue(value);
          } catch (error) {
-           throw new DormError('Could not set the value of ${proxy.property} using the value ${value}, perhaps you need to add a rule to the serializer?');
+           throw new DormError('Could not set the value of ${proxy._propertySymbol} using the value ${value}, perhaps you need to add a rule to the serializer?');
          }
        }
     );
@@ -424,7 +400,7 @@ class Entity extends Observable implements Externalizable {
             if (entry.isIdentity) {
               entry.proxy.setInitialValue(entry.proxy._insertValue);
             } else {
-              dynamic value = this[entry.proxy.property];
+              dynamic value = this[entry.proxy._propertySymbol];
               
               if (value is ObservableList) {
                 ObservableList listCast = value as ObservableList;

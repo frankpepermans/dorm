@@ -24,7 +24,7 @@ class TestEntitySuperClass extends Entity {
   @NotNullable()
   @DefaultValue(0)
   @Immutable()
-  final DormProxy<int> _id = new DormProxy<int>('id');
+  final DormProxy<int> _id = new DormProxy<int>(ID, ID_SYMBOL);
 
   static const String ID = 'id';
   static const Symbol ID_SYMBOL = const Symbol('orm_domain.TestEntitySuperClass.id');
@@ -72,7 +72,7 @@ class TestEntity extends TestEntitySuperClass {
 
   @Property(NAME_SYMBOL, 'name', String)
   @LabelField()
-  final DormProxy<String> _name = new DormProxy<String>('name');
+  final DormProxy<String> _name = new DormProxy<String>(NAME, NAME_SYMBOL);
 
   static const String NAME = 'name';
   static const Symbol NAME_SYMBOL = const Symbol('orm_domain.TestEntity.name');
@@ -85,7 +85,7 @@ class TestEntity extends TestEntitySuperClass {
   //---------------------------------
 
   @Property(DATE_SYMBOL, 'date', DateTime)
-  final DormProxy<DateTime> _date = new DormProxy<DateTime>('date');
+  final DormProxy<DateTime> _date = new DormProxy<DateTime>(DATE, DATE_SYMBOL);
 
   static const String DATE = 'date';
   static const Symbol DATE_SYMBOL = const Symbol('orm_domain.TestEntity.date');
@@ -98,7 +98,7 @@ class TestEntity extends TestEntitySuperClass {
   //---------------------------------
 
   @Property(CYCLIC_REFERENCE_SYMBOL, 'cyclicReference', TestEntity)
-  final DormProxy<TestEntity> _cyclicReference = new DormProxy<TestEntity>('cyclicReference');
+  final DormProxy<TestEntity> _cyclicReference = new DormProxy<TestEntity>(CYCLIC_REFERENCE, CYCLIC_REFERENCE_SYMBOL);
 
   static const String CYCLIC_REFERENCE = 'cyclicReference';
   static const Symbol CYCLIC_REFERENCE_SYMBOL = const Symbol('orm_domain.TestEntity.cyclicReference');

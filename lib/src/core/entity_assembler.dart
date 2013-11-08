@@ -108,11 +108,12 @@ class EntityAssembler {
     while (i > 0) {
       proxy = proxies[--i];
       
-      scanProxy = scan._proxyMap[proxy.property]..proxy = proxy;
+      scanProxy = scan._proxyMap[proxy._property]..proxy = proxy;
       
-      proxy.propertySymbol = scanProxy.propertySymbol;
-      
-      scan._metadataCache._updateProxyWithMetadata(scanProxy, scan);
+      scan._metadataCache._updateProxyWithMetadata(
+          scanProxy, 
+          scan
+      );
     }
     
     entity._proxies = proxies;
@@ -223,7 +224,7 @@ class EntityAssembler {
               orElse: () => null
             );
             
-            if (entryMatch != null && entryMatch.proxy.hasDelta) entryA.proxy.setInitialValue(existingEntity.notifyPropertyChange(entryA.proxy.propertySymbol, entryA.proxy._value, entryMatch.proxy._value));
+            if (entryMatch != null && entryMatch.proxy.hasDelta) entryA.proxy.setInitialValue(existingEntity.notifyPropertyChange(entryA.proxy._propertySymbol, entryA.proxy._value, entryMatch.proxy._value));
           }
       );
     }
