@@ -5,13 +5,22 @@ Dorm is a client side library, it can he hooked up to a server side [ORM] implem
 The idea behind Dorm is that you expose your [ORM] entity model (or a subset of it) to your client application
 and load and/or commit entities asynchronously via services.
 
+Dorm is used and tested in a production application, the server-side implementation is not open sourced.
+To set it up for example between Java Hibernate and :dart: is not difficult however.
+
+The entities implement the Observable library to provide easy binding into frameworks such as Polymer.
+
+Communication with the server currently works via JSON, both for sending and receiving entities,
+but one can easily implement other message formats.
+An [Entity] has readExternal and writeExternal methods which will iterate all values and get or insert them to or from a Map object.
+This Map can them be converted to a message format of choice.
+
 Dorm supports :
 - cyclic references (i.e. foo.bar.listOfFoos) via pointers
 - default serializer for JSON data
 - Entities use the [observe] library, an [Entity] extends ObservableBase, and an [Entity] collection is an ObservableList
 
 Dorm will soon support :
-- lazy loading
 - push via web sockets, share [Entity] status between clients
 
 [![Build Status](https://drone.io/github.com/frankpepermans/dorm/status.png)](https://drone.io/github.com/frankpepermans/dorm/latest)
@@ -58,25 +67,22 @@ you should generate [Entity] properties in the following way:
 	@NotNullable()
 	@DefaultValue(0)
 	@Immutable()
-	DormProxy<int> _bar;
-
+	final DormProxy<Bar> _bar = new DormProxy<Bar>(BAR, BAR_SYMBOL);
+	
 	static const String BAR = 'bar';
-	static const Symbol BAR_SYMBOL = const Symbol('orm_domain.Foo.bar');
-
-	int get bar => _bar.value;
-	set bar(int value) => _bar.value = notifyPropertyChange(BAR_SYMBOL, _bar.value, value);
+	static const Symbol BAR_SYMBOL = const Symbol('orm_domain.TestEntity.bar'); // full path + prop name
+	
+	Bar get bar => _bar.value;
+	set date(Bar value) => _bar.value = notifyPropertyChange(BAR_SYMBOL, _bar.value, value);
 ```
 
 Then, in the [Entity] constructor body, you need to register this property as following:
 
 ```
-	EntityAssembler assembler = new EntityAssembler();
-	
-	_bar = new DormProxy()
-	..property = 'bar'
-	..propertySymbol = BAR_SYMBOL;
-
-	assembler.registerProxies(this, <DormProxy>[_bar]);
+	Entity.ASSEMBLER.registerProxies(
+      this,
+      <DormProxy>[_bar, /*plus any other properties*/]
+    );
 ```
 
 See [Person] for a full example of a Dorm entity.
@@ -89,8 +95,8 @@ with this file, generate the following method:
 void ormInitialize() {
 	EntityAssembler assembler = new EntityAssembler();
 
-	assembler.scan(Foo, 'entities.foo', Foo.construct);
-	//...
+	assembler.scan(TestEntity, 'entities.TestEntity', TestEntity.construct);
+	//... other Entities...
 }
 ```
 
@@ -104,7 +110,7 @@ Your client services must use the serializer when dealing with incoming/outgoing
 here's an example of a service's body:
 
 ```
-	final Serializer serializer = new SerializerJson<String>();
+	final Serializer serializer = new SerializerJson();
 	
 	Future serviceMethodNameHere(String operation, Map<String, dynamic> arguments) {
 		Completer completer = new Completer();
