@@ -62,17 +62,20 @@ Dorm entities use a proxy,
 you should generate [Entity] properties in the following way:
 
 ```
+	// A declaration of an ID field called 'bar' and of type Bar
+	
 	@Property(BAR_SYMBOL, 'bar', Bar) // Bar being another [Entity]
 	@Id() // Indicates that this property is an identity field, you can have multiple Id fields for combined key support
 	@NotNullable() // We need a value when persisting this [Entity]
 	@DefaultValue(const Bar('A null Bar')) // the default value when creating a new Bar();
+	
 	final DormProxy<Bar> _bar = new DormProxy<Bar>(BAR, BAR_SYMBOL); // the actual value is proxied
 	
 	static const String BAR = 'bar';
 	static const Symbol BAR_SYMBOL = const Symbol('orm_domain.TestEntity.bar'); // full path + prop name
 	
 	Bar get bar => _bar.value;
-	set date(Bar value) => _bar.value = notifyPropertyChange(BAR_SYMBOL, _bar.value, value);
+	set bar(Bar value) => _bar.value = notifyPropertyChange(BAR_SYMBOL, _bar.value, value);
 ```
 
 Then, in the [Entity] constructor body, you need to register this property as following:
