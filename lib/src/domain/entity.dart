@@ -256,6 +256,9 @@ class Entity extends Observable implements Externalizable {
     );
   }
   
+  /**
+   * Returns a [List] containing [Symbol]s of all properties belonging to this [Entity].
+   */
   List<Symbol> getPropertyList() {
     List<Symbol> result = <Symbol>[];
     
@@ -266,6 +269,12 @@ class Entity extends Observable implements Externalizable {
     return result;
   }
   
+  /**
+   * Returns the metadata attached to a specific property.
+   * 
+   * The metadata can be combination of the following :
+   * [Id], [Lazy], [NotNullable], [DefaultValue], [Transient], [Immutable], [LabelField] or [Annotation]
+   */
   MetadataExternalized getMetadata(Symbol propertyField) {
     _ProxyEntry result = _scan._proxies.firstWhere(
         (_ProxyEntry entry) => (entry.propertySymbol == propertyField),
@@ -275,8 +284,16 @@ class Entity extends Observable implements Externalizable {
     return (result != null) ? result.metadataCache._getMetadataExternal() : null;
   }
   
+  /**
+   * Duplicates the [Entity] and any recusrive entities to a new [Entity].
+   */
   Entity duplicate() => _duplicateImpl(<_ClonedEntityEntry>[]);
   
+  /**
+   * Validates the values of this [Entity] using the associated metadata.
+   * 
+   * Returns a [List] of [MetadataValidationResult].
+   */
   List<MetadataValidationResult> validate() {
     MetadataValidationResult validationResult;
     List<MetadataValidationResult> validationResultList = <MetadataValidationResult>[];
@@ -292,6 +309,10 @@ class Entity extends Observable implements Externalizable {
     return validationResultList;
   }
   
+  /**
+   * Scans the [Entity]'s properties for any changes, returns [true] if the [Entity] has changes,
+   * or returns [false] if it is untouched.
+   */
   bool isDirty() => (
       isMutable &&
       (
@@ -308,6 +329,15 @@ class Entity extends Observable implements Externalizable {
       )    
   );
   
+  /**
+   * Converts raw [Map] data into an [Entity], including the full cyclic chain.
+   * 
+   * The [Serializer] is used to perform special conversions if needed, i.e. to create a [DateTime] from an [int]
+   * value which contains the millisecondsSinceEpoch value.
+   * 
+   * The [OnConflictFunction] will take care of discrepantions (if any exist) should the [Entity] have
+   * already been loaded and/or modified prior to reloading it.
+   */
   void readExternal(Map<String, dynamic> data, Serializer serializer, OnConflictFunction onConflict) {
     _isPointer = (data[SerializationType.POINTER] != null);
     
@@ -339,8 +369,17 @@ class Entity extends Observable implements Externalizable {
     );
   }
   
+  /**
+   * Converts the [Entity] into raw [Map] data, including the full cyclic chain.
+   * 
+   * The [Serializer] is used to perform special conversions if needed, i.e. to create an [int] value from a [DateTime] value
+   * value which contains the millisecondsSinceEpoch value.
+   */
   void writeExternal(Map<String, dynamic> data, Serializer serializer) => _writeExternalImpl(data, null, serializer);
   
+  /**
+   * Converts the [Entity] into a JSON representation.
+   */
   String toJson({Map<String, Map<String, dynamic>> convertedEntities}) {
     Map<String, dynamic> jsonMap = new Map<String, dynamic>();
     
@@ -349,6 +388,9 @@ class Entity extends Observable implements Externalizable {
     return JSON.encode(jsonMap);
   }
   
+  /**
+   * Converts the [Entity] into a String representation.
+   */
   String toString() {
     List<String> result = <String>[];
     
