@@ -124,7 +124,7 @@ void init() {
                 (Entity entity) => dormManager.queue(entity)
               );
               
-              DormManagerCommitStructure structure = dormManager.getCommitStructure();
+              DormManagerCommitStructure structure = dormManager.drain();
               
               commitService.flush(structure.dataToCommit, structure.dataToDelete).then(
                   (List<Entity> response) {

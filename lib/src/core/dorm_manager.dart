@@ -114,9 +114,15 @@ class DormManager extends Observable {
     }
   }
   
-  void queueAll(Iterable<Entity> entities) {
+  void queueAll(Iterable<Entity> entities, {bool asDeleted: false}) {
     entities.forEach(
-      (Entity entity) => queue(entity)    
+      (Entity entity) => asDeleted ? queueAsDeleted(entity) : queue(entity)    
+    );
+  }
+  
+  void unqueueAll(Iterable<Entity> entities) {
+    entities.forEach(
+      (Entity entity) => unqueue(entity)    
     );
   }
   
@@ -129,7 +135,9 @@ class DormManager extends Observable {
     _updateIsCommitRequired();
   }
   
-  DormManagerCommitStructure getCommitStructure() {
+  DormManagerCommitStructure drain() {
+    final List<Entity> rollbackCommit = new List<Entity>.from(_queue);
+    final List<Entity> rollbackDelete = new List<Entity>.from(_deleteQueue);
     List<Entity> queueRecursive = <Entity>[];
     List<Entity> deleteQueueRecursive = <Entity>[];
     
@@ -157,7 +165,7 @@ class DormManager extends Observable {
         (Entity entity) => entity.validate()
     );
     
-    return new DormManagerCommitStructure(queueRecursive, deleteQueueRecursive);
+    return new DormManagerCommitStructure(this, queueRecursive, deleteQueueRecursive, rollbackCommit, rollbackDelete);
   }
   
   //-----------------------------------
@@ -203,9 +211,17 @@ class DormManager extends Observable {
 
 class DormManagerCommitStructure {
   
+  final DormManager manager;
   final List<Entity> dataToCommit;
   final List<Entity> dataToDelete;
+  final List<Entity> rollbackCommit;
+  final List<Entity> rollbackDelete;
   
-  const DormManagerCommitStructure(this.dataToCommit, this.dataToDelete);
+  const DormManagerCommitStructure(this.manager, this.dataToCommit, this.dataToDelete, this.rollbackCommit, this.rollbackDelete);
+  
+  void rollback() {
+    manager.queueAll(rollbackCommit, asDeleted: false);
+    manager.queueAll(rollbackDelete, asDeleted: true);
+  }
   
 }

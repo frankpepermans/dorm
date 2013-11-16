@@ -8,9 +8,8 @@ class DormProxy<T> {
   //
   //-----------------------------------
   
-  T _insertValue;
-  T _defaultValue;
-  T _value;
+  T _insertValue, _defaultValue, _value;
+  
   Future<T> _lazyFuture;
   
   //-----------------------------------
