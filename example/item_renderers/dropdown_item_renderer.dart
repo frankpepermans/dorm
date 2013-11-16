@@ -14,8 +14,7 @@ class DropdownItemRenderer extends ItemRenderer {
   static ObservableList jobs;
   static Future<List<Entity>> jobsAsync;
   
-  final String url = '127.0.0.1';
-  final String port = '8080';
+  final String url = '127.0.0.1', port = '8080';
   final Serializer serializer = new SerializerJson();
 
   //---------------------------------
@@ -34,9 +33,7 @@ class DropdownItemRenderer extends ItemRenderer {
     layout = new HorizontalLayout();
   }
 
-  static DropdownItemRenderer construct() {
-    return new DropdownItemRenderer();
-  }
+  static DropdownItemRenderer construct() => new DropdownItemRenderer();
 
   //---------------------------------
   //
@@ -103,19 +100,14 @@ class DropdownItemRenderer extends ItemRenderer {
     }
   }
   
-  void comboBox_onSelectedItemChangedHandler(FrameworkEvent Event) {
+  void comboBox_onSelectedItemChangedHandler(FrameworkEvent<Job> event) {
     if (
         (data != null) &&
-        (field != null) &&
-        (_comboBox.selectedItem is Job)
-    ) {
-      data[field] = _comboBox.selectedItem;
-    }
+        (field != null)
+    ) data[field] = event.relatedObject;
   }
   
   String comboBox_labelHandler(Job job) => job.name;
   
-  ConflictManager handleConflictAcceptClient(Entity serverEntity, Entity clientEntity) {
-    return ConflictManager.ACCEPT_CLIENT;
-  }
+  ConflictManager handleConflictAcceptClient(Entity serverEntity, Entity clientEntity) => ConflictManager.ACCEPT_CLIENT;
 }

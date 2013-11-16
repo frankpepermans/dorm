@@ -39,9 +39,7 @@ class RelatedEmployeesItemRenderer extends LabelItemRenderer {
 
   RelatedEmployeesItemRenderer({String elementId: null}) : super(elementId: null);
 
-  static RelatedEmployeesItemRenderer construct() {
-    return new RelatedEmployeesItemRenderer();
-  }
+  static RelatedEmployeesItemRenderer construct() => new RelatedEmployeesItemRenderer();
 
   //---------------------------------
   //
@@ -55,14 +53,12 @@ class RelatedEmployeesItemRenderer extends LabelItemRenderer {
         (field != null)
     ) {
       List<String> namesList = <String>[];
-      Job job = data[field];
+      final Job job = data[field];
       
       if (job != null) {
         job.employees.forEach(
           (Employee employee) {
-            if (employee != data) {
-              namesList.add(employee.name);
-            }
+            if (employee != data) namesList.add(employee.name);
           }
         );
         
