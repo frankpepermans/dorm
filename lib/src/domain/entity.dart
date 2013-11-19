@@ -7,9 +7,6 @@ class Entity extends Observable implements Externalizable {
   static Serializer _serializerWorkaround;
   static Timer _observableDirtyCheckTimeout;
   
-  // TODO: find better solution
-  int encReference, encType;
-  
   //-----------------------------------
   //
   // Private properties
