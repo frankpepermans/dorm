@@ -17,18 +17,19 @@ class MetadataCache {
   //---------------------------------
   
   void registerTagForProperty(_ProxyEntry entry, Object reflectee) {
+    final Type type = reflectee.runtimeType;
+    
     if (entry.metadataCache == null) entry.metadataCache = new _PropertyMetadataCache(entry.property);
     
-    switch (reflectee.runtimeType) {
-      case Id:              entry.metadataCache.isId = true;
-                            entry.metadataCache.insertValue = (reflectee as Id).insertValue;            break;
-      case Transient:       entry.metadataCache.isTransient = true;                                     break;
-      case NotNullable:     entry.metadataCache.isNullable = false;                                     break;
-      case DefaultValue:    entry.metadataCache.initialValue = (reflectee as DefaultValue).value;       break;
-      case LabelField:      entry.metadataCache.isLabelField = true;                                    break;
-      case Immutable:       entry.metadataCache.isMutable = false;                                      break;
-      case Lazy:            entry.metadataCache.isLazy = true;                                          break;
-    }
+    if (type == Id) {
+      entry.metadataCache.isId = true;
+      entry.metadataCache.insertValue = (reflectee as Id).insertValue;
+    } else if (type == Transient)     entry.metadataCache.isTransient = true;
+      else if (type == NotNullable)   entry.metadataCache.isNullable = false;
+      else if (type == DefaultValue)  entry.metadataCache.initialValue = (reflectee as DefaultValue).value;
+      else if (type == LabelField)    entry.metadataCache.isLabelField = true;
+      else if (type == Immutable)     entry.metadataCache.isMutable = false;
+      else if (type == Lazy)          entry.metadataCache.isLazy = true;
   }
   
   //---------------------------------
