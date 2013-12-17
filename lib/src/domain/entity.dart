@@ -347,15 +347,12 @@ class Entity extends Observable implements Externalizable {
          dynamic entryValue = data[entry.property];
          dynamic value;
          
-         if (entryValue is Map) {
-           value = FACTORY.spawnSingle(entryValue, serializer, onConflict, proxy:proxy);
-         } else if (entryValue is Iterable) {
-           proxy.owner = FACTORY.spawn(entryValue, serializer, onConflict);
+         if (entryValue is Map) value = FACTORY.spawnSingle(entryValue, serializer, onConflict, proxy:proxy);
+         else if (entryValue is Iterable) {
+           proxy.owner = serializer.convertIn(entry.type, FACTORY.spawn(entryValue, serializer, onConflict));
            
            value = proxy.owner;
-         } else if (entryValue != null) {
-           value = serializer.convertIn(entry.type, entryValue);
-         }
+         } else if (entryValue != null) value = serializer.convertIn(entry.type, entryValue);
          
          try {
            proxy.setInitialValue(value);
@@ -507,7 +504,7 @@ class Entity extends Observable implements Externalizable {
             subEntity._writeExternalImpl(data[entry.property], convertedEntities, serializer);
           }
         } else if (entry.proxy._value is List) {
-          List<dynamic> subList = entry.proxy._value as List;
+          List<dynamic> subList = serializer.convertOut(entry.type, entry.proxy._value);
           List<dynamic> dataList = <dynamic>[];
           
           subList.forEach(
@@ -536,16 +533,12 @@ class Entity extends Observable implements Externalizable {
                     
                     dataList.add(entryData);
                   }
-                } else {
-                  dataList.add(serializer.convertOut(entry.type, entry.proxy._value));
-                }
+                } else dataList.add(serializer.convertOut(entry.type, entry.proxy._value));
               }
             );
             
             data[entry.property] = dataList;
-          } else {
-            data[entry.property] = serializer.convertOut(entry.type, entry.proxy._value);
-          }
+          } else data[entry.property] = serializer.convertOut(entry.type, entry.proxy._value);
       }
     );
   }
