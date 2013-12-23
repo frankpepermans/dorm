@@ -1,12 +1,12 @@
 name: dorm
-version: 1.0.01
 author: Frank Pepermans <frank@igindo.com>
+version: 1.0.02
+homepage: https://github.com/frankpepermans/dorm
 description: "Dorm is an ORM mapping on the client, the goal is to hook it up with\
   \ existing server-side ORM solutions (Hibernate, EntityFramework, ...)\r\n\r\nThe\
   \ example includes a JSON based Dart server for testing purposes.\r\n\r\nYou can\
   \ also generate client-side entities using build_entities.dart, any changes to the\
   \ bin/dbo JSON files will be reflected."
-homepage: https://github.com/frankpepermans/dorm
 documentation: http://igindo.com/dart/dorm/index.html
 dependencies:
   observe: '>=0.9.0'
@@ -14,5 +14,4 @@ dependencies:
 dev_dependencies:
   benchmark_harness: '>=1.0.2'
   browser: '>=0.9.0'
-  dart_flex:
-    path: ../dart_flex
+  dart_flex: any
