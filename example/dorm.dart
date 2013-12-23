@@ -1,11 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:html';
 
 import 'package:dart_flex/dart_flex.dart';
 import 'package:dorm/dorm.dart';
 import 'package:observe/observe.dart';
 
-import 'item_renderers/item_renderers.dart';
 import 'orm_domain/orm_domain.dart';
 import 'orm_infrastructure/orm_infrastructure.dart';
 
@@ -26,6 +26,40 @@ ConflictManager handleConflictAcceptServer(Entity serverEntity, Entity clientEnt
 }
 
 void main() {
+  Map<String, dynamic> person = <String, dynamic>{};
+  List<Map<String, dynamic>> properties = <Map<String, dynamic>>[];
+  
+  Map<String, dynamic> p_id = <String, dynamic>{};
+  Map<String, dynamic> p_name = <String, dynamic>{};
+  Map<String, dynamic> p_group = <String, dynamic>{};
+  
+  p_id['name'] = 'id';
+  p_id['column'] = 'Person_id';
+  p_id['type'] = 'int';
+  p_id['isIdentifier'] = true;
+  p_id['insertValue'] = 0;
+  
+  p_name['name'] = 'name';
+  p_name['column'] = 'Name';
+  p_name['type'] = 'String';
+  p_name['defaultValue'] = '';
+  
+  p_group['name'] = 'group';
+  p_group['column'] = 'PersonGroup_id';
+  p_group['type'] = 'PersonGroup';
+  p_group['defaultValue'] = null;
+  
+  properties.add(p_id);
+  properties.add(p_name);
+  properties.add(p_group);
+  
+  person['name'] = 'Person';
+  person['table'] = 'Persons';
+  person['extends'] = 'MutableEntity';
+  person['properties'] = properties;
+  
+  print(JSON.encode(person));
+  
   // !!! MAKE SURE TO START THE DART SERVER, RUN run_mock_server.dart !!!
   
   // make sure to add this call,
@@ -53,101 +87,150 @@ void benchmark() {
 }
 
 void init() {
-  fetchService = new FetchService(url, port, serializer, handleConflictAcceptClient);
-  commitService = new CommitService(url, port, serializer, handleConflictAcceptServer);
-  postCommitFetchService = new FetchService(url, port, serializer, handleConflictAcceptServer);
+  ObservableList resultList = new ObservableList();
+  int x = 0;
   
-  fetchService.ormEntityLoad('Employee').then(
-      (ObservableList<Entity> resultList) {
-        DartFlexRootContainer rootContainer = new DartFlexRootContainer(elementId: '#dynamic_content')
-        ..layout=new VerticalLayout();
-        
-        HGroup header = new HGroup()
-        ..percentWidth=100.0
-        ..height=30;
-        
-        Button commitButton = new Button()
-        ..width=120
-        ..height=30
-        ..label='COMMIT';
-        
-        RichText commitResultText = new RichText()
-        ..percentWidth=100.0
-        ..height=20;
-        
-        DataGrid grid = new DataGrid()
-        ..percentWidth=100.0
-        ..height=520
-        ..headerHeight=40
-        ..rowHeight=60
-        ..columnSpacing=0
-        ..rowSpacing=0
-        ..columns = new ObservableList.from(
-                  [
-                     new DataGridColumn()
-                     ..width = 80
-                     ..headerData = const HeaderData(Person.ID_SYMBOL, 'id', 'person id')
-                     ..field = Person.ID_SYMBOL
-                     ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
-                     ..columnItemRendererFactory = new ClassFactory(constructorMethod: LabelItemRenderer.construct),
-
-                     new DataGridColumn()
-                     ..width=280
-                     ..headerData = const HeaderData(Person.NAME_SYMBOL, 'name', 'person name')
-                     ..field = Person.NAME_SYMBOL
-                     ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
-                     ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct),
-
-                     new DataGridColumn()
-                     ..width=280
-                     ..headerData = const HeaderData(Employee.JOB_SYMBOL, 'job', 'person job')
-                     ..field = Employee.JOB_SYMBOL
-                     ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
-                     ..columnItemRendererFactory = new ClassFactory(constructorMethod: DropdownItemRenderer.construct),
-                     
-                     new DataGridColumn()
-                     ..percentWidth=100.0
-                     ..headerData = const HeaderData(Employee.JOB_SYMBOL, 'job cyclic', 'person job cyclic')
-                     ..field = Employee.JOB_SYMBOL
-                     ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
-                     ..columnItemRendererFactory = new ClassFactory(constructorMethod: RelatedEmployeesItemRenderer.construct)
-            ]
-        )
-        ..dataProvider = resultList;
-        
-        commitButton.observeEventType(
-            'buttonClick', 
-            (FrameworkEvent event) {
-              DormManager dormManager = new DormManager();
-              
-              resultList.forEach(
-                (Entity entity) => dormManager.queue(entity)
-              );
-              
-              DormManagerCommitStructure structure = dormManager.drain();
-              
-              commitService.flush(structure.dataToCommit, structure.dataToDelete).then(
-                  (List<Entity> response) {
-                    commitResultText.text = 'commit completed!';
-                    
-                    postCommitFetchService.ormEntityLoad('Job');
-                    
-                    Timer timer = new Timer(
-                        const Duration(seconds: 10),
-                        () => commitResultText.text = ''
-                    );
-                  }
-              );
-            }
-        );
-        
-        header.addComponent(commitButton);
-        header.addComponent(commitResultText);
-        
-        rootContainer.addComponent(header);
-        rootContainer.addComponent(grid);
-      }
+  for (x=0; x<1000; x++)
+  
+  resultList.add(
+      new Employee()
+      ..name = '$x'
+      ..id = x
   );
+  
+  DartFlexRootContainer rootContainer = new DartFlexRootContainer(elementId: '#dynamic_content')
+  ..layout=new VerticalLayout();
+  
+  HGroup header = new HGroup()
+  ..percentWidth=100.0
+  ..height=30;
+  
+  DataGrid grid = new DataGrid()
+  ..percentWidth=100.0
+  ..percentHeight=100.0
+  ..headerHeight=40
+  ..rowHeight=80
+  ..columnSpacing=0
+  ..rowSpacing=0
+  ..columns = new ObservableList.from(
+      [
+       new DataGridColumn()
+       ..width = 80
+       ..headerData = const HeaderData('', Person.ID_SYMBOL, 'id', 'person id')
+       ..field = Person.ID_SYMBOL
+       ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
+       ..columnItemRendererFactory = new ClassFactory(constructorMethod: LabelItemRenderer.construct),
+
+       new DataGridColumn()
+       ..width=50
+       ..headerData = const HeaderData('', Person.NAME_SYMBOL, 'name', 'person name')
+       ..field = Person.NAME_SYMBOL
+       ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
+       ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct),
+
+       new DataGridColumn()
+       ..width=50
+       ..headerData = const HeaderData('', Person.NAME_SYMBOL, 'name', 'person name')
+       ..field = Person.NAME_SYMBOL
+       ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
+       ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct),
+       
+       new DataGridColumn()
+       ..width=50
+       ..headerData = const HeaderData('', Person.NAME_SYMBOL, 'name', 'person name')
+       ..field = Person.NAME_SYMBOL
+       ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
+       ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct),
+       
+       new DataGridColumn()
+       ..width=50
+       ..headerData = const HeaderData('', Person.NAME_SYMBOL, 'name', 'person name')
+       ..field = Person.NAME_SYMBOL
+       ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
+       ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct),
+       
+       new DataGridColumn()
+       ..width=50
+       ..headerData = const HeaderData('', Person.NAME_SYMBOL, 'name', 'person name')
+       ..field = Person.NAME_SYMBOL
+       ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
+       ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct),
+       
+       new DataGridColumn()
+       ..width=50
+       ..headerData = const HeaderData('', Person.NAME_SYMBOL, 'name', 'person name')
+       ..field = Person.NAME_SYMBOL
+       ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
+       ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct),
+       
+       new DataGridColumn()
+       ..width=50
+       ..headerData = const HeaderData('', Person.NAME_SYMBOL, 'name', 'person name')
+       ..field = Person.NAME_SYMBOL
+       ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
+       ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct),
+       
+       new DataGridColumn()
+       ..width=50
+       ..headerData = const HeaderData('', Person.NAME_SYMBOL, 'name', 'person name')
+       ..field = Person.NAME_SYMBOL
+       ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
+       ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct),
+       
+       new DataGridColumn()
+       ..width=50
+       ..headerData = const HeaderData('', Person.NAME_SYMBOL, 'name', 'person name')
+       ..field = Person.NAME_SYMBOL
+       ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
+       ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct),
+       
+       new DataGridColumn()
+       ..width=50
+       ..headerData = const HeaderData('', Person.NAME_SYMBOL, 'name', 'person name')
+       ..field = Person.NAME_SYMBOL
+       ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
+       ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct),
+       
+       new DataGridColumn()
+       ..width=50
+       ..headerData = const HeaderData('', Person.NAME_SYMBOL, 'name', 'person name')
+       ..field = Person.NAME_SYMBOL
+       ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
+       ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct),
+       
+       new DataGridColumn()
+       ..width=50
+       ..headerData = const HeaderData('', Person.NAME_SYMBOL, 'name', 'person name')
+       ..field = Person.NAME_SYMBOL
+       ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
+       ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct),
+       
+       new DataGridColumn()
+       ..width=50
+       ..headerData = const HeaderData('', Person.NAME_SYMBOL, 'name', 'person name')
+       ..field = Person.NAME_SYMBOL
+       ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
+       ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct),
+       
+       new DataGridColumn()
+       ..width=50
+       ..headerData = const HeaderData('', Person.NAME_SYMBOL, 'name', 'person name')
+       ..field = Person.NAME_SYMBOL
+       ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
+       ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct),
+       
+       new DataGridColumn()
+       ..width=50
+       ..headerData = const HeaderData('', Person.NAME_SYMBOL, 'name', 'person name')
+       ..field = Person.NAME_SYMBOL
+       ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
+       ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct)
+       ]
+  )
+  ..dataProvider = resultList;
+  
+  rootContainer.addComponent(header);
+  rootContainer.addComponent(grid);
 }
   /*
   // loading data can be done through 2 library-level methods

@@ -1,0 +1,19 @@
+{
+   "name":"TransactionType",
+   "table":"TransactionTypes",
+   "extends":"ImmutableEntity",
+   "properties":[
+      {
+         "name":"id",
+         "column":"TransactionType_id",
+         "type":"int",
+         "isIdentifier":true,
+         "insertValue":0
+      },
+      {
+         "name":"name",
+         "column":"Name",
+         "type":"Strinf"
+      }
+   ]
+}

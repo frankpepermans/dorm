@@ -14,7 +14,7 @@ class EntityScan {
   List<EntityScan> _keyCollection;
   MetadataCache _metadataCache;
   
-  final Map<String, _ProxyEntry> _proxyMap = new Map<String, _ProxyEntry>();
+  final SplayTreeMap<String, _ProxyEntry> _proxyMap = new SplayTreeMap<String, _ProxyEntry>();
   final List<_ProxyEntry> _identityProxies = <_ProxyEntry>[];
   
   //---------------------------------

@@ -1,0 +1,27 @@
+{
+   "name":"PersonGroup",
+   "table":"PersonGroups",
+   "extends":"MutableEntity",
+   "properties":[
+      {
+         "name":"id",
+         "column":"PersonGroup_id",
+         "type":"int",
+         "isIdentifier":true,
+         "insertValue":0
+      },
+      {
+         "name":"name",
+         "column":"Name",
+         "type":"String",
+         "defaultValue":""
+      },
+      {
+         "name":"members",
+         "table":"Persons",
+         "inverse_column":"PersonGroup_id",
+         "type":"Person",
+         "defaultValue":null
+      }
+   ]
+}

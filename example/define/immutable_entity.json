@@ -1,0 +1,7 @@
+{
+   "name":"ImmutableEntity",
+   "extends":"DatabaseRecord",
+   "mutable":false,
+   "properties":[
+   ]
+}

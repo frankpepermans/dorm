@@ -472,6 +472,24 @@ class Entity extends Observable implements Externalizable {
     return this;
   }
   
+  int compare(Entity otherEntity) {
+    if (this == otherEntity) return 0;
+    
+    final int len = _scan._identityProxies.length;
+    _ProxyEntry entryA, entryB;
+    int i;
+    
+    for (i=0; i<len; i++) {
+      entryA = _scan._identityProxies[i];
+      entryB = otherEntity._scan._identityProxies[i];
+      
+      if (entryA.proxy.value < entryB.proxy.value) return -1;
+      else if (entryA.proxy.value > entryB.proxy.value) return 1;
+    }
+    
+    return 0;
+  }
+  
   void _writeExternalImpl(Map<String, dynamic> data, Map<int, Map<String, dynamic>> convertedEntities, Serializer serializer) {
     data[SerializationType.ENTITY_TYPE] = _scan.refClassName;
     data[SerializationType.UID] = _uid;

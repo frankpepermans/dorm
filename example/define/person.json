@@ -1,0 +1,34 @@
+{
+   "name":"Person",
+   "table":"Persons",
+   "extends":"MutableEntity",
+   "properties":[
+      {
+         "name":"id",
+         "column":"Person_id",
+         "type":"int",
+         "isIdentifier":true,
+         "insertValue":0
+      },
+      {
+         "name":"name",
+         "column":"Name",
+         "type":"String",
+         "defaultValue":""
+      },
+      ,
+      {
+         "name":"email",
+         "column":"Email",
+         "type":"String",
+         "defaultValue":""
+      }
+      {
+         "name":"group",
+         "column":"PersonGroup_id",
+         "type":"PersonGroup",
+         "defaultValue":null,
+         "lazy":true
+      }
+   ]
+}

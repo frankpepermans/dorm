@@ -22,8 +22,10 @@ packages:
     source: hosted
     version: "0.9.0"
   dart_flex:
-    description: dart_flex
-    source: hosted
+    description:
+      path: "C:\\work\\production\\igindo\\dart\\dorm\\../dart_flex"
+      relative: true
+    source: path
     version: "0.8.11"
   logging:
     description: logging

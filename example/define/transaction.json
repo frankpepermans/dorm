@@ -1,0 +1,30 @@
+{
+   "name":"Transaction",
+   "table":"Transactions",
+   "extends":"MutableEntity",
+   "properties":[
+      {
+         "name":"id",
+         "column":"Transaction_id",
+         "type":"int",
+         "isIdentifier":true,
+         "insertValue":0
+      },
+      {
+         "name":"date",
+         "column":"Date",
+         "type":"DateTime"
+      },
+      {
+         "name":"owner",
+         "column":"Owner",
+         "type":"Person"
+      },
+      {
+         "name":"entries",
+         "table":"TransactionEntries",
+         "inverse_column":"Transaction_id",
+         "type":"TransactionEntry"
+      }
+   ]
+}

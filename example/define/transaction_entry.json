@@ -1,0 +1,29 @@
+{
+   "name":"TransactionEntry",
+   "table":"TransactionEntries",
+   "extends":"MutableEntity",
+   "properties":[
+      {
+         "name":"id",
+         "column":"TransactionEntry_id",
+         "type":"int",
+         "isIdentifier":true,
+         "insertValue":0
+      },
+      {
+         "name":"transaction",
+         "column":"Transaction_id",
+         "type":"int"
+      },
+      {
+         "name":"type",
+         "column":"TransactionType_id",
+         "type":"int"
+      },
+      {
+         "name":"target",
+         "column":"MutableEntity_id",
+         "type":"MutableEntity"
+      }
+   ]
+}
