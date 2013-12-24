@@ -75,11 +75,9 @@ class EntityKey {
     Map<dynamic, EntityKey> mainKey = _map[key];
     
     if (mainKey == null) {
-      mainKey = new Map<dynamic, EntityKey>();
-      
       returnValue = new EntityKey();
       
-      mainKey[value] = returnValue;
+      mainKey = <dynamic, EntityKey>{value: returnValue};
       
       _map[key] = mainKey;
       
@@ -98,12 +96,7 @@ class EntityKey {
   void _setKeyValueNoReturn(Symbol key, dynamic value) {
     Map<dynamic, EntityKey> mainKey = _map[key];
     
-    if (mainKey == null) {
-      mainKey = <dynamic, EntityKey>{value: new EntityKey()};
-      
-      _map[key] = mainKey;
-    } else if (mainKey[value] == null) {
-      mainKey[value] = new EntityKey();
-    }
+    if (mainKey == null) _map[key] = mainKey = <dynamic, EntityKey>{value: new EntityKey()};
+    else if (mainKey[value] == null) mainKey[value] = new EntityKey();
   }
 }
