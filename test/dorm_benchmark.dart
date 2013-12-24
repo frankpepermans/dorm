@@ -39,8 +39,14 @@ class TemplateBenchmark extends BenchmarkBase {
 }
 
 void _runBenchmark() {
-  entityFactory.spawn(serializer.incoming(jsonData), serializer, handleConflictAcceptClient);
+  Iterable<TestEntity> testEntities = entityFactory.spawn(serializer.incoming(jsonData), serializer, handleConflictAcceptClient);
   
+  testEntities.forEach(
+    (TestEntity testEntity) {
+      int id = testEntity[TestEntitySuperClass.ID_SYMBOL];
+      String name = testEntity[TestEntity.NAME_SYMBOL];
+    }
+  );
   //out.innerHtml += 'json to Map $t1 ms, dorm to entity class model $t2 ms<br>';
 }
 

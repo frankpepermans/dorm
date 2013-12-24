@@ -14,7 +14,6 @@ class Entity extends Observable implements Externalizable {
   //-----------------------------------
   
   List<DormProxy> _proxies;
-  Map _source;
   EntityScan _scan;
   bool _isPointer;
   int get _uid => hashCode;
