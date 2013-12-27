@@ -120,8 +120,6 @@ class EntityAssembler {
           scan
       );
     }
-    
-    entity._proxies = proxies;
   }
   
   //---------------------------------
@@ -162,11 +160,8 @@ class EntityAssembler {
     final bool isSpawneeUnsaved = spawnee.isUnsaved();
     
     if (isSpawneeUnsaved) {
-      if (spawnee._isPointer) {
-        throw new DormError('Ambiguous reference, entity is unsaved and is also a pointer');
-      } else {
-        return spawnee;
-      }
+      if (spawnee._isPointer) throw new DormError('Ambiguous reference, entity is unsaved and is also a pointer');
+      else return spawnee;
     }
     
     spawnee._scan.buildKey();
@@ -193,9 +188,9 @@ class EntityAssembler {
     } else {
       spawnee._scan._keyCollection.add(spawnee._scan);
       
-      spawnee._proxies.forEach(
-          (DormProxy proxy) {
-            if (proxy.owner != null) _collections.add(proxy.owner);
+      spawnee._scan._proxies.forEach(
+          (_ProxyEntry entry) {
+            if (entry.proxy.owner != null) _collections.add(entry.proxy.owner);
           }
       );
       

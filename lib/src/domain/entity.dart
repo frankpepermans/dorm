@@ -2,8 +2,8 @@ part of dorm;
 
 class Entity extends Observable implements Externalizable {
   
-  static final EntityAssembler ASSEMBLER = new EntityAssembler();
-  static final EntityFactory FACTORY = new EntityFactory();
+  static final EntityAssembler ASSEMBLER = EntityAssembler._instance;
+  static final EntityFactory FACTORY = EntityFactory._instance;
   static Serializer _serializerWorkaround;
   static Timer _observableDirtyCheckTimeout;
   
@@ -13,10 +13,8 @@ class Entity extends Observable implements Externalizable {
   //
   //-----------------------------------
   
-  List<DormProxy> _proxies;
   EntityScan _scan;
   bool _isPointer;
-  int get _uid => hashCode;
   
   //-----------------------------------
   //
@@ -490,22 +488,24 @@ class Entity extends Observable implements Externalizable {
   }
   
   void _writeExternalImpl(Map<String, dynamic> data, Map<int, Map<String, dynamic>> convertedEntities, Serializer serializer) {
+    final int uid = hashCode;
+    
     data[SerializationType.ENTITY_TYPE] = _scan.refClassName;
-    data[SerializationType.UID] = _uid;
+    data[SerializationType.UID] = uid;
     
     if (convertedEntities == null) convertedEntities = new Map<int, Map<String, dynamic>>();
     
-    convertedEntities[_uid] = data;
+    convertedEntities[uid] = data;
     
     _scan._proxies.forEach(
       (_ProxyEntry entry) {
         if (entry.proxy._value is Entity) {
           Entity subEntity = entry.proxy._value;
           
-          if (convertedEntities[subEntity._uid] != null) {
+          if (convertedEntities[subEntity.hashCode] != null) {
             Map<String, dynamic> pointerMap = new Map<String, dynamic>();
             
-            pointerMap[SerializationType.POINTER] = subEntity._uid;
+            pointerMap[SerializationType.POINTER] = subEntity.hashCode;
             pointerMap[SerializationType.ENTITY_TYPE] = subEntity._scan.refClassName;
             
             subEntity._scan._proxies.forEach(
@@ -530,10 +530,10 @@ class Entity extends Observable implements Externalizable {
                   Entity subEntity = listEntry as Entity;
                   Map<String, dynamic> entryData;
                   
-                  if (convertedEntities[subEntity._uid] != null) {
+                  if (convertedEntities[subEntity.hashCode] != null) {
                     Map<String, dynamic> pointerMap = new Map<String, dynamic>();
                     
-                    pointerMap[SerializationType.POINTER] = subEntity._uid;
+                    pointerMap[SerializationType.POINTER] = subEntity.hashCode;
                     pointerMap[SerializationType.ENTITY_TYPE] = subEntity._scan.refClassName;
                     
                     subEntity._scan._proxies.forEach(
