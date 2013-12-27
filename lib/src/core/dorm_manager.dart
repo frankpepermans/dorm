@@ -176,7 +176,7 @@ class DormManager extends Observable {
   
   void _scanRecursively(Entity entity, List<Entity> list) {
     entity._scan._proxies.forEach(
-      (_ProxyEntry entry) {
+      (_DormProxyListEntry entry) {
         if (entry.proxy.value is Entity) {
           if (
               entry.proxy.value._scan.isMutableEntity &&

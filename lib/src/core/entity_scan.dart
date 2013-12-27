@@ -14,7 +14,7 @@ class EntityScan {
   List<EntityScan> _keyCollection;
   MetadataCache _metadataCache;
   
-  final List<_ProxyEntry> _identityProxies = <_ProxyEntry>[], _proxies = <_ProxyEntry>[];
+  final List<_DormProxyListEntry> _identityProxies = <_DormProxyListEntry>[], _proxies = <_DormProxyListEntry>[];
   
   //---------------------------------
   //
@@ -34,7 +34,7 @@ class EntityScan {
     EntityKey nextKey = EntityAssembler._instance._keyChain;
     
     _identityProxies.forEach(
-      (_ProxyEntry entry) =>  nextKey = nextKey._setKeyValue(entry.propertySymbol, entry.proxy._value)   
+      (_DormProxyListEntry entry) =>  nextKey = nextKey._setKeyValue(entry.propertySymbol, entry.proxy._value)   
     );
     
     if (_keyCollection != nextKey.entityScans) {
@@ -59,12 +59,12 @@ class EntityScan {
     this.isMutableEntity = _original.isMutableEntity;
     
     _original._proxies.forEach(
-       (_ProxyEntry entry) {
-         final _ProxyEntry clonedEntry = entry.clone();
+       (_DormProxyListEntry entry) {
+         final _DormProxyListEntry clonedEntry = entry.clone();
          
          this._proxies.add(clonedEntry);
          
-         if (clonedEntry.isIdentity) {
+         if (entry.metadataCache.isId) {
            this._identityProxies.add(clonedEntry);
            
            entity.changes.listen(
@@ -106,7 +106,7 @@ class EntityScan {
   
   void registerMetadataUsing(VariableMirror mirror) {
     InstanceMirror instanceMirror;
-    _ProxyEntry entry;
+    _DormProxyListEntry entry;
     Property property;
     int i = mirror.metadata.length, j;
     bool isIdentity;
@@ -120,7 +120,7 @@ class EntityScan {
       if (instanceMirror.reflectee is Property) {
         property = instanceMirror.reflectee as Property;
         
-        entry = new _ProxyEntry(property.property, property.propertySymbol, property.type);
+        entry = new _DormProxyListEntry(property.property, property.propertySymbol, property.type);
         
         isIdentity = false;
         
@@ -133,8 +133,6 @@ class EntityScan {
           
           if (metatag is Id) isIdentity = true;
         }
-        
-        entry.isIdentity = isIdentity;
         
         _proxies.add(entry);
         
@@ -154,18 +152,24 @@ class EntityScan {
 // _ProxyEntry
 //---------------------------------
 
-class _ProxyEntry {
+class _DormProxyListEntry<T extends _DormProxyListEntry> extends Comparable {
   
   final String property;
   final Symbol propertySymbol;
   final Type type;
-  
-  bool isIdentity = false;
-  DormProxy proxy;
   _PropertyMetadataCache metadataCache;
   
-  _ProxyEntry(this.property, this.propertySymbol, this.type);
+  DormProxy proxy;
   
-  _ProxyEntry clone() => new _ProxyEntry(property, propertySymbol, type)..metadataCache = metadataCache..isIdentity = isIdentity;
+  _DormProxyListEntry(this.property, this.propertySymbol, this.type);
   
+  _DormProxyListEntry clone() => new _DormProxyListEntry(property, propertySymbol, type)
+  ..metadataCache = metadataCache;
+  
+  @override
+  int compareTo(T other) {
+    if (other == null) return 1;
+    
+    return property.compareTo(other.property);
+  }
 }

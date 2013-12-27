@@ -102,14 +102,14 @@ class EntityAssembler {
     
     final EntityScan scan = entity._scan;
     DormProxy proxy;
-    _ProxyEntry scanProxy;
+    _DormProxyListEntry scanProxy;
     int i = proxies.length;
     
     while (i > 0) {
       proxy = proxies[--i];
       
       scanProxy = scan._proxies.firstWhere(
-        (_ProxyEntry entry) => (entry.property == proxy._property),
+        (_DormProxyListEntry entry) => (entry.property == proxy._property),
         orElse: () => null
       );
       
@@ -189,7 +189,7 @@ class EntityAssembler {
       spawnee._scan._keyCollection.add(spawnee._scan);
       
       spawnee._scan._proxies.forEach(
-          (_ProxyEntry entry) {
+          (_DormProxyListEntry entry) {
             if (entry.proxy.owner != null) _collections.add(entry.proxy.owner);
           }
       );
@@ -202,7 +202,7 @@ class EntityAssembler {
   
   void _solveConflictsIfAny(Entity spawnee, Entity existingEntity, OnConflictFunction onConflict) {
     ConflictManager conflictManager;
-    Iterable<_ProxyEntry> entryProxies, spawneeProxies;
+    Iterable<_DormProxyListEntry> entryProxies, spawneeProxies;
     int i, j;
     
     if (onConflict == null) throw new DormError('Conflict was detected, but no onConflict method is available');
@@ -216,11 +216,11 @@ class EntityAssembler {
       entryProxies = existingEntity._scan._proxies;
       
       entryProxies.forEach(
-          (_ProxyEntry entryA) {
+          (_DormProxyListEntry entryA) {
             final spawneeProxies = spawnee._scan._proxies;
             
-            final _ProxyEntry entryMatch = spawneeProxies.firstWhere(
-              (_ProxyEntry entryB) => (entryA.property == entryB.property),
+            final _DormProxyListEntry entryMatch = spawneeProxies.firstWhere(
+              (_DormProxyListEntry entryB) => (entryA.property == entryB.property),
               orElse: () => null
             );
             

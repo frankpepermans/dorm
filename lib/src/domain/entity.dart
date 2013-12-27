@@ -41,8 +41,8 @@ class Entity extends Observable implements Externalizable {
   //-----------------------------------
   
   dynamic operator [](Symbol propertyField) {
-    _ProxyEntry result = _scan._proxies.firstWhere(
-      (_ProxyEntry entry) => (entry.propertySymbol == propertyField),
+    _DormProxyListEntry result = _scan._proxies.firstWhere(
+      (_DormProxyListEntry entry) => (entry.propertySymbol == propertyField),
       orElse: () => null
     );
     
@@ -50,8 +50,8 @@ class Entity extends Observable implements Externalizable {
   }
   
   void operator []=(Symbol propertyField, dynamic propertyValue) {
-    _ProxyEntry result = _scan._proxies.firstWhere(
-        (_ProxyEntry entry) => (entry.propertySymbol == propertyField),
+    _DormProxyListEntry result = _scan._proxies.firstWhere(
+        (_DormProxyListEntry entry) => (entry.propertySymbol == propertyField),
         orElse: () => null
     );
     
@@ -97,8 +97,8 @@ class Entity extends Observable implements Externalizable {
    *  - print(entity.isDirty()); //false
    */
   bool setDefaultPropertyValue(Symbol propertyField, dynamic propertyValue) {
-    _ProxyEntry result = _scan._proxies.firstWhere(
-        (_ProxyEntry entry) => (entry.propertySymbol == propertyField),
+    _DormProxyListEntry result = _scan._proxies.firstWhere(
+        (_DormProxyListEntry entry) => (entry.propertySymbol == propertyField),
         orElse: () => null
     );
     
@@ -119,7 +119,7 @@ class Entity extends Observable implements Externalizable {
    */
   void setCurrentStatusIsDefaultStatus() {
     _scan._proxies.forEach(
-        (_ProxyEntry entry) => entry.proxy._defaultValue = entry.proxy._value
+        (_DormProxyListEntry entry) => entry.proxy._defaultValue = entry.proxy._value
     );
   }
   
@@ -130,7 +130,7 @@ class Entity extends Observable implements Externalizable {
    */
   void revertChanges() {
     _scan._proxies.forEach(
-        (_ProxyEntry entry) => this[entry.proxy._propertySymbol] = entry.proxy._defaultValue
+        (_DormProxyListEntry entry) => this[entry.proxy._propertySymbol] = entry.proxy._defaultValue
     );
   }
   
@@ -152,7 +152,7 @@ class Entity extends Observable implements Externalizable {
     tree.add(this);
     
     _scan._proxies.forEach(
-        (_ProxyEntry entry) {
+        (_DormProxyListEntry entry) {
           if (entry.proxy._value is Entity) {
             Entity entity = entry.proxy._value as Entity;
             
@@ -187,7 +187,7 @@ class Entity extends Observable implements Externalizable {
     List<Symbol> result = <Symbol>[];
     
     _scan._identityProxies.forEach(
-      (_ProxyEntry entry) => result.add(entry.propertySymbol) 
+      (_DormProxyListEntry entry) => result.add(entry.propertySymbol) 
     );
     
     return result;
@@ -207,7 +207,7 @@ class Entity extends Observable implements Externalizable {
     Map<Symbol, dynamic> result = <Symbol, dynamic>{};
     
     _scan._identityProxies.forEach(
-      (_ProxyEntry entry) => result[entry.propertySymbol] = entry.proxy._insertValue 
+      (_DormProxyListEntry entry) => result[entry.propertySymbol] = entry.proxy._insertValue 
     );
     
     return result;
@@ -225,8 +225,8 @@ class Entity extends Observable implements Externalizable {
    *  - print(entity.isUnsaved()); // false
    */
   bool isUnsaved() {
-    _ProxyEntry nonInsertIdentityProxy = _scan._identityProxies.firstWhere(
-        (_ProxyEntry entry) => (entry.proxy._value != entry.proxy._insertValue),
+    _DormProxyListEntry nonInsertIdentityProxy = _scan._identityProxies.firstWhere(
+        (_DormProxyListEntry entry) => (entry.proxy._value != entry.proxy._insertValue),
         orElse: () => null
     );
     
@@ -242,7 +242,7 @@ class Entity extends Observable implements Externalizable {
    */
   void setUnsaved() {
     _scan._identityProxies.forEach(
-        (_ProxyEntry entry) => entry.proxy._value = notifyPropertyChange(
+        (_DormProxyListEntry entry) => entry.proxy._value = notifyPropertyChange(
             entry.proxy._propertySymbol, 
             entry.proxy._value,
             entry.proxy._insertValue
@@ -257,7 +257,7 @@ class Entity extends Observable implements Externalizable {
     List<Symbol> result = <Symbol>[];
     
     _scan._proxies.forEach(
-      (_ProxyEntry entry) => result.add(entry.propertySymbol)
+      (_DormProxyListEntry entry) => result.add(entry.propertySymbol)
     );
     
     return result;
@@ -270,8 +270,8 @@ class Entity extends Observable implements Externalizable {
    * [Id], [Lazy], [NotNullable], [DefaultValue], [Transient], [Immutable], [LabelField] or [Annotation]
    */
   MetadataExternalized getMetadata(Symbol propertyField) {
-    _ProxyEntry result = _scan._proxies.firstWhere(
-        (_ProxyEntry entry) => (entry.propertySymbol == propertyField),
+    _DormProxyListEntry result = _scan._proxies.firstWhere(
+        (_DormProxyListEntry entry) => (entry.propertySymbol == propertyField),
         orElse: () => null
     );
     
@@ -293,7 +293,7 @@ class Entity extends Observable implements Externalizable {
     List<MetadataValidationResult> validationResultList = <MetadataValidationResult>[];
     
     _scan._proxies.forEach(
-        (_ProxyEntry entry) {
+        (_DormProxyListEntry entry) {
           validationResult = entry.proxy.validate(this);
           
           if (validationResult != null) validationResultList.add(validationResult);
@@ -311,10 +311,10 @@ class Entity extends Observable implements Externalizable {
       isMutable &&
       (
           _scan._proxies.firstWhere(
-              (_ProxyEntry entry) => (
+              (_DormProxyListEntry entry) => (
                   (entry.proxy._value != entry.proxy._defaultValue) ||
                   (
-                      entry.isIdentity && 
+                      entry.metadataCache.isId && 
                       (entry.proxy._value == entry.proxy._insertValue)
                   )
               ),
@@ -335,10 +335,10 @@ class Entity extends Observable implements Externalizable {
   void readExternal(Map<String, dynamic> data, Serializer serializer, OnConflictFunction onConflict) {
     _isPointer = (data[SerializationType.POINTER] != null);
     
-    final Iterable<_ProxyEntry> proxies = _isPointer ? _scan._identityProxies : _scan._proxies;
+    final Iterable<_DormProxyListEntry> proxies = _isPointer ? _scan._identityProxies : _scan._proxies;
     
     proxies.forEach(
-       (_ProxyEntry entry) {
+       (_DormProxyListEntry entry) {
          DormProxy proxy = entry.proxy..hasDelta = true;
          
          dynamic entryValue = data[entry.property];
@@ -386,7 +386,7 @@ class Entity extends Observable implements Externalizable {
     List<String> result = <String>[];
     
     _scan._proxies.forEach(
-      (_ProxyEntry entry) {
+      (_DormProxyListEntry entry) {
         if (entry.proxy.isLabelField) result.add(entry.proxy._value.toString());
       }
     );
@@ -429,8 +429,8 @@ class Entity extends Observable implements Externalizable {
       clonedEntities.add(new _ClonedEntityEntry(this, clone));
       
       clone._scan._proxies.forEach(
-          (_ProxyEntry entry) {
-            if (entry.isIdentity) {
+          (_DormProxyListEntry entry) {
+            if (entry.metadataCache.isId) {
               entry.proxy.setInitialValue(entry.proxy._insertValue);
             } else {
               dynamic value = this[entry.proxy._propertySymbol];
@@ -473,7 +473,7 @@ class Entity extends Observable implements Externalizable {
     if (this == otherEntity) return 0;
     
     final int len = _scan._identityProxies.length;
-    _ProxyEntry entryA, entryB;
+    _DormProxyListEntry entryA, entryB;
     int i;
     
     for (i=0; i<len; i++) {
@@ -498,7 +498,7 @@ class Entity extends Observable implements Externalizable {
     convertedEntities[uid] = data;
     
     _scan._proxies.forEach(
-      (_ProxyEntry entry) {
+      (_DormProxyListEntry entry) {
         if (entry.proxy._value is Entity) {
           Entity subEntity = entry.proxy._value;
           
@@ -509,7 +509,7 @@ class Entity extends Observable implements Externalizable {
             pointerMap[SerializationType.ENTITY_TYPE] = subEntity._scan.refClassName;
             
             subEntity._scan._proxies.forEach(
-                (_ProxyEntry subEntry) {
+                (_DormProxyListEntry subEntry) {
                   if (subEntry.proxy.isId) pointerMap[subEntry.property] = subEntry.proxy._value;
                 }
             );
@@ -537,7 +537,7 @@ class Entity extends Observable implements Externalizable {
                     pointerMap[SerializationType.ENTITY_TYPE] = subEntity._scan.refClassName;
                     
                     subEntity._scan._proxies.forEach(
-                        (_ProxyEntry subEntry) {
+                        (_DormProxyListEntry subEntry) {
                           if (subEntry.proxy.isId) pointerMap[subEntry.property] = subEntry.proxy._value;
                         }
                     );
