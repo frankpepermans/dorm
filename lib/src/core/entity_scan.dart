@@ -14,8 +14,7 @@ class EntityScan {
   List<EntityScan> _keyCollection;
   MetadataCache _metadataCache;
   
-  final SplayTreeMap<String, _ProxyEntry> _proxyMap = new SplayTreeMap<String, _ProxyEntry>();
-  final List<_ProxyEntry> _identityProxies = <_ProxyEntry>[], _proxies = new List<_ProxyEntry>();
+  final List<_ProxyEntry> _identityProxies = <_ProxyEntry>[], _proxies = <_ProxyEntry>[];
   
   //---------------------------------
   //
@@ -63,7 +62,6 @@ class EntityScan {
        (_ProxyEntry entry) {
          final _ProxyEntry clonedEntry = entry.clone();
          
-         this._proxyMap[entry.property] = clonedEntry;
          this._proxies.add(clonedEntry);
          
          if (clonedEntry.isIdentity) {
@@ -138,7 +136,6 @@ class EntityScan {
         
         entry.isIdentity = isIdentity;
         
-        _proxyMap[property.property] = entry;
         _proxies.add(entry);
         
         if (isIdentity) _identityProxies.add(entry);

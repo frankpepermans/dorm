@@ -108,7 +108,12 @@ class EntityAssembler {
     while (i > 0) {
       proxy = proxies[--i];
       
-      scanProxy = scan._proxyMap[proxy._property]..proxy = proxy;
+      scanProxy = scan._proxies.firstWhere(
+        (_ProxyEntry entry) => (entry.property == proxy._property),
+        orElse: () => null
+      );
+      
+      scanProxy.proxy = proxy;
       
       scan._metadataCache._updateProxyWithMetadata(
           scanProxy, 
