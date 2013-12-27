@@ -8,10 +8,11 @@ class EntityScan {
   //
   //---------------------------------
   
+  EntityKeyChain _rootKeyChain;
   EntityScan _original;
   EntityCtor _entityCtor;
   Entity _unusedInstance;
-  List<EntityScan> _keyCollection;
+  EntityKeyChain _keyChain;
   MetadataCache _metadataCache;
   
   final List<_DormProxyListEntry> _identityProxies = <_DormProxyListEntry>[], _proxies = <_DormProxyListEntry>[];
@@ -31,16 +32,16 @@ class EntityScan {
   //---------------------------------
   
   void buildKey() {
-    EntityKey nextKey = EntityAssembler._instance._keyChain;
+    EntityKeyChain nextKey = _rootKeyChain;
     
     _identityProxies.forEach(
       (_DormProxyListEntry entry) =>  nextKey = nextKey._setKeyValue(entry.propertySymbol, entry.proxy._value)   
     );
     
-    if (_keyCollection != nextKey.entityScans) {
-      if (_keyCollection != null) _keyCollection.remove(this);
+    if (_keyChain != nextKey) {
+      if (_keyChain != null) _keyChain.entityScans.remove(this);
       
-      _keyCollection = nextKey.entityScans;
+      _keyChain = nextKey;
     }
   }
   
@@ -52,8 +53,13 @@ class EntityScan {
   
   EntityScan(this.refClassName, this._entityCtor);
   
+  EntityScan.withKeyChain(this.refClassName, this._entityCtor) {
+    _rootKeyChain = new EntityKeyChain();
+  }
+  
   factory EntityScan.fromScan(EntityScan originalScan, Entity forEntity) {
     final EntityScan newScan = new EntityScan(originalScan.refClassName, originalScan._entityCtor)
+    .._rootKeyChain = originalScan._rootKeyChain
     .._original = originalScan
     .._metadataCache = originalScan._metadataCache
     ..entity = forEntity

@@ -11,7 +11,7 @@ part of dorm;
  * with your services to facilitate this.
  * 
  * The assembler is responsible for the creation of an [Entity] and also continues to maintain it afterwards. 
- * As soon as an [Entity] is created, it will be stored in the [EntityKey] chain,
+ * As soon as an [Entity] is created, it will be stored in the [EntityKeyChain] chain,
  * should the same [Entity] then at a later time be reloaded in any way,
  * then the assembler will choose to update it in the case of [ConflictManager.ACCEPT_SERVER]
  * or keep the client [Entity] unchanged in case of [ConflictManager.ACCEPT_CLIENT].
@@ -30,7 +30,6 @@ class EntityAssembler {
   final List<EntityScan> _entityScans = <EntityScan>[];
   final List<List<dynamic>> _collections = <List<dynamic>>[];
   final List<DormProxy> _pendingProxies = <DormProxy>[];
-  final EntityKey _keyChain = new EntityKey();
   
   ConflictManager _handleConflictAcceptClient(Entity serverEntity, Entity clientEntity) => ConflictManager.ACCEPT_CLIENT;
   
@@ -76,7 +75,7 @@ class EntityAssembler {
     
     if(scan != null) return scan;
     
-    scan = new EntityScan(refClassName, constructorMethod);
+    scan = new EntityScan.withKeyChain(refClassName, constructorMethod);
     
     ClassMirror classMirror = reflectClass(forType);
     
@@ -166,7 +165,7 @@ class EntityAssembler {
     
     spawnee._scan.buildKey();
     
-    localNonPointerEntity = _keyChain.getFirstSibling(spawnee, allowPointers: false);
+    localNonPointerEntity = EntityKeyChain.getFirstSibling(spawnee._scan, allowPointers: false);
     
     if (
         !spawnee._isPointer &&
@@ -186,7 +185,7 @@ class EntityAssembler {
     if (spawnee._isPointer) {
       if (owningProxy != null) _pendingProxies.add(owningProxy);
     } else {
-      spawnee._scan._keyCollection.add(spawnee._scan);
+      spawnee._scan._keyChain.entityScans.add(spawnee._scan);
       
       spawnee._scan._proxies.forEach(
           (_DormProxyListEntry entry) {
@@ -239,7 +238,7 @@ class EntityAssembler {
     while (i > 0) {
       proxy = _pendingProxies[--i];
       
-      if (_keyChain.areSameKeySignature(proxy._value, actualEntity)) {
+      if (EntityKeyChain.areSameKeySignature(proxy._value._scan, actualEntity._scan)) {
         proxy.setInitialValue(actualEntity);
         
         _pendingProxies.remove(proxy);
@@ -256,7 +255,7 @@ class EntityAssembler {
       collectionEntry.forEach(
           (dynamic entry) {
             if (entry is Entity) {
-              if (_keyChain.areSameKeySignature(entry, actualEntity)) {
+              if (EntityKeyChain.areSameKeySignature(entry._scan, actualEntity._scan)) {
                 collectionEntry[collectionEntry.indexOf(entry)] = actualEntity;
               } else if (entry._isPointer) {
                 collectionEntryHasPointers = true;

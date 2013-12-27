@@ -1,6 +1,28 @@
 part of dorm;
 
-class EntityKey {
+class EntityKeyChain {
+  
+  //---------------------------------
+  //
+  // Static methods
+  //
+  //---------------------------------
+  
+  static final EntityKeyChain rootKeyChain = new EntityKeyChain();
+  
+  static Entity getFirstSibling(EntityScan forScan, {bool allowPointers: true}) {
+    EntityScan result = forScan._keyChain.entityScans.firstWhere(
+      (EntityScan scan) => (
+          (scan.entity != forScan.entity) && 
+          (allowPointers || !scan.entity._isPointer)
+      ),
+      orElse: () => null
+    );
+    
+    return (result != null) ? result.entity : null;
+  }
+  
+  static bool areSameKeySignature(EntityScan scanA, EntityScan scanB) => scanA._keyChain.entityScans.contains(scanB);
   
   //---------------------------------
   //
@@ -8,7 +30,7 @@ class EntityKey {
   //
   //---------------------------------
   
-  final Map<Symbol, Map<dynamic, EntityKey>> _map = new Map<Symbol, Map<dynamic, EntityKey>>();
+  final Map<Symbol, Map<dynamic, EntityKeyChain>> _map = new Map<Symbol, Map<dynamic, EntityKeyChain>>();
   
   //---------------------------------
   //
@@ -16,7 +38,7 @@ class EntityKey {
   //
   //---------------------------------
   
-  final List<EntityScan> entityScans = new List<EntityScan>();
+  final List<EntityScan> entityScans = <EntityScan>[];
   
   //---------------------------------
   //
@@ -24,7 +46,7 @@ class EntityKey {
   //
   //---------------------------------
   
-  EntityKey();
+  EntityKeyChain();
   
   //---------------------------------
   //
@@ -34,35 +56,7 @@ class EntityKey {
   
   void operator []= (Symbol key, dynamic value) => _setKeyValueNoReturn(key, value);
   
-  EntityKey operator [] (List otherKey) => _map[otherKey[0]][otherKey[1]];
-  
-  //---------------------------------
-  //
-  // Public methods
-  //
-  //---------------------------------
-  
-  Entity getFirstSibling(Entity forEntity, {bool allowPointers: true}) {
-    EntityScan result = forEntity._scan._keyCollection.firstWhere(
-      (EntityScan scan) => (
-          (scan.entity != forEntity) && 
-          (allowPointers || !scan.entity._isPointer)
-      ),
-      orElse: () => null
-    );
-    
-    return (result != null) ? result.entity : null;
-  }
-  
-  bool areSameKeySignature(Entity entity, Entity compareEntity) => entity._scan._keyCollection.contains(compareEntity._scan);
-  
-  bool remove(Entity entity) => entity._scan._keyCollection.remove(entity._scan);
-  
-  Iterable<EntityScan> getSiblings(Entity forEntity) => forEntity._scan._keyCollection.where(
-      (EntityScan scan) => (scan.entity != forEntity)    
-  );
-  
-  List<EntityScan> getExistingEntityScans(Entity forEntity) => forEntity._scan._keyCollection;
+  EntityKeyChain operator [] (List otherKey) => _map[otherKey[0]][otherKey[1]];
   
   //---------------------------------
   //
@@ -70,20 +64,20 @@ class EntityKey {
   //
   //---------------------------------
   
-  EntityKey _setKeyValue(Symbol key, dynamic value) {
-    EntityKey returnValue;
-    Map<dynamic, EntityKey> mainKey = _map[key];
+  EntityKeyChain _setKeyValue(Symbol key, dynamic value) {
+    EntityKeyChain returnValue;
+    Map<dynamic, EntityKeyChain> mainKey = _map[key];
     
     if (mainKey == null) {
-      returnValue = new EntityKey();
+      returnValue = new EntityKeyChain();
       
-      mainKey = <dynamic, EntityKey>{value: returnValue};
+      mainKey = <dynamic, EntityKeyChain>{value: returnValue};
       
       _map[key] = mainKey;
       
       return returnValue;
     } else if (mainKey[value] == null) {
-      returnValue = new EntityKey();
+      returnValue = new EntityKeyChain();
       
       mainKey[value] = returnValue;
       
@@ -94,9 +88,9 @@ class EntityKey {
   }
   
   void _setKeyValueNoReturn(Symbol key, dynamic value) {
-    Map<dynamic, EntityKey> mainKey = _map[key];
+    Map<dynamic, EntityKeyChain> mainKey = _map[key];
     
-    if (mainKey == null) _map[key] = mainKey = <dynamic, EntityKey>{value: new EntityKey()};
-    else if (mainKey[value] == null) mainKey[value] = new EntityKey();
+    if (mainKey == null) _map[key] = mainKey = <dynamic, EntityKeyChain>{value: new EntityKeyChain()};
+    else if (mainKey[value] == null) mainKey[value] = new EntityKeyChain();
   }
 }
