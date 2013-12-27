@@ -26,7 +26,7 @@ class Entity extends Observable implements Externalizable {
   // isMutable
   //-----------------------------------
   
-  bool get isMutable => _scan.isMutableEntity;
+  bool get isMutable => _scan._root.isMutableEntity;
   
   //-----------------------------------
   // refClassName
@@ -416,7 +416,7 @@ class Entity extends Observable implements Externalizable {
   }
   
   Entity _duplicateImpl(List<_ClonedEntityEntry> clonedEntities) {
-    if (_scan.isMutableEntity) {
+    if (_scan._root.isMutableEntity) {
       _ClonedEntityEntry clonedEntity = clonedEntities.firstWhere(
          (_ClonedEntityEntry cloneEntry) => (cloneEntry.original == this),
          orElse: () => null
@@ -424,7 +424,7 @@ class Entity extends Observable implements Externalizable {
       
       if (clonedEntity != null) return clonedEntity.clone;
       
-      Entity clone = _scan._entityCtor();
+      Entity clone = _scan._root._entityCtor();
       
       clonedEntities.add(new _ClonedEntityEntry(this, clone));
       
@@ -490,7 +490,7 @@ class Entity extends Observable implements Externalizable {
   void _writeExternalImpl(Map<String, dynamic> data, Map<int, Map<String, dynamic>> convertedEntities, Serializer serializer) {
     final int uid = hashCode;
     
-    data[SerializationType.ENTITY_TYPE] = _scan.refClassName;
+    data[SerializationType.ENTITY_TYPE] = _scan._root.refClassName;
     data[SerializationType.UID] = uid;
     
     if (convertedEntities == null) convertedEntities = new Map<int, Map<String, dynamic>>();
@@ -506,7 +506,7 @@ class Entity extends Observable implements Externalizable {
             Map<String, dynamic> pointerMap = new Map<String, dynamic>();
             
             pointerMap[SerializationType.POINTER] = subEntity.hashCode;
-            pointerMap[SerializationType.ENTITY_TYPE] = subEntity._scan.refClassName;
+            pointerMap[SerializationType.ENTITY_TYPE] = subEntity._scan._root.refClassName;
             
             subEntity._scan._proxies.forEach(
                 (_DormProxyListEntry subEntry) {
@@ -534,7 +534,7 @@ class Entity extends Observable implements Externalizable {
                     Map<String, dynamic> pointerMap = new Map<String, dynamic>();
                     
                     pointerMap[SerializationType.POINTER] = subEntity.hashCode;
-                    pointerMap[SerializationType.ENTITY_TYPE] = subEntity._scan.refClassName;
+                    pointerMap[SerializationType.ENTITY_TYPE] = subEntity._scan._root.refClassName;
                     
                     subEntity._scan._proxies.forEach(
                         (_DormProxyListEntry subEntry) {

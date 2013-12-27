@@ -27,7 +27,7 @@ class EntityAssembler {
   
   static const Symbol ENTITY_SYMBOL = const Symbol('dorm.Entity');
   
-  final List<EntityScan> _entityScans = <EntityScan>[];
+  final List<EntityRootScan> _entityScans = <EntityRootScan>[];
   final List<List<dynamic>> _collections = <List<dynamic>>[];
   final List<DormProxy> _pendingProxies = <DormProxy>[];
   
@@ -70,12 +70,12 @@ class EntityAssembler {
   /**
    * TO_DO: scan requires mirrors, it would be better to move this to a build file later
    */
-  EntityScan scan(Type forType, String refClassName, Function constructorMethod) {
-    EntityScan scan = _existingFromScanRegistry(refClassName);
+  EntityRootScan scan(Type forType, String refClassName, Function constructorMethod) {
+    EntityRootScan scan = _existingFromScanRegistry(refClassName);
     
     if(scan != null) return scan;
     
-    scan = new EntityScan.withKeyChain(refClassName, constructorMethod);
+    scan = new EntityRootScan(refClassName, constructorMethod);
     
     ClassMirror classMirror = reflectClass(forType);
     
@@ -114,7 +114,7 @@ class EntityAssembler {
       
       scanProxy.proxy = proxy;
       
-      scan._metadataCache._updateProxyWithMetadata(
+      scan._root._metadataCache._updateProxyWithMetadata(
           scanProxy, 
           scan
       );
@@ -128,16 +128,16 @@ class EntityAssembler {
   //---------------------------------
   
   EntityScan _createEntityScan(Entity entity) {
-    EntityScan scan = _existingFromScanRegistry(entity.refClassName);
+    EntityRootScan scan = _existingFromScanRegistry(entity.refClassName);
     
-    if(scan != null) return new EntityScan.fromScan(scan, entity);
+    if(scan != null) return new EntityScan.fromRootScan(scan, entity);
     
     throw new DormError('Scan for entity not found');
   }
   
   Entity _assemble(Map<String, dynamic> rawData, DormProxy owningProxy, Serializer serializer, OnConflictFunction onConflict) {
     final String refClassName = rawData[SerializationType.ENTITY_TYPE];
-    EntityScan entityScan;
+    EntityRootScan entityScan;
     Entity spawnee, localNonPointerEntity;
     
     if (onConflict == null) onConflict = _handleConflictAcceptClient;
@@ -268,9 +268,9 @@ class EntityAssembler {
     }
   }
   
-  EntityScan _existingFromScanRegistry(String refClassName) {
+  EntityRootScan _existingFromScanRegistry(String refClassName) {
     return _entityScans.firstWhere(
-      (EntityScan scan) => (scan.refClassName.compareTo(refClassName) == 0),
+      (EntityRootScan scan) => (scan.refClassName.compareTo(refClassName) == 0),
       orElse: () => null
     );
   }

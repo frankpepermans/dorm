@@ -82,7 +82,7 @@ class DormManager extends Observable {
   
   void queueAsDeleted(Entity entity) {
     if (
-        entity._scan.isMutableEntity &&
+        entity.isMutable &&
         !_deleteQueue.contains(entity)
     ) {
       _queue.remove(entity);
@@ -94,7 +94,7 @@ class DormManager extends Observable {
   
   void queue(Entity entity) {
     if (
-        entity._scan.isMutableEntity &&
+        entity.isMutable &&
         !_queue.contains(entity) &&
         entity.isDirty()
     ) {
@@ -106,7 +106,7 @@ class DormManager extends Observable {
   }
   
   void unqueue(Entity entity) {
-    if (entity._scan.isMutableEntity) {
+    if (entity.isMutable) {
       if (_queue.contains(entity)) _queue.remove(entity);
       if (_deleteQueue.contains(entity)) _deleteQueue.remove(entity);
       

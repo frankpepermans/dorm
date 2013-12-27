@@ -1,88 +1,18 @@
 part of dorm;
 
-class EntityScan {
+class EntityRootScan {
   
-  //---------------------------------
-  //
-  // Private properties
-  //
-  //---------------------------------
-  
-  EntityKeyChain _rootKeyChain;
-  EntityScan _original;
-  EntityCtor _entityCtor;
-  Entity _unusedInstance;
-  EntityKeyChain _keyChain;
+  final EntityKeyChain _keyChain = new EntityKeyChain();
+  final EntityCtor _entityCtor;
   MetadataCache _metadataCache;
+  Entity _unusedInstance;
+  
+  final String refClassName;
+  bool isMutableEntity = true;
   
   final List<_DormProxyListEntry> _identityProxies = <_DormProxyListEntry>[], _proxies = <_DormProxyListEntry>[];
   
-  //---------------------------------
-  //
-  // Public properties
-  //
-  //---------------------------------
-  
-  Entity entity;
-  String refClassName;
-  bool isMutableEntity = true;
-  
-  //---------------------------------
-  // key
-  //---------------------------------
-  
-  void buildKey() {
-    EntityKeyChain nextKey = _rootKeyChain;
-    
-    _identityProxies.forEach(
-      (_DormProxyListEntry entry) =>  nextKey = nextKey._setKeyValue(entry.propertySymbol, entry.proxy._value)   
-    );
-    
-    if (_keyChain != nextKey) {
-      if (_keyChain != null) _keyChain.entityScans.remove(this);
-      
-      _keyChain = nextKey;
-    }
-  }
-  
-  //---------------------------------
-  //
-  // Constructor
-  //
-  //---------------------------------
-  
-  EntityScan(this.refClassName, this._entityCtor);
-  
-  EntityScan.withKeyChain(this.refClassName, this._entityCtor) {
-    _rootKeyChain = new EntityKeyChain();
-  }
-  
-  factory EntityScan.fromScan(EntityScan originalScan, Entity forEntity) {
-    final EntityScan newScan = new EntityScan(originalScan.refClassName, originalScan._entityCtor)
-    .._rootKeyChain = originalScan._rootKeyChain
-    .._original = originalScan
-    .._metadataCache = originalScan._metadataCache
-    ..entity = forEntity
-    ..isMutableEntity = originalScan.isMutableEntity;
-    
-    bool useChangeListener = false;
-    
-    originalScan._proxies.forEach(
-       (_DormProxyListEntry entry) {
-         final _DormProxyListEntry clonedEntry = new _DormProxyListEntry.from(entry);
-         
-         newScan._proxies.add(clonedEntry);
-         
-         if (clonedEntry.metadataCache.isId) newScan._identityProxies.add(clonedEntry);
-         
-         if (clonedEntry.metadataCache.isId && clonedEntry.metadataCache.isMutable) useChangeListener = true;
-       }
-    );
-    
-    if (useChangeListener) forEntity.changes.listen(_entity_changeHandler);
-    
-    return newScan;
-  }
+  EntityRootScan(this.refClassName, this._entityCtor);
   
   //---------------------------------
   //
@@ -136,6 +66,78 @@ class EntityScan {
       }
     }
   }
+}
+
+class EntityScan {
+  
+  //---------------------------------
+  //
+  // Private properties
+  //
+  //---------------------------------
+  
+  EntityRootScan _root;
+  EntityKeyChain _keyChain;
+  
+  final List<_DormProxyListEntry> _identityProxies = <_DormProxyListEntry>[], _proxies = <_DormProxyListEntry>[];
+  
+  //---------------------------------
+  //
+  // Public properties
+  //
+  //---------------------------------
+  
+  Entity entity;
+  
+  //---------------------------------
+  // key
+  //---------------------------------
+  
+  void buildKey() {
+    EntityKeyChain nextKey = _root._keyChain;
+    
+    _identityProxies.forEach(
+      (_DormProxyListEntry entry) =>  nextKey = nextKey._setKeyValue(entry.propertySymbol, entry.proxy._value)   
+    );
+    
+    if (_keyChain != nextKey) {
+      if (_keyChain != null) _keyChain.entityScans.remove(this);
+      
+      _keyChain = nextKey;
+    }
+  }
+  
+  //---------------------------------
+  //
+  // Constructor
+  //
+  //---------------------------------
+  
+  EntityScan();
+  
+  factory EntityScan.fromRootScan(EntityRootScan root, Entity forEntity) {
+    final EntityScan newScan = new EntityScan()
+    .._root = root
+    ..entity = forEntity;
+    
+    bool useChangeListener = false;
+    
+    root._proxies.forEach(
+       (_DormProxyListEntry entry) {
+         final _DormProxyListEntry clonedEntry = new _DormProxyListEntry.from(entry);
+         
+         newScan._proxies.add(clonedEntry);
+         
+         if (clonedEntry.metadataCache.isId) newScan._identityProxies.add(clonedEntry);
+         
+         if (clonedEntry.metadataCache.isId && clonedEntry.metadataCache.isMutable) useChangeListener = true;
+       }
+    );
+    
+    if (useChangeListener) forEntity.changes.listen(_entity_changeHandler);
+    
+    return newScan;
+  }
   
   //---------------------------------
   //
@@ -176,6 +178,7 @@ class _DormProxyListEntry<T extends _DormProxyListEntry> extends Comparable {
   final Type type;
   final _PropertyMetadataCache metadataCache;
   
+  // TODO:
   DormProxy proxy;
   
   _DormProxyListEntry(this.property, this.propertySymbol, this.type, this.metadataCache);

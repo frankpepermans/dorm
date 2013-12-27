@@ -41,7 +41,7 @@ class MetadataCache {
     entry.proxy.isTransient = entry.metadataCache.isTransient;
     entry.proxy.isNullable = entry.metadataCache.isNullable;
     entry.proxy.isLabelField = entry.metadataCache.isLabelField;
-    entry.proxy.isMutable = (scan.isMutableEntity && entry.metadataCache.isMutable);
+    entry.proxy.isMutable = (scan._root.isMutableEntity && entry.metadataCache.isMutable);
     entry.proxy.isLazy = entry.metadataCache.isLazy;
     
     entry.proxy.setInsertValue(entry.metadataCache.insertValue);
