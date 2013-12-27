@@ -52,40 +52,30 @@ class EntityScan {
   
   EntityScan(this.refClassName, this._entityCtor);
   
-  EntityScan.fromScan(this._original, this.entity) {
-    this._entityCtor = _original._entityCtor;
-    this._metadataCache = _original._metadataCache;
-    this.refClassName = _original.refClassName;
-    this.isMutableEntity = _original.isMutableEntity;
+  factory EntityScan.fromScan(EntityScan originalScan, Entity forEntity) {
+    final EntityScan newScan = new EntityScan(originalScan.refClassName, originalScan._entityCtor)
+    .._original = originalScan
+    .._metadataCache = originalScan._metadataCache
+    ..entity = forEntity
+    ..isMutableEntity = originalScan.isMutableEntity;
     
-    _original._proxies.forEach(
+    bool useChangeListener = false;
+    
+    originalScan._proxies.forEach(
        (_DormProxyListEntry entry) {
-         final _DormProxyListEntry clonedEntry = entry.clone();
+         final _DormProxyListEntry clonedEntry = new _DormProxyListEntry.from(entry);
          
-         this._proxies.add(clonedEntry);
+         newScan._proxies.add(clonedEntry);
          
-         if (entry.metadataCache.isId) {
-           this._identityProxies.add(clonedEntry);
-           
-           entity.changes.listen(
-            (List<ChangeRecord> changes)  {
-              PropertyChangeRecord matchingChange = changes.firstWhere(
-                    (ChangeRecord change) => (
-                        (change is PropertyChangeRecord) && 
-                        (change.name == clonedEntry.propertySymbol)
-                    ),
-                    orElse: () => null
-              );
-              
-              if (
-                  (matchingChange != null) &&
-                  !entity.isUnsaved()
-              ) buildKey();
-            }
-           );
-         }
+         if (clonedEntry.metadataCache.isId) newScan._identityProxies.add(clonedEntry);
+         
+         if (clonedEntry.metadataCache.isId && clonedEntry.metadataCache.isMutable) useChangeListener = true;
        }
     );
+    
+    if (useChangeListener) forEntity.changes.listen(_entity_changeHandler);
+    
+    return newScan;
   }
   
   //---------------------------------
@@ -120,7 +110,7 @@ class EntityScan {
       if (instanceMirror.reflectee is Property) {
         property = instanceMirror.reflectee as Property;
         
-        entry = new _DormProxyListEntry(property.property, property.propertySymbol, property.type);
+        entry = new _DormProxyListEntry(property.property, property.propertySymbol, property.type, new _PropertyMetadataCache(property.property));
         
         isIdentity = false;
         
@@ -140,6 +130,27 @@ class EntityScan {
       }
     }
   }
+  
+  //---------------------------------
+  //
+  // Private methods
+  //
+  //---------------------------------
+  
+  static void _entity_changeHandler(List<ChangeRecord> changes) {
+    PropertyChangeRecord matchingChange = changes.firstWhere(
+        (ChangeRecord change) => (
+            (change is PropertyChangeRecord) && 
+            (change.object as Entity).getIdentityFields().contains(change.name)
+        ),
+        orElse: () => null
+    );
+    
+    if (
+        (matchingChange != null) &&
+        !(matchingChange.object as Entity).isUnsaved()
+    ) (matchingChange.object as Entity)._scan.buildKey();
+  }
 }
 
 //---------------------------------
@@ -157,14 +168,13 @@ class _DormProxyListEntry<T extends _DormProxyListEntry> extends Comparable {
   final String property;
   final Symbol propertySymbol;
   final Type type;
-  _PropertyMetadataCache metadataCache;
+  final _PropertyMetadataCache metadataCache;
   
   DormProxy proxy;
   
-  _DormProxyListEntry(this.property, this.propertySymbol, this.type);
+  _DormProxyListEntry(this.property, this.propertySymbol, this.type, this.metadataCache);
   
-  _DormProxyListEntry clone() => new _DormProxyListEntry(property, propertySymbol, type)
-  ..metadataCache = metadataCache;
+  factory _DormProxyListEntry.from(_DormProxyListEntry value) => new _DormProxyListEntry(value.property, value.propertySymbol, value.type, value.metadataCache);
   
   @override
   int compareTo(T other) {

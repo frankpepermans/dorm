@@ -19,8 +19,6 @@ class MetadataCache {
   void registerTagForProperty(_DormProxyListEntry entry, Object reflectee) {
     final Type type = reflectee.runtimeType;
     
-    if (entry.metadataCache == null) entry.metadataCache = new _PropertyMetadataCache(entry.property);
-    
     if (type == Id) {
       entry.metadataCache.isId = true;
       entry.metadataCache.insertValue = (reflectee as Id).insertValue;
@@ -39,8 +37,6 @@ class MetadataCache {
   //---------------------------------
   
   void _updateProxyWithMetadata(_DormProxyListEntry entry, EntityScan scan) {
-    if (entry.metadataCache == null) entry.metadataCache = new _PropertyMetadataCache(entry.property);
-    
     entry.proxy.isId = entry.metadataCache.isId;
     entry.proxy.isTransient = entry.metadataCache.isTransient;
     entry.proxy.isNullable = entry.metadataCache.isNullable;
