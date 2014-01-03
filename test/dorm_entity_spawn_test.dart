@@ -11,7 +11,8 @@ int nextId = 1;
 main() {
   EntityAssembler assembler = new EntityAssembler();
   
-  assembler.scan(TestEntity, 'entities.testEntity', TestEntity.construct);
+  assembler.scan(TestEntity, 'entities.TestEntity', TestEntity.construct);
+  assembler.scan(AnotherTestEntity, 'entities.AnotherTestEntity', AnotherTestEntity.construct);
   
   setup();
   run();
@@ -26,14 +27,22 @@ void setup() {
   );
 }
 
-String generateJSONData(String name, DateTime date) => '[{"id":${nextId++},"name":"$name","date":${date.millisecondsSinceEpoch},"?t":"entities.testEntity"}]';
+String generateJSONData(String name, DateTime date, String type) => '[{"id":${nextId++},"name":"$name","date":${date.millisecondsSinceEpoch},"?t":"entities.$type"}]';
 
 void run() {
   DateTime now = new DateTime.now().toUtc();
   
+  test('Inheritance', () {
+    String rawDataA = generateJSONData('Test A', now, 'AnotherTestEntity');
+    
+    EntityFactory<AnotherTestEntity> factory = new EntityFactory();
+    
+    AnotherTestEntity entity = factory.spawn(serializer.incoming(rawDataA), serializer, handleConflictAcceptClient).first;
+  });
+  
   test('Simple spawn test', () {
-    String rawDataA = generateJSONData('Test A', now);
-    String rawDataB = generateJSONData('Test B', now);
+    String rawDataA = generateJSONData('Test A', now, 'TestEntity');
+    String rawDataB = generateJSONData('Test B', now, 'TestEntity');
     
     EntityFactory<TestEntity> factory = new EntityFactory();
     
@@ -47,12 +56,12 @@ void run() {
     String outgoing = serializer.outgoing(<Entity>[entity, entityShouldNotBePointer]);
     List<String> outgoingToComplexData = JSON.decode(outgoing);
     
-    expect(entity.id, 1);
+    expect(entity.id, 2);
     expect(entity.name, 'Test A');
     expect(entity.date.millisecondsSinceEpoch, now.millisecondsSinceEpoch);
-    expect(entityShouldBePointer.id, 1);
+    expect(entityShouldBePointer.id, 2);
     expect(entityShouldBePointer.name, 'Test A');
-    expect(entityShouldNotBePointer.id, 2);
+    expect(entityShouldNotBePointer.id, 3);
     expect(entityShouldNotBePointer.name, 'Test B');
     expect((entity == entityShouldBePointer), true);
     expect((entity != entityShouldNotBePointer), true);
@@ -65,13 +74,13 @@ void run() {
         expect(map.containsKey('id'), true);
         expect(map.containsKey(SerializationType.UID), true);
         
-        expect(map[SerializationType.ENTITY_TYPE], 'entities.testEntity');
+        expect(map[SerializationType.ENTITY_TYPE], 'entities.TestEntity');
       }
     );
   });
   
   test('Conflict manager, accept client test', () {
-    String rawDataC = generateJSONData('Test C', now);
+    String rawDataC = generateJSONData('Test C', now, 'TestEntity');
     EntityFactory<TestEntity> factory = new EntityFactory();
     TestEntity entity;
     
@@ -90,7 +99,7 @@ void run() {
   });
   
   test('Conflict manager, accept server test', () {
-    String rawDataD = generateJSONData('Test D', now);
+    String rawDataD = generateJSONData('Test D', now, 'TestEntity');
     EntityFactory<TestEntity> factory = new EntityFactory();
     TestEntity entity;
     
@@ -109,7 +118,7 @@ void run() {
   });
   
   test('Post processing', ()  {
-    String rawDataE = generateJSONData('Test E', now);
+    String rawDataE = generateJSONData('Test E', now, 'TestEntity');
     EntityFactory<TestEntity> factory = new EntityFactory()
     ..addPostProcessor(
       new EntityPostProcessor(
@@ -122,7 +131,7 @@ void run() {
   });
   
   test('Cloning', ()  {
-    String rawDataE = generateJSONData('Test F', now);
+    String rawDataE = generateJSONData('Test F', now, 'TestEntity');
     EntityFactory<TestEntity> factory = new EntityFactory();
     TestEntity entity = factory.spawnSingle(serializer.incoming(rawDataE).first, serializer, handleConflictAcceptServer);
     TestEntity entityClone = entity.duplicate();

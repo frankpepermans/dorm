@@ -30,9 +30,9 @@ class TemplateBenchmark extends BenchmarkBase {
     entityFactory = new EntityFactory();
     serializer = new SerializerJson();
     
-    Entity.ASSEMBLER.scan(TestEntity, 'entities.testEntity', TestEntity.construct);
+    Entity.ASSEMBLER.scan(TestEntity, 'entities.TestEntity', TestEntity.construct);
     
-    while (i > 0) jsonRaw.add('{"id":${--i},"name":"Speed test","type":"type_${i}","?t":"entities.testEntity"}');
+    while (i > 0) jsonRaw.add('{"id":${--i},"name":"Speed test","type":"type_${i}","?t":"entities.TestEntity"}');
   
     jsonData = '[' + jsonRaw.join(',') + ']';
   }

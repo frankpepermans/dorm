@@ -16,7 +16,7 @@ class MetadataCache {
   //
   //---------------------------------
   
-  void registerTagForProperty(_DormProxyListEntry entry, Object reflectee) {
+  void registerTagForProperty(_DormRootProxyListEntry entry, Object reflectee) {
     final Type type = reflectee.runtimeType;
     
     if (type == Id) {
