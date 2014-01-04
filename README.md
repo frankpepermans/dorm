@@ -25,6 +25,9 @@ Dorm will soon support :
 
 [![Build Status](https://drone.io/github.com/frankpepermans/dorm/status.png)](https://drone.io/github.com/frankpepermans/dorm/latest)
 
+![Alt text](dorm.svg)
+<img src="dorm.svg">
+
 Try It Now
 -----------
 Add the Dorm package to your pubspec.yaml file:

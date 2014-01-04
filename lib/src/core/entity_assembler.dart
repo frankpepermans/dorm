@@ -101,20 +101,20 @@ class EntityAssembler {
     
     final EntityScan scan = entity._scan;
     DormProxy proxy;
-    _DormProxyListEntry scanProxy;
+    _DormProxyPropertyInfo scanProxy;
     int i = proxies.length;
     
     while (i > 0) {
       proxy = proxies[--i];
       
       scanProxy = scan._proxies.firstWhere(
-        (_DormProxyListEntry entry) => (entry.property == proxy._property),
+        (_DormProxyPropertyInfo entry) => (entry.info.property == proxy._property),
         orElse: () => null
       );
       
       scanProxy.proxy = proxy;
       
-      scan._root._metadataCache._updateProxyWithMetadata(
+      proxy._updateWithMetadata(
           scanProxy, 
           scan
       );
@@ -188,7 +188,7 @@ class EntityAssembler {
       spawnee._scan._keyChain.entityScans.add(spawnee._scan);
       
       spawnee._scan._proxies.forEach(
-          (_DormProxyListEntry entry) {
+          (_DormProxyPropertyInfo entry) {
             if (entry.proxy.owner != null) _collections.add(entry.proxy.owner);
           }
       );
@@ -201,7 +201,7 @@ class EntityAssembler {
   
   void _solveConflictsIfAny(Entity spawnee, Entity existingEntity, OnConflictFunction onConflict) {
     ConflictManager conflictManager;
-    Iterable<_DormProxyListEntry> entryProxies, spawneeProxies;
+    Iterable<_DormProxyPropertyInfo> entryProxies, spawneeProxies;
     int i, j;
     
     if (onConflict == null) throw new DormError('Conflict was detected, but no onConflict method is available');
@@ -215,11 +215,11 @@ class EntityAssembler {
       entryProxies = existingEntity._scan._proxies;
       
       entryProxies.forEach(
-          (_DormProxyListEntry entryA) {
+          (_DormProxyPropertyInfo entryA) {
             final spawneeProxies = spawnee._scan._proxies;
             
-            final _DormProxyListEntry entryMatch = spawneeProxies.firstWhere(
-              (_DormProxyListEntry entryB) => (entryA.property == entryB.property),
+            final _DormProxyPropertyInfo entryMatch = spawneeProxies.firstWhere(
+              (_DormProxyPropertyInfo entryB) => (entryA.info.property == entryB.info.property),
               orElse: () => null
             );
             

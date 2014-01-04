@@ -16,7 +16,7 @@ class MetadataCache {
   //
   //---------------------------------
   
-  void registerTagForProperty(_DormRootProxyListEntry entry, Object reflectee) {
+  void registerTagForProperty(_DormPropertyInfo entry, Object reflectee) {
     final Type type = reflectee.runtimeType;
     
     if (type == Id) {
@@ -28,24 +28,6 @@ class MetadataCache {
       else if (type == LabelField)    entry.metadataCache.isLabelField = true;
       else if (type == Immutable)     entry.metadataCache.isMutable = false;
       else if (type == Lazy)          entry.metadataCache.isLazy = true;
-  }
-  
-  //---------------------------------
-  //
-  // Private methods
-  //
-  //---------------------------------
-  
-  void _updateProxyWithMetadata(_DormProxyListEntry entry, EntityScan scan) {
-    entry.proxy.isId = entry.metadataCache.isId;
-    entry.proxy.isTransient = entry.metadataCache.isTransient;
-    entry.proxy.isNullable = entry.metadataCache.isNullable;
-    entry.proxy.isLabelField = entry.metadataCache.isLabelField;
-    entry.proxy.isMutable = (scan._root.isMutableEntity && entry.metadataCache.isMutable);
-    entry.proxy.isLazy = entry.metadataCache.isLazy;
-    
-    entry.proxy.setInsertValue(entry.metadataCache.insertValue);
-    entry.proxy.setInitialValue(entry.metadataCache.initialValue);
   }
 }
 

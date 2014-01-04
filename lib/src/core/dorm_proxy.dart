@@ -77,4 +77,24 @@ class DormProxy<T> {
     _defaultValue = value;
     _value = value;
   }
+  
+  //-----------------------------------
+  //
+  // Private methods
+  //
+  //-----------------------------------
+  
+  void _updateWithMetadata(_DormProxyPropertyInfo entry, EntityScan scan) {
+    final _PropertyMetadataCache cache = entry.info.metadataCache;
+    
+    isId = cache.isId;
+    isTransient = cache.isTransient;
+    isNullable = cache.isNullable;
+    isLabelField = cache.isLabelField;
+    isMutable = (scan._root.isMutableEntity && cache.isMutable);
+    isLazy = cache.isLazy;
+    
+    setInsertValue(cache.insertValue);
+    setInitialValue(cache.initialValue);
+  }
 }
