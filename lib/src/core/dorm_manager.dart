@@ -178,12 +178,14 @@ class DormManager extends Observable {
     entity._scan._proxies.forEach(
       (_DormProxyPropertyInfo entry) {
         if (entry.proxy.value is Entity) {
+          final Entity tmpEntity = entry.proxy.value as Entity;
+          
           if (
-              entry.proxy.value._scan.isMutableEntity &&
-              !list.contains(entry.proxy.value) &&
-              entry.proxy.value.isDirty()
+              tmpEntity.isMutable &&
+              !list.contains(tmpEntity) &&
+              tmpEntity.isDirty()
           ) {
-            list.add(entry.proxy.value);
+            list.add(tmpEntity);
           }
         } else if (entry.proxy.value is List) {
           List<Entity> entityList = entry.proxy.value;
