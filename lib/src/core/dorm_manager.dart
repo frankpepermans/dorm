@@ -68,6 +68,10 @@ class DormManager extends Observable {
   //
   //-----------------------------------
   
+  void resetCommitStatus() {
+    _isCommitRequired = false;
+  }
+  
   void forceDirtyStatus(bool value) {
     _forcedDirtyStatus = value;
     

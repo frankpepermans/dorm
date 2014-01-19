@@ -79,9 +79,13 @@ class Entity extends Observable implements Externalizable {
    *
    * For convenience this returns [newValue].
    */
-  dynamic notifyPropertyChange(Symbol field, Object oldValue, Object newValue) => _scheduleDirtyCheck(
-    super.notifyPropertyChange(field, oldValue, newValue)    
-  );
+  dynamic notifyPropertyChange(Symbol field, Object oldValue, Object newValue) {
+    if (oldValue != newValue) _scheduleDirtyCheck(
+        super.notifyPropertyChange(field, oldValue, newValue)    
+    );
+    
+    return newValue;
+  }
   
   /**
    * Updates the default value for the field [propertyName] to [propertyValue] on the [Entity].
@@ -400,7 +404,7 @@ class Entity extends Observable implements Externalizable {
   //
   //---------------------------------
   
-  dynamic _scheduleDirtyCheck(dynamic newValue) {
+  void _scheduleDirtyCheck(dynamic newValue) {
     if (_observableDirtyCheckTimeout == null) {
       _observableDirtyCheckTimeout = new Timer(
         new Duration(milliseconds: 30),
@@ -411,8 +415,6 @@ class Entity extends Observable implements Externalizable {
         }
       );
     }
-    
-    return newValue;
   }
   
   Entity _duplicateImpl(List<_ClonedEntityEntry> clonedEntities) {
@@ -451,7 +453,7 @@ class Entity extends Observable implements Externalizable {
                   }
                 );
                 
-                entry.proxy.setInitialValue(listClone);
+                entry.proxy.setInitialValue(_serializerWorkaround.convertIn(entry.info.type, listClone));
               } else if (value is Entity) {
                 Entity entryCast = value as Entity;
                 
