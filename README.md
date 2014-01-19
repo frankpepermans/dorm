@@ -25,8 +25,8 @@ Dorm will soon support :
 
 [![Build Status](https://drone.io/github.com/frankpepermans/dorm/status.png)](https://drone.io/github.com/frankpepermans/dorm/latest)
 
-![Alt text](dorm.svg)
-<img src="dorm.svg">
+![Alt text](http://igindo.com/dart/dorm/dorm_graph.svg)
+<img src="http://igindo.com/dart/dorm/dorm_graph.svg">
 
 Try It Now
 -----------
