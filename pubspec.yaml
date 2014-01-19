@@ -1,12 +1,7 @@
 name: dorm
-<<<<<<< HEAD
-version: 1.0.04
-author: Frank Pepermans <frank@igindo.com>
-=======
 author: Frank Pepermans <frank@igindo.com>
 version: 1.0.06
 homepage: https://github.com/frankpepermans/dorm
->>>>>>> merge svg
 description: "Dorm is an ORM mapping on the client, the goal is to hook it up with\
   \ existing server-side ORM solutions (Hibernate, EntityFramework, ...)\r\n\r\nThe\
   \ example includes a JSON based Dart server for testing purposes.\r\n\r\nYou can\
