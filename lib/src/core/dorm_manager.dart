@@ -11,6 +11,7 @@ class DormManager extends Observable {
   List<Entity> _observeList = <Entity>[];
   List<Entity> _queue = <Entity>[];
   List<Entity> _deleteQueue = <Entity>[];
+  Map<Entity, StreamSubscription> _dirtyListeners = <Entity, StreamSubscription>{};
   bool _forcedDirtyStatus = false;
   
   //-----------------------------------
@@ -106,6 +107,18 @@ class DormManager extends Observable {
       _queue.add(entity);
       
       _updateIsCommitRequired();
+      
+      StreamSubscription subscription = _dirtyListeners[entity];
+      
+      if (subscription != null) {
+        subscription.cancel();
+        
+        _dirtyListeners.remove(subscription);
+      }
+      
+      _dirtyListeners[entity] = entity.changes.listen(
+        (_) => _updateIsCommitRequired()
+      );
     }
   }
   
@@ -115,6 +128,14 @@ class DormManager extends Observable {
       if (_deleteQueue.contains(entity)) _deleteQueue.remove(entity);
       
       _updateIsCommitRequired();
+      
+      StreamSubscription subscription = _dirtyListeners[entity];
+      
+      if (subscription != null) {
+        subscription.cancel();
+        
+        _dirtyListeners.remove(subscription);
+      }
     }
   }
   
