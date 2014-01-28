@@ -160,7 +160,7 @@ class DormManager extends Observable {
     _updateIsCommitRequired();
   }
   
-  DormManagerCommitStructure drain() {
+  DormManagerCommitStructure drain({bool ignoreMutable: false, bool ignoreDirty: false}) {
     final List<Entity> rollbackCommit = new List<Entity>.from(_queue);
     final List<Entity> rollbackDelete = new List<Entity>.from(_deleteQueue);
     List<Entity> queueRecursive = <Entity>[];
@@ -170,11 +170,11 @@ class DormManager extends Observable {
     deleteQueueRecursive.addAll(_deleteQueue);
     
     _queue.forEach(
-      (Entity entity) => _scanRecursively(entity, queueRecursive)
+      (Entity entity) => _scanRecursively(entity, queueRecursive, ignoreMutable, ignoreDirty)
     );
     
     _deleteQueue.forEach(
-        (Entity entity) => _scanRecursively(entity, deleteQueueRecursive)
+        (Entity entity) => _scanRecursively(entity, deleteQueueRecursive, ignoreMutable, ignoreDirty)
     );
     
     _queue = queueRecursive;
@@ -199,24 +199,26 @@ class DormManager extends Observable {
   //
   //-----------------------------------
   
-  void _scanRecursively(Entity entity, List<Entity> list) {
+  void _scanRecursively(Entity entity, List<Entity> list, bool ignoreMutable, bool ignoreDirty) {
     entity._scan._proxies.forEach(
       (_DormProxyPropertyInfo entry) {
         if (entry.proxy.value is Entity) {
           final Entity tmpEntity = entry.proxy.value as Entity;
           
           if (
-              tmpEntity.isMutable &&
+              (ignoreMutable || tmpEntity.isMutable) &&
               !list.contains(tmpEntity) &&
-              tmpEntity.isDirty()
+              (ignoreDirty || tmpEntity.isDirty())
           ) {
             list.add(tmpEntity);
+            
+            _scanRecursively(tmpEntity, list, ignoreMutable, ignoreDirty);
           }
         } else if (entry.proxy.value is List) {
           List<Entity> entityList = entry.proxy.value;
           
           entityList.forEach(
-            (Entity listEntity) => _scanRecursively(listEntity, list)  
+            (Entity listEntity) => _scanRecursively(listEntity, list, ignoreMutable, ignoreDirty)  
           );
         }
       }
