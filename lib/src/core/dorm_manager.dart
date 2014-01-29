@@ -214,11 +214,21 @@ class DormManager extends Observable {
             
             _scanRecursively(tmpEntity, list, ignoreMutable, ignoreDirty);
           }
-        } else if (entry.proxy.value is List) {
-          List<Entity> entityList = entry.proxy.value;
+        } else if (entry.proxy.value is Iterable) {
+          Iterable<Entity> entityList = entry.proxy.value;
           
           entityList.forEach(
-            (Entity listEntity) => _scanRecursively(listEntity, list, ignoreMutable, ignoreDirty)  
+            (Entity listEntity) {
+              if (
+                  (ignoreMutable || listEntity.isMutable) &&
+                  !list.contains(listEntity) &&
+                  (ignoreDirty || listEntity.isDirty())
+              ) {
+                list.add(listEntity);
+                
+                _scanRecursively(listEntity, list, ignoreMutable, ignoreDirty);
+              }
+            }
           );
         }
       }
