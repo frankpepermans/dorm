@@ -45,8 +45,6 @@ class EntityFactory<T extends Entity> {
       (EntityPostProcessor tmpPostProcessor) => (tmpPostProcessor == postProcessor)
   );
   
-  EntityList<T> spawnLazy(Iterable<Map<String, dynamic>> rawData, Serializer serializer, OnConflictFunction onConflict, {DormProxy proxy}) => new EntityList<T>(rawData, spawnSingle, serializer, onConflict, proxy);
-  
   ObservableList<T> spawn(Iterable<Map<String, dynamic>> rawData, Serializer serializer, OnConflictFunction onConflict, {DormProxy proxy}) {
     final ObservableList<T> results = new ObservableList<T>();
     
@@ -74,26 +72,4 @@ class EntityPostProcessor {
   
   const EntityPostProcessor(this.handler);
   
-}
-
-typedef T _EntityPredicate<T extends Entity>(Map<String, dynamic> rawData, Serializer serializer, OnConflictFunction onConflict, {DormProxy proxy});
-
-class EntityList<T extends Entity> extends ObservableList<T> {
-  final Iterable<T> _iterable;
-  final _EntityPredicate _f;
-  final Serializer serializer;
-  final OnConflictFunction onConflict;
-  final DormProxy proxy;
-
-  EntityList(this._iterable, _EntityPredicate this._f, this.serializer, this.onConflict, this.proxy) {
-    addAll(_iterable);
-  }
-  
-  @reflectable T operator [](int index) {
-    dynamic listEntry = super[index];
-    
-    if (listEntry is Map) this[index] = listEntry = _f(super[index], serializer, onConflict, proxy: proxy);
-    
-    return listEntry;
-  }
 }
