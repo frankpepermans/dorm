@@ -216,9 +216,7 @@ class EntityAssembler {
       
       entryProxies.forEach(
           (_DormProxyPropertyInfo entryA) {
-            final spawneeProxies = spawnee._scan._proxies;
-            
-            final _DormProxyPropertyInfo entryMatch = spawneeProxies.firstWhere(
+            final _DormProxyPropertyInfo entryMatch = spawnee._scan._proxies.firstWhere(
               (_DormProxyPropertyInfo entryB) => (entryA.info.property == entryB.info.property),
               orElse: () => null
             );
