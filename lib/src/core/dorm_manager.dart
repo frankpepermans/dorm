@@ -201,7 +201,7 @@ class DormManager extends Observable {
   
   void _scanRecursively(Entity entity, List<Entity> list, bool ignoreMutable, bool ignoreDirty) {
     entity._scan._proxies.forEach(
-      (String property, _DormProxyPropertyInfo entry) {
+      (_DormProxyPropertyInfo entry) {
         if (entry.proxy.value is Entity) {
           final Entity tmpEntity = entry.proxy.value as Entity;
           
