@@ -107,10 +107,7 @@ class EntityAssembler {
     while (i > 0) {
       proxy = proxies[--i];
       
-      scanProxy = scan._proxies.firstWhere(
-        (_DormProxyPropertyInfo entry) => (entry.info.property == proxy._property),
-        orElse: () => null
-      );
+      scanProxy = scan._proxies[proxy._property];
       
       scanProxy.proxy = proxy;
       
@@ -188,7 +185,7 @@ class EntityAssembler {
       spawnee._scan._keyChain.entityScans.add(spawnee._scan);
       
       spawnee._scan._proxies.forEach(
-          (_DormProxyPropertyInfo entry) {
+          (String property, _DormProxyPropertyInfo entry) {
             if (entry.proxy.owner != null) _collections.add(entry.proxy.owner);
           }
       );
@@ -201,7 +198,7 @@ class EntityAssembler {
   
   void _solveConflictsIfAny(Entity spawnee, Entity existingEntity, OnConflictFunction onConflict) {
     ConflictManager conflictManager;
-    Iterable<_DormProxyPropertyInfo> entryProxies, spawneeProxies;
+    Map<String, _DormProxyPropertyInfo> entryProxies, spawneeProxies;
     int i, j;
     
     if (onConflict == null) throw new DormError('Conflict was detected, but no onConflict method is available');
@@ -215,15 +212,12 @@ class EntityAssembler {
       entryProxies = existingEntity._scan._proxies;
       
       entryProxies.forEach(
-          (_DormProxyPropertyInfo entryA) {
-            final spawneeProxies = spawnee._scan._proxies;
+          (String property, _DormProxyPropertyInfo entry) {
+            spawneeProxies = spawnee._scan._proxies;
             
-            final _DormProxyPropertyInfo entryMatch = spawneeProxies.firstWhere(
-              (_DormProxyPropertyInfo entryB) => (entryA.info.property == entryB.info.property),
-              orElse: () => null
-            );
+            final _DormProxyPropertyInfo entryMatch = spawneeProxies[entry.info.property];
             
-            if (entryMatch != null && entryMatch.proxy.hasDelta) entryA.proxy.setInitialValue(existingEntity.notifyPropertyChange(entryA.proxy._propertySymbol, entryA.proxy._value, entryMatch.proxy._value));
+            if (entryMatch != null && entryMatch.proxy.hasDelta) entry.proxy.setInitialValue(existingEntity.notifyPropertyChange(entry.proxy._propertySymbol, entry.proxy._value, entryMatch.proxy._value));
           }
       );
     }
