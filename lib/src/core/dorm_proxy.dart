@@ -23,7 +23,11 @@ class DormProxy<T> {
   //-----------------------------------
   
   T get value => _value;
-  set value(T newValue) => _value = newValue;
+  set value(T newValue) {
+    if (_isValueUpdateRequired(_value, newValue)) {
+      _value = newValue;
+    }
+  }
   
   Future<T> get lazyFuture => _lazyFuture;
   set lazyFuture(Future<T> newValue) => _lazyFuture = newValue;
@@ -83,6 +87,15 @@ class DormProxy<T> {
   // Private methods
   //
   //-----------------------------------
+  
+  bool _isValueUpdateRequired(dynamic valueA, dynamic valueB) {
+    if (
+      (valueA is Comparable) &&
+      (valueB is Comparable)
+    ) return (valueA.compareTo(valueB) != 0);
+    
+    return (valueA != valueB);
+  }
   
   void _updateWithMetadata(_DormProxyPropertyInfo entry, EntityScan scan) {
     final _PropertyMetadataCache cache = entry.info.metadataCache;

@@ -151,6 +151,18 @@ class DormManager extends Observable {
     );
   }
   
+  void revertAllChanges() {
+    _queue.forEach(
+      (Entity entity) => entity.revertChanges()
+    );
+    
+    _deleteQueue.forEach(
+        (Entity entity) => entity.revertChanges()
+    );
+    
+    clear();
+  }
+  
   void clear() {
     _forcedDirtyStatus = false;
     _isCommitRequired = false;
