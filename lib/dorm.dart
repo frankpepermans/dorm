@@ -103,7 +103,6 @@
 library dorm;
 
 import 'dart:async';
-import 'dart:collection';
 import 'dart:convert';
 import 'dart:core';
 import 'dart:mirrors';
@@ -132,7 +131,7 @@ part 'src/serialization/serializer_json.dart';
 
 final LazyLoader lazyLoader = new LazyLoader();
 
-class SerializerBase = Object with SerializerMixin;
+abstract class SerializerBase = Object with SerializerMixin;
 
 typedef ConflictManager OnConflictFunction(Entity serverEntity, Entity clientEntity);
 

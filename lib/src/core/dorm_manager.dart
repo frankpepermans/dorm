@@ -152,6 +152,12 @@ class DormManager extends Observable {
   }
   
   void revertAllChanges() {
+    _dirtyListeners.forEach(
+      (_, StreamSubscription subscription) => subscription.cancel() 
+    );
+    
+    _dirtyListeners = <Entity, StreamSubscription>{};
+    
     _queue.forEach(
       (Entity entity) => entity.revertChanges()
     );
@@ -165,7 +171,7 @@ class DormManager extends Observable {
   
   void clear() {
     _forcedDirtyStatus = false;
-    _isCommitRequired = false;
+    //_isCommitRequired = false;
     
     _flushInternal();
     

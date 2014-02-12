@@ -9,7 +9,7 @@ abstract class Serializer<T> {
   //-----------------------------------
   
   Iterable incoming(T data);
-  String outgoing(dynamic data);
+  T outgoing(dynamic data);
   
   void addRule(Type forType, dynamic incoming(dynamic value), dynamic outgoing(dynamic value));
   void removeRule(Type forType);
