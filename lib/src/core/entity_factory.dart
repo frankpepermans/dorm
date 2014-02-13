@@ -17,7 +17,7 @@ class EntityFactory<T extends Entity> {
   //
   //---------------------------------
   
-  const EntityFactory._construct();
+  EntityFactory._internal();
   
   //---------------------------------
   //
@@ -25,13 +25,9 @@ class EntityFactory<T extends Entity> {
   //
   //---------------------------------
   
-  static EntityFactory _instance;
+  static final EntityFactory _factory = new EntityFactory._internal();
 
-  factory EntityFactory() {
-    if (_instance == null) _instance = new EntityFactory._construct();
-
-    return _instance;
-  }
+  factory EntityFactory() => _factory;
   
   //---------------------------------
   //

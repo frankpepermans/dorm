@@ -25,8 +25,6 @@ class EntityAssembler {
   //
   //---------------------------------
   
-  static const Symbol ENTITY_SYMBOL = const Symbol('dorm.Entity');
-  
   final List<EntityRootScan> _entityScans = <EntityRootScan>[];
   final List<List<dynamic>> _collections = <List<dynamic>>[];
   final List<DormProxy> _pendingProxies = <DormProxy>[];
@@ -45,7 +43,7 @@ class EntityAssembler {
   //
   //---------------------------------
   
-  const EntityAssembler._construct();
+  EntityAssembler._internal();
   
   //---------------------------------
   //
@@ -53,13 +51,9 @@ class EntityAssembler {
   //
   //---------------------------------
   
-  static EntityAssembler _instance;
+  static final EntityAssembler _assembler = new EntityAssembler._internal();
 
-  factory EntityAssembler() {
-    if (_instance == null) _instance = new EntityAssembler._construct();
-
-    return _instance;
-  }
+  factory EntityAssembler() => _assembler;
   
   //---------------------------------
   //
@@ -79,7 +73,7 @@ class EntityAssembler {
     
     ClassMirror classMirror = reflectClass(forType);
     
-    while (classMirror.qualifiedName != ENTITY_SYMBOL) {
+    while (classMirror.reflectedType != Entity) {
       if (scan.isMutableEntity) scan.detectIfMutable(classMirror);
       
       classMirror.declarations.forEach(
@@ -150,9 +144,7 @@ class EntityAssembler {
       spawnee = entityScan._unusedInstance;
       
       entityScan._unusedInstance = null;
-    } else {
-      spawnee = entityScan._entityCtor();
-    }
+    } else spawnee = entityScan._entityCtor();
     
     spawnee.readExternal(rawData, serializer, onConflict);
     

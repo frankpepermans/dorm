@@ -2,8 +2,8 @@ part of dorm;
 
 class Entity extends Observable implements Externalizable {
   
-  static final EntityAssembler ASSEMBLER = EntityAssembler._instance;
-  static final EntityFactory FACTORY = EntityFactory._instance;
+  static final EntityAssembler ASSEMBLER = new EntityAssembler();
+  static final EntityFactory FACTORY = new EntityFactory();
   static Serializer _serializerWorkaround;
   static Timer _observableDirtyCheckTimeout;
   
@@ -41,7 +41,7 @@ class Entity extends Observable implements Externalizable {
   //-----------------------------------
   
   dynamic operator [](Symbol propertyField) {
-    _DormProxyPropertyInfo result = _scan._proxies.firstWhere(
+    final _DormProxyPropertyInfo result = _scan._proxies.firstWhere(
       (_DormProxyPropertyInfo entry) => (entry.info.propertySymbol == propertyField),
       orElse: () => null
     );
@@ -50,18 +50,16 @@ class Entity extends Observable implements Externalizable {
   }
   
   void operator []=(Symbol propertyField, dynamic propertyValue) {
-    _DormProxyPropertyInfo result = _scan._proxies.firstWhere(
+    final _DormProxyPropertyInfo result = _scan._proxies.firstWhere(
         (_DormProxyPropertyInfo entry) => (entry.info.propertySymbol == propertyField),
         orElse: () => null
     );
     
-    if (result != null) {
-      result.proxy._value = notifyPropertyChange(
-          result.proxy._propertySymbol, 
-          result.proxy._value,
-          propertyValue
-      );
-    }
+    if (result != null) result.proxy._value = notifyPropertyChange(
+        result.proxy._propertySymbol, 
+        result.proxy._value,
+        propertyValue
+    );
   }
   
   //-----------------------------------
@@ -101,7 +99,7 @@ class Entity extends Observable implements Externalizable {
    *  - print(entity.isDirty()); //false
    */
   bool setDefaultPropertyValue(Symbol propertyField, dynamic propertyValue) {
-    _DormProxyPropertyInfo result = _scan._proxies.firstWhere(
+    final _DormProxyPropertyInfo result = _scan._proxies.firstWhere(
         (_DormProxyPropertyInfo entry) => (entry.info.propertySymbol == propertyField),
         orElse: () => null
     );
@@ -121,22 +119,18 @@ class Entity extends Observable implements Externalizable {
    * 
    * Similar to [setDefaultPropertyValue], except this method will run on all fields.
    */
-  void setCurrentStatusIsDefaultStatus() {
-    _scan._proxies.forEach(
+  void setCurrentStatusIsDefaultStatus() => _scan._proxies.forEach(
         (_DormProxyPropertyInfo entry) => entry.proxy._defaultValue = entry.proxy._value
-    );
-  }
+  );
   
   /**
    * Resets all [Entity] properties so that all fields are again equal to the default values.
    * 
    * Use this feature to revert any changes to the [Entity]'s fields.
    */
-  void revertChanges() {
-    _scan._proxies.forEach(
-        (_DormProxyPropertyInfo entry) => this[entry.proxy._propertySymbol] = entry.proxy._defaultValue
-    );
-  }
+  void revertChanges() => _scan._proxies.forEach(
+      (_DormProxyPropertyInfo entry) => this[entry.proxy._propertySymbol] = entry.proxy._defaultValue
+  );
   
   /**
    * Unrolls all [Entity] properties and collections to a one-dimensional [List].
@@ -151,29 +145,25 @@ class Entity extends Observable implements Externalizable {
    *  - foo.getEntityTree(); // List containing [foo, bar, bazA, bazB]
    */
   List<Entity> getEntityTree({List<Entity> traversedEntities}) {
-    List<Entity> tree = (traversedEntities != null) ? traversedEntities : <Entity>[];
+    final List<Entity> tree = (traversedEntities != null) ? traversedEntities : <Entity>[];
     
     tree.add(this);
     
     _scan._proxies.forEach(
         (_DormProxyPropertyInfo entry) {
           if (entry.proxy._value is Entity) {
-            Entity entity = entry.proxy._value as Entity;
+            final Entity entity = entry.proxy._value as Entity;
             
-            if (!tree.contains(entity)) {
-              List<Entity> subTree = entity.getEntityTree(traversedEntities: tree);
-            }
+            if (!tree.contains(entity)) entity.getEntityTree(traversedEntities: tree);
           } else if (entry.proxy._value is ObservableList) {
-            ObservableList subList = entry.proxy._value as ObservableList;
+            final ObservableList subList = entry.proxy._value as ObservableList;
           
             subList.forEach(
               (dynamic subListEntry) {
                 if (subListEntry is Entity) {
-                  Entity subListEntity = subListEntry as Entity;
+                  final Entity subListEntity = subListEntry as Entity;
                   
-                  if (!tree.contains(subListEntity)) {
-                    List<Entity> subTree = subListEntity.getEntityTree(traversedEntities: tree);
-                  }
+                  if (!tree.contains(subListEntity)) subListEntity.getEntityTree(traversedEntities: tree);
                 }
               }
             );
@@ -188,7 +178,7 @@ class Entity extends Observable implements Externalizable {
    * Unrolls all [Entity] identity fields to a one-dimensional [List]
    */
   List<Symbol> getIdentityFields() {
-    List<Symbol> result = <Symbol>[];
+    final List<Symbol> result = <Symbol>[];
     
     _scan._identityProxies.forEach(
       (_DormProxyPropertyInfo entry) => result.add(entry.info.propertySymbol) 
@@ -208,7 +198,7 @@ class Entity extends Observable implements Externalizable {
    *  - foo.getInsertValues() // key: 'fooId', value: 0
    */
   Map<Symbol, dynamic> getInsertValues() {
-    Map<Symbol, dynamic> result = <Symbol, dynamic>{};
+    final Map<Symbol, dynamic> result = <Symbol, dynamic>{};
     
     _scan._identityProxies.forEach(
       (_DormProxyPropertyInfo entry) => result[entry.info.propertySymbol] = entry.proxy._insertValue 
@@ -229,7 +219,7 @@ class Entity extends Observable implements Externalizable {
    *  - print(entity.isUnsaved()); // false
    */
   bool isUnsaved() {
-    _DormProxyPropertyInfo nonInsertIdentityProxy = _scan._identityProxies.firstWhere(
+    final _DormProxyPropertyInfo nonInsertIdentityProxy = _scan._identityProxies.firstWhere(
         (_DormProxyPropertyInfo entry) => (entry.proxy._value != entry.proxy._insertValue),
         orElse: () => null
     );
@@ -244,21 +234,19 @@ class Entity extends Observable implements Externalizable {
    * 
    * Use this to quickly create a duplicate of one [Entity].
    */
-  void setUnsaved() {
-    _scan._identityProxies.forEach(
-        (_DormProxyPropertyInfo entry) => entry.proxy._value = notifyPropertyChange(
-            entry.proxy._propertySymbol, 
-            entry.proxy._value,
-            entry.proxy._insertValue
-        )
-    );
-  }
+  void setUnsaved() => _scan._identityProxies.forEach(
+      (_DormProxyPropertyInfo entry) => entry.proxy._value = notifyPropertyChange(
+          entry.proxy._propertySymbol, 
+          entry.proxy._value,
+          entry.proxy._insertValue
+      )
+  );
   
   /**
    * Returns a [List] containing [Symbol]s of all properties belonging to this [Entity].
    */
   List<Symbol> getPropertyList() {
-    List<Symbol> result = <Symbol>[];
+    final List<Symbol> result = <Symbol>[];
     
     _scan._proxies.forEach(
       (_DormProxyPropertyInfo entry) => result.add(entry.info.propertySymbol)
@@ -274,7 +262,7 @@ class Entity extends Observable implements Externalizable {
    * [Id], [Lazy], [NotNullable], [DefaultValue], [Transient], [Immutable], [LabelField] or [Annotation]
    */
   MetadataExternalized getMetadata(Symbol propertyField) {
-    _DormProxyPropertyInfo result = _scan._proxies.firstWhere(
+    final _DormProxyPropertyInfo result = _scan._proxies.firstWhere(
         (_DormProxyPropertyInfo entry) => (entry.info.propertySymbol == propertyField),
         orElse: () => null
     );
@@ -376,7 +364,7 @@ class Entity extends Observable implements Externalizable {
    * Converts the [Entity] into a JSON representation.
    */
   String toJson({Map<String, Map<String, dynamic>> convertedEntities}) {
-    Map<String, dynamic> jsonMap = new Map<String, dynamic>();
+    final Map<String, dynamic> jsonMap = <String, dynamic>{};
     
     writeExternal(jsonMap, _serializerWorkaround);
     
@@ -387,7 +375,7 @@ class Entity extends Observable implements Externalizable {
    * Converts the [Entity] into a String representation.
    */
   String toString() {
-    List<String> result = <String>[];
+    final List<String> result = <String>[];
     
     _scan._proxies.forEach(
       (_DormProxyPropertyInfo entry) {
@@ -419,48 +407,43 @@ class Entity extends Observable implements Externalizable {
   
   Entity _duplicateImpl(List<_ClonedEntityEntry> clonedEntities) {
     if (_scan._root.isMutableEntity) {
-      _ClonedEntityEntry clonedEntity = clonedEntities.firstWhere(
+      final _ClonedEntityEntry clonedEntity = clonedEntities.firstWhere(
          (_ClonedEntityEntry cloneEntry) => (cloneEntry.original == this),
          orElse: () => null
       );
       
       if (clonedEntity != null) return clonedEntity.clone;
       
-      Entity clone = _scan._root._entityCtor();
+      final Entity clone = _scan._root._entityCtor();
       
       clonedEntities.add(new _ClonedEntityEntry(this, clone));
       
       clone._scan._proxies.forEach(
           (_DormProxyPropertyInfo entry) {
-            if (entry.info.metadataCache.isId) {
-              entry.proxy.setInitialValue(entry.proxy._insertValue);
-            } else {
+            if (entry.info.metadataCache.isId) entry.proxy.setInitialValue(entry.proxy._insertValue);
+            else {
               dynamic value = this[entry.proxy._propertySymbol];
               
               if (value is ObservableList) {
-                ObservableList listCast = value as ObservableList;
-                ObservableList listClone = new ObservableList();
+                final ObservableList listCast = value as ObservableList;
+                final ObservableList listClone = new ObservableList();
                 
                 listCast.forEach(
                   (dynamic listEntry) {
                     if (listEntry is Entity) {
-                      Entity listEntryCast = listEntry as Entity;
+                      final Entity listEntryCast = listEntry as Entity;
                       
                       listClone.add(listEntryCast._duplicateImpl(clonedEntities));
-                    } else {
-                      listClone.add(listEntry);
-                    }
+                    } else listClone.add(listEntry);
                   }
                 );
                 
                 entry.proxy.setInitialValue(_serializerWorkaround.convertIn(entry.info.type, listClone));
               } else if (value is Entity) {
-                Entity entryCast = value as Entity;
+                final Entity entryCast = value as Entity;
                 
                 entry.proxy.setInitialValue(entryCast._duplicateImpl(clonedEntities));
-              } else {
-                entry.proxy.setInitialValue(value);
-              }
+              } else entry.proxy.setInitialValue(value);
             }
           }
       );
@@ -495,20 +478,19 @@ class Entity extends Observable implements Externalizable {
     data[SerializationType.ENTITY_TYPE] = _scan._root.refClassName;
     data[SerializationType.UID] = uid;
     
-    if (convertedEntities == null) convertedEntities = new Map<int, Map<String, dynamic>>();
-    
-    convertedEntities[uid] = data;
+    if (convertedEntities == null) convertedEntities = <int, Map<String, dynamic>>{uid: data};
+    else convertedEntities[uid] = data;
     
     _scan._proxies.forEach(
       (_DormProxyPropertyInfo entry) {
         if (entry.proxy._value is Entity) {
-          Entity subEntity = entry.proxy._value;
+          final Entity subEntity = entry.proxy._value;
           
           if (convertedEntities[subEntity.hashCode] != null) {
-            Map<String, dynamic> pointerMap = new Map<String, dynamic>();
-            
-            pointerMap[SerializationType.POINTER] = subEntity.hashCode;
-            pointerMap[SerializationType.ENTITY_TYPE] = subEntity._scan._root.refClassName;
+            final Map<String, dynamic> pointerMap = <String, dynamic>{
+              SerializationType.POINTER: subEntity.hashCode,
+              SerializationType.ENTITY_TYPE: subEntity._scan._root.refClassName
+            };
             
             subEntity._scan._proxies.forEach(
                 (_DormProxyPropertyInfo subEntry) {
@@ -518,13 +500,13 @@ class Entity extends Observable implements Externalizable {
             
             data[entry.info.property] = pointerMap;
           } else {
-            data[entry.info.property] = new Map<String, dynamic>();
+            final Map entityMap = data[entry.info.property] = <String, dynamic>{};
             
-            subEntity._writeExternalImpl(data[entry.info.property], convertedEntities, serializer);
+            subEntity._writeExternalImpl(entityMap, convertedEntities, serializer);
           }
         } else if (entry.proxy._value is List) {
-          List<dynamic> subList = serializer.convertOut(entry.info.type, entry.proxy._value);
-          List<dynamic> dataList = <dynamic>[];
+          final List<dynamic> subList = serializer.convertOut(entry.info.type, entry.proxy._value);
+          final List<dynamic> dataList = <dynamic>[];
           
           subList.forEach(
               (dynamic listEntry) {
@@ -533,10 +515,10 @@ class Entity extends Observable implements Externalizable {
                   Map<String, dynamic> entryData;
                   
                   if (convertedEntities[subEntity.hashCode] != null) {
-                    Map<String, dynamic> pointerMap = new Map<String, dynamic>();
-                    
-                    pointerMap[SerializationType.POINTER] = subEntity.hashCode;
-                    pointerMap[SerializationType.ENTITY_TYPE] = subEntity._scan._root.refClassName;
+                    Map<String, dynamic> pointerMap = <String, dynamic>{
+                      SerializationType.POINTER: subEntity.hashCode,
+                      SerializationType.ENTITY_TYPE: subEntity._scan._root.refClassName
+                    };
                     
                     subEntity._scan._proxies.forEach(
                         (_DormProxyPropertyInfo subEntry) {
@@ -546,7 +528,7 @@ class Entity extends Observable implements Externalizable {
                     
                     dataList.add(pointerMap);
                   } else {
-                    entryData = new Map<String, dynamic>();
+                    entryData = <String, dynamic>{};
                     
                     subEntity._writeExternalImpl(entryData, convertedEntities, serializer);
                     
