@@ -119,9 +119,32 @@ class Entity extends Observable implements Externalizable {
    * 
    * Similar to [setDefaultPropertyValue], except this method will run on all fields.
    */
-  void setCurrentStatusIsDefaultStatus() => _scan._proxies.forEach(
+  void setCurrentStatusIsDefaultStatus({bool recursively: false}) => _setCurrentStatusIsDefaultStatusImpl(recursively, <Entity>[]);
+  
+  void _setCurrentStatusIsDefaultStatusImpl(bool recursively, List<Entity> list) {
+    if (!list.contains(this)) list.add(this);
+    else return;
+    
+    if (recursively) {
+      _scan._proxies.forEach(
+            (_DormProxyPropertyInfo entry) {
+              entry.proxy._defaultValue = entry.proxy._value;
+              
+              if (entry.proxy.value is Entity) entry.proxy.value._setCurrentStatusIsDefaultStatusImpl(true, list);
+              else if (entry.proxy.value is Iterable) {
+                entry.proxy.value.forEach(
+                   (dynamic listItem) {
+                     if (listItem is Entity) listItem._setCurrentStatusIsDefaultStatusImpl(true, list);
+                   }
+                );
+              }
+            }
+          );
+    }
+    else _scan._proxies.forEach(
         (_DormProxyPropertyInfo entry) => entry.proxy._defaultValue = entry.proxy._value
-  );
+    );
+  }
   
   /**
    * Resets all [Entity] properties so that all fields are again equal to the default values.
@@ -234,13 +257,38 @@ class Entity extends Observable implements Externalizable {
    * 
    * Use this to quickly create a duplicate of one [Entity].
    */
-  void setUnsaved() => _scan._identityProxies.forEach(
-      (_DormProxyPropertyInfo entry) => entry.proxy._value = notifyPropertyChange(
-          entry.proxy._propertySymbol, 
-          entry.proxy._value,
-          entry.proxy._insertValue
-      )
-  );
+  void setUnsaved({bool recursively: false, bool asNewDefaultValue: false}) => _setUnsavedImpl(recursively, asNewDefaultValue, <Entity>[]);
+  
+  void _setUnsavedImpl(bool recursively, bool asNewDefaultValue, List<Entity> list) {
+    if (!list.contains(this)) list.add(this);
+    else return;
+    
+    if (recursively) {
+      _setUnsavedImpl(false, asNewDefaultValue, list);
+      
+      _scan._proxies.forEach(
+         (_DormProxyPropertyInfo entry) {
+           if (entry.proxy.value is Entity) entry.proxy.value._setUnsavedImpl(true, asNewDefaultValue, list);
+           else if (entry.proxy.value is Iterable) {
+             entry.proxy.value.forEach(
+                (dynamic listItem) {
+                  if (listItem is Entity) listItem._setUnsavedImpl(true, asNewDefaultValue, list);
+                }
+             );
+           }
+         }
+      );
+    }
+    else _scan._identityProxies.forEach(
+        (_DormProxyPropertyInfo entry) => entry.proxy._value = notifyPropertyChange(
+            entry.proxy._propertySymbol, 
+            entry.proxy._value,
+            entry.proxy._insertValue
+        )
+    );
+    
+    if (asNewDefaultValue) setCurrentStatusIsDefaultStatus();
+  }
   
   /**
    * Returns a [List] containing [Symbol]s of all properties belonging to this [Entity].
@@ -299,17 +347,12 @@ class Entity extends Observable implements Externalizable {
    * Scans the [Entity]'s properties for any changes, returns [true] if the [Entity] has changes,
    * or returns [false] if it is untouched.
    */
-  bool isDirty() => (
+  bool isDirty({bool ignoresUnsavedStatus: false}) => (
       isMutable &&
       (
+          (ignoresUnsavedStatus ? false : isUnsaved()) ||
           _scan._proxies.firstWhere(
-              (_DormProxyPropertyInfo entry) => (
-                  (entry.proxy._value != entry.proxy._defaultValue) ||
-                  (
-                      entry.info.metadataCache.isId && 
-                      (entry.proxy._value == entry.proxy._insertValue)
-                  )
-              ),
+              (_DormProxyPropertyInfo entry) => (entry.proxy._value != entry.proxy._defaultValue),
               orElse: () => null
           ) != null
       )    

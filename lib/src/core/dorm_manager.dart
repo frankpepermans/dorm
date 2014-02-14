@@ -24,7 +24,11 @@ class DormManager extends Observable {
   // id
   //-----------------------------------
   
-  String id;
+  String _id;
+  
+  String get id => _id;
+  
+  bool ignoresUnsavedStatus = false;
   
   //-----------------------------------
   // queueLength
@@ -33,12 +37,26 @@ class DormManager extends Observable {
   static const Symbol IS_COMMIT_REQUIRED = const Symbol('dorm.core.DormManager.isCommitRequired');
   static const Symbol IS_COMMIT_NOT_REQUIRED = const Symbol('dorm.core.DormManager.isCommitNotRequired');
   
+  bool _isCommitStatusInvalidated = false;
   bool _isCommitRequired = false;
   
   bool get isCommitRequired => _isCommitRequired;
   
   void _updateIsCommitRequired() {
-    bool status = (_forcedDirtyStatus || (_queue.length + _deleteQueue.length) > 0);
+    bool status = false;
+    
+    if (!_forcedDirtyStatus) {
+      final List<Entity> fullList = new List<Entity>()
+      ..addAll(_queue)
+      ..addAll(_deleteQueue);
+      
+      status = (
+          fullList.firstWhere(
+            (Entity entity) => entity.isDirty(ignoresUnsavedStatus: ignoresUnsavedStatus), 
+            orElse: () => null
+          ) != null 
+      );
+    } else status = true;
     
     if (status != _isCommitRequired) {
       _isCommitRequired = status;
@@ -60,7 +78,7 @@ class DormManager extends Observable {
   //-----------------------------------
   
   DormManager({String id}) {
-    this.id = id;
+    this._id = id;
   }
   
   //-----------------------------------
@@ -69,6 +87,23 @@ class DormManager extends Observable {
   //
   //-----------------------------------
   
+  void invalidateCommitStatus() {
+    if (!_isCommitStatusInvalidated) {
+      _isCommitStatusInvalidated = true;
+      
+      _updateIsCommitRequired();
+      
+      final Timer timeout = new Timer(
+          const Duration(milliseconds: 50),
+          () {
+            _isCommitStatusInvalidated = false;
+            
+            _updateIsCommitRequired();
+          }
+      );
+    }
+  }
+  
   void resetCommitStatus() {
     _isCommitRequired = false;
   }
@@ -76,7 +111,7 @@ class DormManager extends Observable {
   void forceDirtyStatus(bool value) {
     _forcedDirtyStatus = value;
     
-    _updateIsCommitRequired();
+    invalidateCommitStatus();
   }
   
   bool isQueued(Entity entity, {bool forDelete: false}) {
@@ -93,20 +128,20 @@ class DormManager extends Observable {
       _queue.remove(entity);
       _deleteQueue.add(entity);
       
-      _updateIsCommitRequired();
+      invalidateCommitStatus();
     }
   }
   
   void queue(Entity entity) {
     if (
         entity.isMutable &&
-        !_queue.contains(entity) &&
-        entity.isDirty()
+        !_queue.contains(entity)/* &&
+        entity.isDirty()*/
     ) {
       _deleteQueue.remove(entity);
       _queue.add(entity);
       
-      _updateIsCommitRequired();
+      invalidateCommitStatus();
       
       StreamSubscription subscription = _dirtyListeners[entity];
       
@@ -117,7 +152,7 @@ class DormManager extends Observable {
       }
       
       _dirtyListeners[entity] = entity.changes.listen(
-        (_) => _updateIsCommitRequired()
+        (_) => invalidateCommitStatus()
       );
     }
   }
@@ -127,7 +162,7 @@ class DormManager extends Observable {
       if (_queue.contains(entity)) _queue.remove(entity);
       if (_deleteQueue.contains(entity)) _deleteQueue.remove(entity);
       
-      _updateIsCommitRequired();
+      invalidateCommitStatus();
       
       StreamSubscription subscription = _dirtyListeners[entity];
       
@@ -175,7 +210,7 @@ class DormManager extends Observable {
     
     _flushInternal();
     
-    _updateIsCommitRequired();
+    invalidateCommitStatus();
   }
   
   DormManagerCommitStructure drain({bool ignoreMutable: false, bool ignoreDirty: false}) {
