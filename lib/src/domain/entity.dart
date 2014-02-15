@@ -197,14 +197,16 @@ class Entity extends Observable implements Externalizable {
     return tree;
   }
   
-  final List<Symbol> _identityFieldsList = <Symbol>[];
+  HashSet<Symbol> _identityFieldsList;
   bool _hasIdentityFieldsList = false;
   
   /**
    * Unrolls all [Entity] identity fields to a one-dimensional [List]
    */
-  List<Symbol> getIdentityFields() {
+  HashSet<Symbol> getIdentityFields() {
     if (_hasIdentityFieldsList) return _identityFieldsList;
+    
+    _identityFieldsList = new HashSet<Symbol>.identity();
     
     _scan._identityProxies.forEach(
       (_DormProxyPropertyInfo entry) => _identityFieldsList.add(entry.info.propertySymbol) 
@@ -215,7 +217,7 @@ class Entity extends Observable implements Externalizable {
     return _identityFieldsList;
   }
   
-  final HashMap<Symbol, dynamic> _insertValuesMap = new HashMap<Symbol, dynamic>.identity();
+  HashMap<Symbol, dynamic> _insertValuesMap;
   bool _hasInsertValuesMap = false;
   
   /**
@@ -230,6 +232,8 @@ class Entity extends Observable implements Externalizable {
    */
   Map<Symbol, dynamic> getInsertValues() {
     if (_hasInsertValuesMap) return _insertValuesMap;
+    
+    _insertValuesMap = new HashMap<Symbol, dynamic>.identity();
     
     _scan._identityProxies.forEach(
       (_DormProxyPropertyInfo entry) => _insertValuesMap[entry.info.propertySymbol] = entry.proxy._insertValue 
@@ -300,14 +304,16 @@ class Entity extends Observable implements Externalizable {
     if (asNewDefaultValue) setCurrentStatusIsDefaultStatus();
   }
   
-  final List<Symbol> _propertyList = <Symbol>[];
+  HashSet<Symbol> _propertyList;
   bool _hasPropertyList = false;
   
   /**
    * Returns a [List] containing [Symbol]s of all properties belonging to this [Entity].
    */
-  List<Symbol> getPropertyList() {
+  HashSet<Symbol> getPropertyList() {
     if (_hasPropertyList) return _propertyList;
+    
+    _propertyList = new HashSet<Symbol>.identity();
     
     _scan._proxies.forEach(
       (_DormProxyPropertyInfo entry) => _propertyList.add(entry.info.propertySymbol)

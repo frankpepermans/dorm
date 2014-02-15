@@ -38,7 +38,7 @@ class EntityKeyChain {
   //
   //---------------------------------
   
-  final List<EntityScan> entityScans = <EntityScan>[];
+  final HashSet<EntityScan> entityScans = new HashSet<EntityScan>.identity();
   
   //---------------------------------
   //

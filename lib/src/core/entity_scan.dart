@@ -78,7 +78,6 @@ class EntityScan {
   EntityKeyChain _keyChain;
   
   final List<_DormProxyPropertyInfo> _identityProxies = <_DormProxyPropertyInfo>[], _proxies = <_DormProxyPropertyInfo>[];
-  List<_DormProxyPropertyInfo> _collectionProxies;
   
   //---------------------------------
   //
@@ -133,7 +132,9 @@ class EntityScan {
        }
     );
     
-    if (useChangeListener) forEntity.changes.listen(_entity_changeHandler);
+    if (useChangeListener) forEntity.changes.listen(
+      (List<ChangeRecord> changes) => _entity_changeHandler(forEntity, changes)    
+    );
     
     return newScan;
   }
@@ -144,11 +145,13 @@ class EntityScan {
   //
   //---------------------------------
   
-  static void _entity_changeHandler(List<ChangeRecord> changes) {
+  static void _entity_changeHandler(Entity forEntity, List<ChangeRecord> changes) {
+    final HashSet<Symbol> identitySymbols = forEntity.getIdentityFields();
+    
     PropertyChangeRecord matchingChange = changes.firstWhere(
         (ChangeRecord change) => (
             (change is PropertyChangeRecord) && 
-            (change.object as Entity).getIdentityFields().contains(change.name)
+            identitySymbols.contains(change.name)
         ),
         orElse: () => null
     );
