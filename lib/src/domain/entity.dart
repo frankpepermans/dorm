@@ -396,9 +396,7 @@ class Entity extends Observable implements Externalizable {
          
          if (entryValue is Map) value = FACTORY.spawnSingle(entryValue, serializer, onConflict, proxy:proxy);
          else if (entryValue is Iterable) {
-           proxy.owner = serializer.convertIn(entry.info.type, FACTORY.spawn(entryValue, serializer, onConflict));
-           
-           value = proxy.owner;
+           value = serializer.convertIn(entry.info.type, FACTORY.spawn(entryValue, serializer, onConflict));
          } else if (entryValue != null) value = serializer.convertIn(entry.info.type, entryValue);
          
          try {

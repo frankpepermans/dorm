@@ -35,7 +35,6 @@ class DormProxy<T> {
   final String _property;
   final Symbol _propertySymbol;
   
-  ObservableList<dynamic> owner;
   bool hasDelta = false;
   bool isId = false;
   bool isTransient = false;

@@ -179,12 +179,6 @@ class EntityAssembler {
     } else {
       spawnee._scan._keyChain.entityScans.add(spawnee._scan);
       
-      spawnee._scan._proxies.forEach(
-          (_DormProxyPropertyInfo entry) {
-            if (entry.proxy.owner != null) _collections.add(entry.proxy.owner);
-          }
-      );
-      
       _updateCollectionsWith(spawnee);
     }
     

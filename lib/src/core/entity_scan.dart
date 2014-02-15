@@ -78,6 +78,7 @@ class EntityScan {
   EntityKeyChain _keyChain;
   
   final List<_DormProxyPropertyInfo> _identityProxies = <_DormProxyPropertyInfo>[], _proxies = <_DormProxyPropertyInfo>[];
+  List<_DormProxyPropertyInfo> _collectionProxies;
   
   //---------------------------------
   //
