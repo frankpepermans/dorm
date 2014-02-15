@@ -197,18 +197,26 @@ class Entity extends Observable implements Externalizable {
     return tree;
   }
   
+  final List<Symbol> _identityFieldsList = <Symbol>[];
+  bool _hasIdentityFieldsList = false;
+  
   /**
    * Unrolls all [Entity] identity fields to a one-dimensional [List]
    */
   List<Symbol> getIdentityFields() {
-    final List<Symbol> result = <Symbol>[];
+    if (_hasIdentityFieldsList) return _identityFieldsList;
     
     _scan._identityProxies.forEach(
-      (_DormProxyPropertyInfo entry) => result.add(entry.info.propertySymbol) 
+      (_DormProxyPropertyInfo entry) => _identityFieldsList.add(entry.info.propertySymbol) 
     );
     
-    return result;
+    _hasIdentityFieldsList = true;
+    
+    return _identityFieldsList;
   }
+  
+  final HashMap<Symbol, dynamic> _insertValuesMap = new HashMap<Symbol, dynamic>.identity();
+  bool _hasInsertValuesMap = false;
   
   /**
    * Returns a [Map] of all identity fields where the key is the field's name
@@ -221,13 +229,15 @@ class Entity extends Observable implements Externalizable {
    *  - foo.getInsertValues() // key: 'fooId', value: 0
    */
   Map<Symbol, dynamic> getInsertValues() {
-    final Map<Symbol, dynamic> result = <Symbol, dynamic>{};
+    if (_hasInsertValuesMap) return _insertValuesMap;
     
     _scan._identityProxies.forEach(
-      (_DormProxyPropertyInfo entry) => result[entry.info.propertySymbol] = entry.proxy._insertValue 
+      (_DormProxyPropertyInfo entry) => _insertValuesMap[entry.info.propertySymbol] = entry.proxy._insertValue 
     );
     
-    return result;
+    _hasInsertValuesMap = true;
+    
+    return _insertValuesMap;
   }
   
   /**
@@ -290,17 +300,22 @@ class Entity extends Observable implements Externalizable {
     if (asNewDefaultValue) setCurrentStatusIsDefaultStatus();
   }
   
+  final List<Symbol> _propertyList = <Symbol>[];
+  bool _hasPropertyList = false;
+  
   /**
    * Returns a [List] containing [Symbol]s of all properties belonging to this [Entity].
    */
   List<Symbol> getPropertyList() {
-    final List<Symbol> result = <Symbol>[];
+    if (_hasPropertyList) return _propertyList;
     
     _scan._proxies.forEach(
-      (_DormProxyPropertyInfo entry) => result.add(entry.info.propertySymbol)
+      (_DormProxyPropertyInfo entry) => _propertyList.add(entry.info.propertySymbol)
     );
     
-    return result;
+    _hasPropertyList = true;
+    
+    return _propertyList;
   }
   
   /**
