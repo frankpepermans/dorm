@@ -11,7 +11,7 @@ class DormManager extends Observable {
   List<Entity> _observeList = <Entity>[];
   List<Entity> _queue = <Entity>[];
   List<Entity> _deleteQueue = <Entity>[];
-  Map<Entity, StreamSubscription> _dirtyListeners = <Entity, StreamSubscription>{};
+  HashMap<Entity, StreamSubscription> _dirtyListeners = new HashMap<Entity, StreamSubscription>.identity();
   bool _forcedDirtyStatus = false;
   
   //-----------------------------------
@@ -191,7 +191,7 @@ class DormManager extends Observable {
       (_, StreamSubscription subscription) => subscription.cancel() 
     );
     
-    _dirtyListeners = <Entity, StreamSubscription>{};
+    _dirtyListeners = new HashMap<Entity, StreamSubscription>.identity();
     
     _queue.forEach(
       (Entity entity) => entity.revertChanges()

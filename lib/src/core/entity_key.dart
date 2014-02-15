@@ -30,7 +30,7 @@ class EntityKeyChain {
   //
   //---------------------------------
   
-  final Map<Symbol, Map<dynamic, EntityKeyChain>> _map = new Map<Symbol, Map<dynamic, EntityKeyChain>>();
+  final HashMap<Symbol, HashMap<dynamic, EntityKeyChain>> _map = new HashMap<Symbol, HashMap<dynamic, EntityKeyChain>>.identity();
   
   //---------------------------------
   //
@@ -66,12 +66,14 @@ class EntityKeyChain {
   
   EntityKeyChain _setKeyValue(Symbol key, dynamic value) {
     EntityKeyChain returnValue;
-    Map<dynamic, EntityKeyChain> mainKey = _map[key];
+    HashMap<dynamic, EntityKeyChain> mainKey = _map[key];
     
     if (mainKey == null) {
       returnValue = new EntityKeyChain();
       
-      mainKey = <dynamic, EntityKeyChain>{value: returnValue};
+      mainKey = new HashMap<dynamic, EntityKeyChain>.identity();
+      
+      mainKey[value] = returnValue;
       
       _map[key] = mainKey;
       
@@ -88,9 +90,12 @@ class EntityKeyChain {
   }
   
   void _setKeyValueNoReturn(Symbol key, dynamic value) {
-    Map<dynamic, EntityKeyChain> mainKey = _map[key];
+    HashMap<dynamic, EntityKeyChain> mainKey = _map[key];
     
-    if (mainKey == null) _map[key] = mainKey = <dynamic, EntityKeyChain>{value: new EntityKeyChain()};
-    else if (mainKey[value] == null) mainKey[value] = new EntityKeyChain();
+    if (mainKey == null) {
+      _map[key] = mainKey = new HashMap<dynamic, EntityKeyChain>.identity();
+      
+      mainKey[value] = new EntityKeyChain();
+    } else if (mainKey[value] == null) mainKey[value] = new EntityKeyChain();
   }
 }
