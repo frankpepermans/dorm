@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/frankpepermans/dorm.png?label=ready)](https://waffle.io/frankpepermans/dorm)
 Dorm
 ===========
 
