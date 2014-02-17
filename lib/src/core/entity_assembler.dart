@@ -25,7 +25,7 @@ class EntityAssembler {
   //
   //---------------------------------
   
-  final List<EntityRootScan> _entityScans = <EntityRootScan>[];
+  final Map<String, EntityRootScan> _entityScans = <String, EntityRootScan>{};
   final List<List<dynamic>> _collections = <List<dynamic>>[];
   
   List<DormProxy> _pendingProxies = <DormProxy>[];
@@ -66,7 +66,7 @@ class EntityAssembler {
    * TO_DO: scan requires mirrors, it would be better to move this to a build file later
    */
   EntityRootScan scan(Type forType, String refClassName, Function constructorMethod) {
-    EntityRootScan scan = _existingFromScanRegistry(refClassName);
+    EntityRootScan scan = _entityScans[refClassName];
     
     if(scan != null) return scan;
     
@@ -86,7 +86,7 @@ class EntityAssembler {
       classMirror = classMirror.superclass;
     }
     
-    _entityScans.add(scan);
+    _entityScans[refClassName] = scan;
     
     return scan;
   }
@@ -125,7 +125,7 @@ class EntityAssembler {
   //---------------------------------
   
   EntityScan _createEntityScan(Entity entity) {
-    EntityRootScan scan = _existingFromScanRegistry(entity.refClassName);
+    EntityRootScan scan = _entityScans[entity.refClassName];
     
     if(scan != null) return new EntityScan.fromRootScan(scan, entity);
     
@@ -139,15 +139,13 @@ class EntityAssembler {
     
     if (onConflict == null) onConflict = _handleConflictAcceptClient;
     
-    entityScan = _existingFromScanRegistry(refClassName);
+    entityScan = _entityScans[refClassName];
     
     if (entityScan == null) throw new DormError('Scan for entity not found');
     
-    if (entityScan._unusedInstance != null) {
-      spawnee = entityScan._unusedInstance;
-      
-      entityScan._unusedInstance = null;
-    } else spawnee = entityScan._entityCtor();
+    spawnee = entityScan._unqueueUnusedInstance();
+    
+    if (spawnee == null) spawnee = entityScan._entityCtor();
     
     spawnee.readExternal(rawData, serializer, onConflict);
     
@@ -172,7 +170,7 @@ class EntityAssembler {
     );
     
     if (localNonPointerEntity != null) {
-      entityScan._unusedInstance = spawnee;
+      entityScan._queueUnusedInstance(spawnee);
       
       return localNonPointerEntity;
     }
@@ -278,12 +276,5 @@ class EntityAssembler {
       
       if (!collectionEntryHasPointers) _collections.remove(collectionEntry);
     }
-  }
-  
-  EntityRootScan _existingFromScanRegistry(String refClassName) {
-    return _entityScans.firstWhere(
-      (EntityRootScan scan) => (scan.refClassName.compareTo(refClassName) == 0),
-      orElse: () => null
-    );
   }
 }
