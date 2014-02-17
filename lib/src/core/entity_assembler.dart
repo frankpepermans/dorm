@@ -94,7 +94,8 @@ class EntityAssembler {
   void registerProxies(Entity entity, List<DormProxy> proxies) {
     if (entity._scan == null) entity._scan = _createEntityScan(entity);
     
-    final EntityScan scan = entity._scan;
+    final bool useMapForLookup = (entity._scan._proxies.length > 25);
+    
     DormProxy proxy;
     _DormProxyPropertyInfo scanProxy;
     int i = proxies.length;
@@ -102,16 +103,17 @@ class EntityAssembler {
     while (i > 0) {
       proxy = proxies[--i];
       
-      scanProxy = scan._proxies.firstWhere(
+      if (!useMapForLookup) scanProxy = entity._scan._proxies.firstWhere(
         (_DormProxyPropertyInfo entry) => (entry.info.property == proxy._property),
         orElse: () => null
       );
+      else scanProxy = entity._scan._proxyMap[proxy._property];
       
       scanProxy.proxy = proxy;
       
       proxy._updateWithMetadata(
           scanProxy, 
-          scan
+           entity._scan
       );
     }
   }

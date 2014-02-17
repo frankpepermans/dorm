@@ -78,6 +78,7 @@ class EntityScan {
   EntityKeyChain _keyChain;
   
   final List<_DormProxyPropertyInfo> _identityProxies = <_DormProxyPropertyInfo>[], _proxies = <_DormProxyPropertyInfo>[];
+  final Map<String, _DormProxyPropertyInfo> _proxyMap = <String, _DormProxyPropertyInfo>{};
   
   //---------------------------------
   //
@@ -123,6 +124,7 @@ class EntityScan {
          final _DormProxyPropertyInfo clonedEntry = new _DormProxyPropertyInfo.from(entry);
          
          newScan._proxies.add(clonedEntry);
+         newScan._proxyMap[clonedEntry.info.property] = clonedEntry;
          
          if (clonedEntry.info.metadataCache.isId) newScan._identityProxies.add(clonedEntry);
          

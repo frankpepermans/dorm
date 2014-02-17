@@ -38,7 +38,7 @@ class EntityFactory<T extends Entity> {
   void addPostProcessor(EntityPostProcessor postProcessor) => _postProcessors.add(postProcessor);
   
   void removePostProcessor(EntityPostProcessor postProcessor) => _postProcessors.removeWhere(
-      (EntityPostProcessor tmpPostProcessor) => (tmpPostProcessor == postProcessor)
+    (EntityPostProcessor tmpPostProcessor) => (tmpPostProcessor == postProcessor)
   );
   
   ObservableList<T> spawn(Iterable<Map<String, dynamic>> rawData, Serializer serializer, OnConflictFunction onConflict, {DormProxy proxy}) {
