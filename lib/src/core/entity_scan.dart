@@ -77,8 +77,8 @@ class EntityScan {
   final EntityRootScan _root;
   EntityKeyChain _keyChain;
   
-  final List<_DormProxyPropertyInfo> _identityProxies = <_DormProxyPropertyInfo>[], _proxies = <_DormProxyPropertyInfo>[];
-  final Map<String, _DormProxyPropertyInfo> _proxyMap = <String, _DormProxyPropertyInfo>{};
+  List<_DormProxyPropertyInfo> _identityProxies, _proxies;
+  Map<String, _DormProxyPropertyInfo> _proxyMap;
   
   //---------------------------------
   //
@@ -115,7 +115,7 @@ class EntityScan {
   EntityScan(this._root, this.entity);
   
   factory EntityScan.fromRootScan(EntityRootScan root, Entity forEntity) {
-    final EntityScan newScan = new EntityScan(root, forEntity);
+    final EntityScan newScan = new EntityScan(root, forEntity).._initialize();
     
     bool useChangeListener = false;
     
@@ -144,6 +144,14 @@ class EntityScan {
   // Private methods
   //
   //---------------------------------
+  
+  void _initialize() {
+    if (_identityProxies == null) {
+      _identityProxies = <_DormProxyPropertyInfo>[];
+      _proxies = <_DormProxyPropertyInfo>[];
+      _proxyMap = <String, _DormProxyPropertyInfo>{};
+    }
+  }
   
   static void _entity_changeHandler(Entity forEntity, List<ChangeRecord> changes) {
     if (!forEntity.isUnsaved()) {

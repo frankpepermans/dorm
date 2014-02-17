@@ -124,10 +124,6 @@ class EntityAssembler {
   //
   //---------------------------------
   
-  void _flushProxies() {
-    _pendingProxies = <DormProxy>[];
-  }
-  
   EntityScan _createEntityScan(Entity entity) {
     EntityRootScan scan = _existingFromScanRegistry(entity.refClassName);
     
@@ -242,15 +238,22 @@ class EntityAssembler {
         
         dynamic listEntry;
         int i = entityList.length;
+        bool hasPointers = false, containsEntities;
         
         while (i > 0) {
           listEntry = entityList[--i];
           
+          containsEntities = (listEntry is Entity);
+          
           if (
-              (listEntry is Entity) &&
+              containsEntities &&
               EntityKeyChain.areSameKeySignature(listEntry._scan, actualEntity._scan)
           ) entityList[i] = actualEntity;
+          
+          if (containsEntities && !hasPointers) hasPointers = (entityList[i] as Entity)._isPointer;
         }
+        
+        if (!hasPointers) _pendingProxies.remove(proxy);
       }
     }
     
