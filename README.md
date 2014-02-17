@@ -24,6 +24,7 @@ Dorm will soon support :
 - push via web sockets, share [Entity] status between clients
 
 [![Build Status](https://drone.io/github.com/frankpepermans/dorm/status.png)](https://drone.io/github.com/frankpepermans/dorm/latest)
+[![Stories in Ready](https://badge.waffle.io/frankpepermans/dorm.png?label=ready)](http://waffle.io/frankpepermans/dorm)
 
 ![Alt text](http://igindo.com/dart/dorm/dorm_graph.svg)
 <img src="http://igindo.com/dart/dorm/dorm_graph.svg">
