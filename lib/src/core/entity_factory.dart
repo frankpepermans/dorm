@@ -54,15 +54,15 @@ class EntityFactory<T extends Entity> {
   }
   
   T spawnSingle(Map<String, dynamic> rawData, Serializer serializer, OnConflictFunction onConflict, {DormProxy proxy}) {
-      final T entity = _assembler._assemble(rawData, proxy, serializer, onConflict);
-      
-      if (proxy == null) _assembler._flushProxies();
-      
-      _postProcessors.forEach(
-          (EntityPostProcessor postProcessor) => postProcessor.handler(entity)
-      );
-      
-      return entity;
+    if (proxy == null) _assembler._flushProxies();
+    
+    final T entity = _assembler._assemble(rawData, proxy, serializer, onConflict);
+    
+    _postProcessors.forEach(
+        (EntityPostProcessor postProcessor) => postProcessor.handler(entity)
+    );
+    
+    return entity;
   }
 }
 
