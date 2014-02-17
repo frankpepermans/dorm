@@ -26,11 +26,8 @@ class EntityAssembler {
   //---------------------------------
   
   final Map<String, EntityRootScan> _entityScans = <String, EntityRootScan>{};
-  final List<List<dynamic>> _collections = <List<dynamic>>[];
   
   List<DormProxy> _pendingProxies = <DormProxy>[];
-  
-  ConflictManager _handleConflictAcceptClient(Entity serverEntity, Entity clientEntity) => ConflictManager.ACCEPT_CLIENT;
   
   //---------------------------------
   //
@@ -137,7 +134,7 @@ class EntityAssembler {
     EntityRootScan entityScan;
     Entity spawnee, localNonPointerEntity;
     
-    if (onConflict == null) onConflict = _handleConflictAcceptClient;
+    if (onConflict == null) onConflict = (Entity serverEntity, Entity clientEntity) => ConflictManager.ACCEPT_CLIENT;
     
     entityScan = _entityScans[refClassName];
     
@@ -253,28 +250,6 @@ class EntityAssembler {
         
         if (!hasPointers) _pendingProxies.remove(proxy);
       }
-    }
-    
-    i = _collections.length;
-    
-    while (i > 0) {
-      collectionEntry = _collections[--i];
-      
-      collectionEntryHasPointers = false;
-      
-      collectionEntry.forEach(
-          (dynamic entry) {
-            if (entry is Entity) {
-              if (EntityKeyChain.areSameKeySignature(entry._scan, actualEntity._scan)) {
-                collectionEntry[collectionEntry.indexOf(entry)] = actualEntity;
-              } else if (entry._isPointer) {
-                collectionEntryHasPointers = true;
-              }
-            }
-          }
-      );
-      
-      if (!collectionEntryHasPointers) _collections.remove(collectionEntry);
     }
   }
 }

@@ -1,6 +1,8 @@
 # Don’t commit the following files and directories created by pub and dart2js
 packages
 packages/
+build
+build/
 example/packages
 example/packages/
 example/define/packages
