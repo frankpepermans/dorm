@@ -74,7 +74,7 @@ class EntityScan {
   //
   //---------------------------------
   
-  EntityRootScan _root;
+  final EntityRootScan _root;
   EntityKeyChain _keyChain;
   
   final List<_DormProxyPropertyInfo> _identityProxies = <_DormProxyPropertyInfo>[], _proxies = <_DormProxyPropertyInfo>[];
@@ -85,7 +85,7 @@ class EntityScan {
   //
   //---------------------------------
   
-  Entity entity;
+  final Entity entity;
   
   //---------------------------------
   // key
@@ -95,7 +95,7 @@ class EntityScan {
     EntityKeyChain nextKey = _root._rootKeyChain;
     
     _identityProxies.forEach(
-      (_DormProxyPropertyInfo entry) =>  nextKey = nextKey._setKeyValue(entry.info.propertySymbol, entry.proxy._value)   
+      (_DormProxyPropertyInfo entry) => nextKey = nextKey._setKeyValue(entry.info.propertySymbol, entry.proxy._value)   
     );
     
     if (_keyChain != nextKey) {
@@ -111,12 +111,10 @@ class EntityScan {
   //
   //---------------------------------
   
-  EntityScan();
+  EntityScan(this._root, this.entity);
   
   factory EntityScan.fromRootScan(EntityRootScan root, Entity forEntity) {
-    final EntityScan newScan = new EntityScan()
-    .._root = root
-    ..entity = forEntity;
+    final EntityScan newScan = new EntityScan(root, forEntity);
     
     bool useChangeListener = false;
     
@@ -146,22 +144,19 @@ class EntityScan {
   //---------------------------------
   
   static void _entity_changeHandler(Entity forEntity, List<ChangeRecord> changes) {
-    final HashSet<Symbol> identitySymbols = forEntity.getIdentityFields();
-    
-    PropertyChangeRecord matchingChange = changes.firstWhere(
-        (ChangeRecord change) => (
-            (change is PropertyChangeRecord) && 
-            identitySymbols.contains(change.name)
-        ),
-        orElse: () => null
-    );
-    
-    final Entity targetEntity = (matchingChange != null) ? (matchingChange.object as Entity) : null;
-    
-    if (
-        (targetEntity != null) &&
-        !targetEntity.isUnsaved()
-    ) targetEntity._scan.buildKey();
+    if (!forEntity.isUnsaved()) {
+      final HashSet<Symbol> identitySymbols = forEntity.getIdentityFields();
+      
+      PropertyChangeRecord matchingChange = changes.firstWhere(
+          (ChangeRecord change) => (
+              (change is PropertyChangeRecord) && 
+              identitySymbols.contains(change.name)
+          ),
+          orElse: () => null
+      );
+      
+      forEntity._scan.buildKey();
+    }
   }
 }
 

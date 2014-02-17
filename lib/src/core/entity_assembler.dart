@@ -27,7 +27,8 @@ class EntityAssembler {
   
   final List<EntityRootScan> _entityScans = <EntityRootScan>[];
   final List<List<dynamic>> _collections = <List<dynamic>>[];
-  final List<DormProxy> _pendingProxies = <DormProxy>[];
+  
+  List<DormProxy> _pendingProxies = <DormProxy>[];
   
   ConflictManager _handleConflictAcceptClient(Entity serverEntity, Entity clientEntity) => ConflictManager.ACCEPT_CLIENT;
   
@@ -120,6 +121,10 @@ class EntityAssembler {
   // Library protected methods
   //
   //---------------------------------
+  
+  void _flushProxies() {
+    _pendingProxies = <DormProxy>[];
+  }
   
   EntityScan _createEntityScan(Entity entity) {
     EntityRootScan scan = _existingFromScanRegistry(entity.refClassName);
@@ -222,10 +227,28 @@ class EntityAssembler {
     while (i > 0) {
       proxy = _pendingProxies[--i];
       
-      if (EntityKeyChain.areSameKeySignature(proxy._value._scan, actualEntity._scan)) {
-        proxy.setInitialValue(actualEntity);
+      if (proxy._value is Entity) {
+        final Entity entity = proxy._value as Entity;
         
-        _pendingProxies.remove(proxy);
+        if (EntityKeyChain.areSameKeySignature(entity._scan, actualEntity._scan)) {
+          proxy.setInitialValue(actualEntity);
+          
+          _pendingProxies.remove(proxy);
+        }
+      } else if (proxy._value is Iterable) {
+        final List entityList = proxy._value as Iterable;
+        
+        dynamic listEntry;
+        int i = entityList.length;
+        
+        while (i > 0) {
+          listEntry = entityList[--i];
+          
+          if (
+              (listEntry is Entity) &&
+              EntityKeyChain.areSameKeySignature(listEntry._scan, actualEntity._scan)
+          ) entityList[i] = actualEntity;
+        }
       }
     }
     

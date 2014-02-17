@@ -1,6 +1,6 @@
 part of dorm;
 
-class Entity extends Observable implements Externalizable {
+abstract class Entity extends Observable implements Externalizable {
   
   static final EntityAssembler ASSEMBLER = new EntityAssembler();
   static final EntityFactory FACTORY = new EntityFactory();
@@ -32,7 +32,7 @@ class Entity extends Observable implements Externalizable {
   // refClassName
   //-----------------------------------
   
-  String get refClassName => null;
+  String get refClassName;
   
   //-----------------------------------
   //
@@ -402,7 +402,7 @@ class Entity extends Observable implements Externalizable {
          
          if (entryValue is Map) value = FACTORY.spawnSingle(entryValue, serializer, onConflict, proxy:proxy);
          else if (entryValue is Iterable) {
-           value = serializer.convertIn(entry.info.type, FACTORY.spawn(entryValue, serializer, onConflict));
+           value = serializer.convertIn(entry.info.type, FACTORY.spawn(entryValue, serializer, onConflict, proxy:proxy));
          } else if (entryValue != null) value = serializer.convertIn(entry.info.type, entryValue);
          
          try {

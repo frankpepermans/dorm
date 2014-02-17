@@ -24,9 +24,7 @@ class DormProxy<T> {
   
   T get value => _value;
   set value(T newValue) {
-    if (_isValueUpdateRequired(_value, newValue)) {
-      _value = newValue;
-    }
+    if (_isValueUpdateRequired(_value, newValue)) _value = newValue;
   }
   
   Future<T> get lazyFuture => _lazyFuture;

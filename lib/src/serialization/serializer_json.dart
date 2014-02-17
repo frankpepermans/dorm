@@ -54,5 +54,4 @@ class SerializerJson extends SerializerBase {
     
     return (convertor == null) ? outValue : convertor.outgoing(outValue);
   }
-  
 }
