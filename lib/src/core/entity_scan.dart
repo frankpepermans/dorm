@@ -5,7 +5,7 @@ class EntityRootScan {
   final EntityKeyChain _rootKeyChain = new EntityKeyChain();
   final EntityCtor _entityCtor;
   MetadataCache _metadataCache;
-  List<Entity> _unusedInstances = new List<Entity>();
+  Entity _unusedInstance;
   
   final String refClassName;
   bool isMutableEntity = true;
@@ -64,16 +64,6 @@ class EntityRootScan {
       }
     }
   }
-  
-  //---------------------------------
-  //
-  // Protected methods
-  //
-  //---------------------------------
-  
-  Entity _unqueueUnusedInstance() => (_unusedInstances.length > 0) ? _unusedInstances.removeLast() : null;
-  
-  void _queueUnusedInstance(Entity entity) => _unusedInstances.add(entity);
 }
 
 class EntityScan {

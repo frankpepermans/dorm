@@ -140,9 +140,10 @@ class EntityAssembler {
     
     if (entityScan == null) throw new DormError('Scan for entity not found');
     
-    spawnee = entityScan._unqueueUnusedInstance();
+    spawnee = entityScan._unusedInstance;
     
     if (spawnee == null) spawnee = entityScan._entityCtor();
+    else entityScan._unusedInstance = null;
     
     spawnee.readExternal(rawData, serializer, onConflict);
     
@@ -167,7 +168,7 @@ class EntityAssembler {
     );
     
     if (localNonPointerEntity != null) {
-      entityScan._queueUnusedInstance(spawnee);
+      entityScan._unusedInstance = spawnee;
       
       return localNonPointerEntity;
     }
