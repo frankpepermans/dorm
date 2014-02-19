@@ -138,7 +138,7 @@ class EntityAssembler {
     
     entityScan = _entityScans[refClassName];
     
-    if (entityScan == null) throw new DormError('Scan for entity not found');
+    if (entityScan == null) throw new DormError('Scan for entity not found: $refClassName');
     
     spawnee = entityScan._unusedInstance;
     
