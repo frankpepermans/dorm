@@ -342,7 +342,23 @@ abstract class Entity extends Observable implements Externalizable {
   /**
    * Duplicates the [Entity] and any recusrive entities to a new [Entity].
    */
-  Entity duplicate() => _duplicateImpl(<_ClonedEntityEntry>[]);
+  Entity duplicate({List<Symbol> ignoredSymbols: null}) => _duplicateImpl(<_ClonedEntityEntry>[], ignoredSymbols);
+  
+  /**
+   * Duplicates the [Entity] and any recusrive entities to a new [Entity].
+   */
+  void duplicateFrom(Entity otherEntity, {List<Symbol> ignoredSymbols: null}) {
+    Entity clone = otherEntity.duplicate(ignoredSymbols: ignoredSymbols);
+    
+    _scan._proxies.forEach(
+      (_DormProxyPropertyInfo proxyInfo) {
+        if (
+          (ignoredSymbols == null) ||
+          !ignoredSymbols.contains(proxyInfo.info.propertySymbol)
+        ) this[proxyInfo.info.propertySymbol] = clone[proxyInfo.info.propertySymbol];
+      }
+    );
+  }
   
   /**
    * Validates the values of this [Entity] using the associated metadata.
@@ -467,7 +483,7 @@ abstract class Entity extends Observable implements Externalizable {
     }
   }
   
-  Entity _duplicateImpl(List<_ClonedEntityEntry> clonedEntities) {
+  Entity _duplicateImpl(List<_ClonedEntityEntry> clonedEntities, List<Symbol> ignoredSymbols) {
     if (_scan._root.isMutableEntity) {
       final _ClonedEntityEntry clonedEntity = clonedEntities.firstWhere(
          (_ClonedEntityEntry cloneEntry) => (cloneEntry.original == this),
@@ -482,30 +498,35 @@ abstract class Entity extends Observable implements Externalizable {
       
       clone._scan._proxies.forEach(
           (_DormProxyPropertyInfo entry) {
-            if (entry.info.metadataCache.isId) entry.proxy.setInitialValue(entry.proxy._insertValue);
-            else {
-              dynamic value = this[entry.proxy._propertySymbol];
-              
-              if (value is ObservableList) {
-                final ObservableList listCast = value as ObservableList;
-                final ObservableList listClone = new ObservableList();
+            if (
+              (ignoredSymbols == null) ||
+              !ignoredSymbols.contains(entry.info.propertySymbol)
+            ) {
+              if (entry.info.metadataCache.isId) entry.proxy.setInitialValue(entry.proxy._insertValue);
+              else {
+                dynamic value = this[entry.proxy._propertySymbol];
                 
-                listCast.forEach(
-                  (dynamic listEntry) {
-                    if (listEntry is Entity) {
-                      final Entity listEntryCast = listEntry as Entity;
-                      
-                      listClone.add(listEntryCast._duplicateImpl(clonedEntities));
-                    } else listClone.add(listEntry);
-                  }
-                );
-                
-                entry.proxy.setInitialValue(_serializerWorkaround.convertIn(entry.info.type, listClone));
-              } else if (value is Entity) {
-                final Entity entryCast = value as Entity;
-                
-                entry.proxy.setInitialValue(entryCast._duplicateImpl(clonedEntities));
-              } else entry.proxy.setInitialValue(value);
+                if (value is ObservableList) {
+                  final ObservableList listCast = value as ObservableList;
+                  final ObservableList listClone = new ObservableList();
+                  
+                  listCast.forEach(
+                    (dynamic listEntry) {
+                      if (listEntry is Entity) {
+                        final Entity listEntryCast = listEntry as Entity;
+                        
+                        listClone.add(listEntryCast._duplicateImpl(clonedEntities, ignoredSymbols));
+                      } else listClone.add(listEntry);
+                    }
+                  );
+                  
+                  entry.proxy.setInitialValue(_serializerWorkaround.convertIn(entry.info.type, listClone));
+                } else if (value is Entity) {
+                  final Entity entryCast = value as Entity;
+                  
+                  entry.proxy.setInitialValue(entryCast._duplicateImpl(clonedEntities, ignoredSymbols));
+                } else entry.proxy.setInitialValue(value);
+              }
             }
           }
       );
