@@ -118,113 +118,113 @@ void init() {
        ..width = 80
        ..headerData = const HeaderData('', Person.ID_SYMBOL, 'id', 'person id')
        ..field = Person.ID_SYMBOL
-       ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
-       ..columnItemRendererFactory = new ClassFactory(constructorMethod: LabelItemRenderer.construct),
+       ..headerItemRendererFactory = new ItemRendererFactory(constructorMethod: HeaderItemRenderer.construct)
+       ..columnItemRendererFactory = new ItemRendererFactory(constructorMethod: LabelItemRenderer.construct),
 
        new DataGridColumn()
        ..width=50
        ..headerData = const HeaderData('', Person.NAME_SYMBOL, 'name', 'person name')
        ..field = Person.NAME_SYMBOL
-       ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
-       ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct),
+       ..headerItemRendererFactory = new ItemRendererFactory(constructorMethod: HeaderItemRenderer.construct)
+       ..columnItemRendererFactory = new ItemRendererFactory(constructorMethod: EditableLabelItemRenderer.construct),
 
        new DataGridColumn()
        ..width=50
        ..headerData = const HeaderData('', Person.NAME_SYMBOL, 'name', 'person name')
        ..field = Person.NAME_SYMBOL
-       ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
-       ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct),
+       ..headerItemRendererFactory = new ItemRendererFactory(constructorMethod: HeaderItemRenderer.construct)
+       ..columnItemRendererFactory = new ItemRendererFactory(constructorMethod: EditableLabelItemRenderer.construct),
        
        new DataGridColumn()
        ..width=50
        ..headerData = const HeaderData('', Person.NAME_SYMBOL, 'name', 'person name')
        ..field = Person.NAME_SYMBOL
-       ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
-       ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct),
+       ..headerItemRendererFactory = new ItemRendererFactory(constructorMethod: HeaderItemRenderer.construct)
+       ..columnItemRendererFactory = new ItemRendererFactory(constructorMethod: EditableLabelItemRenderer.construct),
        
        new DataGridColumn()
        ..width=50
        ..headerData = const HeaderData('', Person.NAME_SYMBOL, 'name', 'person name')
        ..field = Person.NAME_SYMBOL
-       ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
-       ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct),
+       ..headerItemRendererFactory = new ItemRendererFactory(constructorMethod: HeaderItemRenderer.construct)
+       ..columnItemRendererFactory = new ItemRendererFactory(constructorMethod: EditableLabelItemRenderer.construct),
        
        new DataGridColumn()
        ..width=50
        ..headerData = const HeaderData('', Person.NAME_SYMBOL, 'name', 'person name')
        ..field = Person.NAME_SYMBOL
-       ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
-       ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct),
+       ..headerItemRendererFactory = new ItemRendererFactory(constructorMethod: HeaderItemRenderer.construct)
+       ..columnItemRendererFactory = new ItemRendererFactory(constructorMethod: EditableLabelItemRenderer.construct),
        
        new DataGridColumn()
        ..width=50
        ..headerData = const HeaderData('', Person.NAME_SYMBOL, 'name', 'person name')
        ..field = Person.NAME_SYMBOL
-       ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
-       ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct),
+       ..headerItemRendererFactory = new ItemRendererFactory(constructorMethod: HeaderItemRenderer.construct)
+       ..columnItemRendererFactory = new ItemRendererFactory(constructorMethod: EditableLabelItemRenderer.construct),
        
        new DataGridColumn()
        ..width=50
        ..headerData = const HeaderData('', Person.NAME_SYMBOL, 'name', 'person name')
        ..field = Person.NAME_SYMBOL
-       ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
-       ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct),
+       ..headerItemRendererFactory = new ItemRendererFactory(constructorMethod: HeaderItemRenderer.construct)
+       ..columnItemRendererFactory = new ItemRendererFactory(constructorMethod: EditableLabelItemRenderer.construct),
        
        new DataGridColumn()
        ..width=50
        ..headerData = const HeaderData('', Person.NAME_SYMBOL, 'name', 'person name')
        ..field = Person.NAME_SYMBOL
-       ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
-       ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct),
+       ..headerItemRendererFactory = new ItemRendererFactory(constructorMethod: HeaderItemRenderer.construct)
+       ..columnItemRendererFactory = new ItemRendererFactory(constructorMethod: EditableLabelItemRenderer.construct),
        
        new DataGridColumn()
        ..width=50
        ..headerData = const HeaderData('', Person.NAME_SYMBOL, 'name', 'person name')
        ..field = Person.NAME_SYMBOL
-       ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
-       ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct),
+       ..headerItemRendererFactory = new ItemRendererFactory(constructorMethod: HeaderItemRenderer.construct)
+       ..columnItemRendererFactory = new ItemRendererFactory(constructorMethod: EditableLabelItemRenderer.construct),
        
        new DataGridColumn()
        ..width=50
        ..headerData = const HeaderData('', Person.NAME_SYMBOL, 'name', 'person name')
        ..field = Person.NAME_SYMBOL
-       ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
-       ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct),
+       ..headerItemRendererFactory = new ItemRendererFactory(constructorMethod: HeaderItemRenderer.construct)
+       ..columnItemRendererFactory = new ItemRendererFactory(constructorMethod: EditableLabelItemRenderer.construct),
        
        new DataGridColumn()
        ..width=50
        ..headerData = const HeaderData('', Person.NAME_SYMBOL, 'name', 'person name')
        ..field = Person.NAME_SYMBOL
-       ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
-       ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct),
+       ..headerItemRendererFactory = new ItemRendererFactory(constructorMethod: HeaderItemRenderer.construct)
+       ..columnItemRendererFactory = new ItemRendererFactory(constructorMethod: EditableLabelItemRenderer.construct),
        
        new DataGridColumn()
        ..width=50
        ..headerData = const HeaderData('', Person.NAME_SYMBOL, 'name', 'person name')
        ..field = Person.NAME_SYMBOL
-       ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
-       ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct),
+       ..headerItemRendererFactory = new ItemRendererFactory(constructorMethod: HeaderItemRenderer.construct)
+       ..columnItemRendererFactory = new ItemRendererFactory(constructorMethod: EditableLabelItemRenderer.construct),
        
        new DataGridColumn()
        ..width=50
        ..headerData = const HeaderData('', Person.NAME_SYMBOL, 'name', 'person name')
        ..field = Person.NAME_SYMBOL
-       ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
-       ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct),
+       ..headerItemRendererFactory = new ItemRendererFactory(constructorMethod: HeaderItemRenderer.construct)
+       ..columnItemRendererFactory = new ItemRendererFactory(constructorMethod: EditableLabelItemRenderer.construct),
        
        new DataGridColumn()
        ..width=50
        ..headerData = const HeaderData('', Person.NAME_SYMBOL, 'name', 'person name')
        ..field = Person.NAME_SYMBOL
-       ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
-       ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct),
+       ..headerItemRendererFactory = new ItemRendererFactory(constructorMethod: HeaderItemRenderer.construct)
+       ..columnItemRendererFactory = new ItemRendererFactory(constructorMethod: EditableLabelItemRenderer.construct),
        
        new DataGridColumn()
        ..width=50
        ..headerData = const HeaderData('', Person.NAME_SYMBOL, 'name', 'person name')
        ..field = Person.NAME_SYMBOL
-       ..headerItemRendererFactory = new ClassFactory(constructorMethod: HeaderItemRenderer.construct)
-       ..columnItemRendererFactory = new ClassFactory(constructorMethod: EditableLabelItemRenderer.construct)
+       ..headerItemRendererFactory = new ItemRendererFactory(constructorMethod: HeaderItemRenderer.construct)
+       ..columnItemRendererFactory = new ItemRendererFactory(constructorMethod: EditableLabelItemRenderer.construct)
        ]
   )
   ..dataProvider = resultList;
