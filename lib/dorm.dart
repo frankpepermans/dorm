@@ -125,6 +125,7 @@ part 'src/core/metadata_validation_result.dart';
 part 'src/domain/entity.dart';
 part 'src/domain/meta.dart';
 
+part 'src/serialization/entity_codec.dart';
 part 'src/serialization/externalizable.dart';
 part 'src/serialization/serialization_type.dart';
 part 'src/serialization/serializer.dart';

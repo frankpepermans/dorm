@@ -245,6 +245,17 @@ abstract class Entity extends Observable implements Externalizable {
   }
   
   /**
+   * Returns a the String representation of a property using the property symbol
+   */
+  String getPropertyByField(Symbol propertyField) {
+    final _DormProxyPropertyInfo matchingInfo = _scan._proxies.firstWhere(
+      (_DormProxyPropertyInfo proxyInfo) => (proxyInfo.info.propertySymbol == propertyField)    
+    );
+    
+    return (matchingInfo != null) ? matchingInfo.info.property : null;
+  }
+  
+  /**
    * Will return [true] when all identity fields are equal to the corresponding insert values.
    * 
    * Will return [false] when at least one identity field does not match its insert value.
@@ -276,6 +287,8 @@ abstract class Entity extends Observable implements Externalizable {
   void _setUnsavedImpl(bool recursively, bool asNewDefaultValue, List<Entity> list) {
     if (!list.contains(this)) list.add(this);
     else return;
+    
+    if (!isMutable) return;
     
     if (recursively) {
       _setUnsavedImpl(false, asNewDefaultValue, list);
