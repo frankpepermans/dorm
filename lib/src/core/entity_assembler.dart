@@ -150,7 +150,7 @@ class EntityAssembler {
     final bool isSpawneeUnsaved = spawnee.isUnsaved();
     
     if (isSpawneeUnsaved) {
-      if (spawnee._isPointer) throw new DormError('Ambiguous reference, entity is unsaved and is also a pointer');
+      if (spawnee._isPointer) throw new DormError('Ambiguous reference, entity is unsaved and is also a pointer [${rawData}]');
       else return spawnee;
     }
     

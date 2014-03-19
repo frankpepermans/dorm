@@ -6,6 +6,7 @@ abstract class Entity extends Observable implements Externalizable {
   static final EntityFactory FACTORY = new EntityFactory();
   static Serializer _serializerWorkaround;
   static Timer _observableDirtyCheckTimeout;
+  static int _nextUid = 1;
   
   //-----------------------------------
   //
@@ -15,6 +16,7 @@ abstract class Entity extends Observable implements Externalizable {
   
   EntityScan _scan;
   bool _isPointer;
+  int _uid = _nextUid++;
   
   //-----------------------------------
   //
@@ -568,77 +570,81 @@ abstract class Entity extends Observable implements Externalizable {
     return 0;
   }
   
-  void _writeExternalImpl(Map<String, dynamic> data, Map<int, Map<String, dynamic>> convertedEntities, Serializer serializer) {
-    final int uid = hashCode;
-    
+  void _writeExternalImpl(Map<String, dynamic> data, Map<Entity, Map<String, dynamic>> convertedEntities, Serializer serializer) {
     data[SerializationType.ENTITY_TYPE] = _scan._root.refClassName;
-    data[SerializationType.UID] = uid;
+    data[SerializationType.UID] = _uid;
     
-    if (convertedEntities == null) convertedEntities = <int, Map<String, dynamic>>{uid: data};
-    else convertedEntities[uid] = data;
+    if (convertedEntities == null) convertedEntities = <Entity, Map<String, dynamic>>{this: data};
+    else convertedEntities[this] = data;
     
     _scan._proxies.forEach(
-      (_DormProxyPropertyInfo entry) {
-        if (entry.proxy._value is Entity) {
-          final Entity subEntity = entry.proxy._value;
-          
-          if (convertedEntities[subEntity.hashCode] != null) {
-            final Map<String, dynamic> pointerMap = <String, dynamic>{
-              SerializationType.POINTER: subEntity.hashCode,
-              SerializationType.ENTITY_TYPE: subEntity._scan._root.refClassName
-            };
-            
-            subEntity._scan._proxies.forEach(
-                (_DormProxyPropertyInfo subEntry) {
-                  if (subEntry.proxy.isId) pointerMap[subEntry.info.property] = subEntry.proxy._value;
-                }
-            );
-            
-            data[entry.info.property] = pointerMap;
-          } else {
-            final Map entityMap = data[entry.info.property] = <String, dynamic>{};
-            
-            subEntity._writeExternalImpl(entityMap, convertedEntities, serializer);
-          }
-        } else if (entry.proxy._value is List) {
-          final List<dynamic> subList = serializer.convertOut(entry.info.type, entry.proxy._value);
-          final List<dynamic> dataList = <dynamic>[];
-          
-          subList.forEach(
-              (dynamic listEntry) {
-                if (listEntry is Entity) {
-                  Entity subEntity = listEntry as Entity;
-                  Map<String, dynamic> entryData;
-                  
-                  if (convertedEntities[subEntity.hashCode] != null) {
-                    Map<String, dynamic> pointerMap = <String, dynamic>{
-                      SerializationType.POINTER: subEntity.hashCode,
-                      SerializationType.ENTITY_TYPE: subEntity._scan._root.refClassName
-                    };
-                    
-                    subEntity._scan._proxies.forEach(
-                        (_DormProxyPropertyInfo subEntry) {
-                          if (subEntry.proxy.isId) pointerMap[subEntry.info.property] = subEntry.proxy._value;
-                        }
-                    );
-                    
-                    dataList.add(pointerMap);
-                  } else {
-                    entryData = <String, dynamic>{};
-                    
-                    subEntity._writeExternalImpl(entryData, convertedEntities, serializer);
-                    
-                    dataList.add(entryData);
-                  }
-                } else dataList.add(serializer.convertOut(entry.info.type, entry.proxy._value));
-              }
-            );
-            
-            data[entry.info.property] = dataList;
-          } else data[entry.info.property] = serializer.convertOut(entry.info.type, entry.proxy._value);
-      }
+      (_DormProxyPropertyInfo entry) => _writeExternalProxy(entry, data, convertedEntities, serializer)
     );
   }
+  
+  void _writeExternalProxy(_DormProxyPropertyInfo entry, Map<String, dynamic> data, Map<Entity, Map<String, dynamic>> convertedEntities, Serializer serializer) {
+    Map<String, dynamic> pointerMap, entityMap;
+    List<dynamic> subList, dataList;
+    Entity subEntity;
+          
+    if (entry.proxy._value is Entity) {
+      subEntity = entry.proxy._value;
+      
+      if (convertedEntities[subEntity] != null) {
+        pointerMap = <String, dynamic>{
+          SerializationType.POINTER: subEntity._uid,
+          SerializationType.ENTITY_TYPE: subEntity._scan._root.refClassName
+        };
+        
+        subEntity._scan._proxies.forEach(
+            (_DormProxyPropertyInfo subEntry) {
+              if (subEntry.proxy.isId) pointerMap[subEntry.info.property] = subEntry.proxy._value;
+            }
+        );
+        
+        data[entry.info.property] = pointerMap;
+      } else {
+        entityMap = data[entry.info.property] = <String, dynamic>{};
+        
+        subEntity._writeExternalImpl(entityMap, convertedEntities, serializer);
+      }
+    } else if (entry.proxy._value is List) {
+      subList = serializer.convertOut(entry.info.type, entry.proxy._value);
+      dataList = <dynamic>[];
+      
+      subList.forEach(
+          (dynamic listEntry) {
+            if (listEntry is Entity) {
+              Entity subEntity = listEntry as Entity;
+              Map<String, dynamic> entryData;
+              
+              if (convertedEntities[subEntity] != null) {
+                Map<String, dynamic> pointerMap = <String, dynamic>{
+                  SerializationType.POINTER: subEntity._uid,
+                  SerializationType.ENTITY_TYPE: subEntity._scan._root.refClassName
+                };
+                
+                subEntity._scan._proxies.forEach(
+                    (_DormProxyPropertyInfo subEntry) {
+                      if (subEntry.proxy.isId) pointerMap[subEntry.info.property] = subEntry.proxy._value;
+                    }
+                );
+                
+                dataList.add(pointerMap);
+              } else {
+                entryData = <String, dynamic>{};
+                
+                subEntity._writeExternalImpl(entryData, convertedEntities, serializer);
+                
+                dataList.add(entryData);
+              }
+            } else dataList.add(serializer.convertOut(entry.info.type, entry.proxy._value));
+          }
+        );
+        
+        data[entry.info.property] = dataList;
+      } else data[entry.info.property] = serializer.convertOut(entry.info.type, entry.proxy._value);
+   }
 }
 
 class _ClonedEntityEntry {
