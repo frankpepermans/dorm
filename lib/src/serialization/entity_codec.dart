@@ -58,13 +58,7 @@ class EntityDecoder extends Converter<String, List<Entity>> {
     final List<Map<String, dynamic>> result = _serializer.incoming(rawData);
     final EntityFactory factory = new EntityFactory();
     
-    try {
-      return factory.spawn(result, _serializer, (Entity serverEntity, Entity clientEntity) => _conflictManager);
-    } catch (error) {
-      if (error is DormError) print(error);
-    }
-    
-    return null;
+    return factory.spawn(result, _serializer, (Entity serverEntity, Entity clientEntity) => _conflictManager);
   }
   
 }

@@ -431,7 +431,7 @@ abstract class Entity extends Observable implements Externalizable {
          dynamic entryValue = data[entry.info.property];
          dynamic value;
          
-         if (entryValue is Map) value = FACTORY.spawnSingle(entryValue, serializer, onConflict, proxy:proxy);
+         if (entryValue is Map) value = serializer.convertIn(Entity, FACTORY.spawnSingle(entryValue, serializer, onConflict, proxy:proxy));
          else if (entryValue is Iterable) {
            value = serializer.convertIn(entry.info.type, FACTORY.spawn(entryValue, serializer, onConflict, proxy:proxy));
          } else if (entryValue != null) value = serializer.convertIn(entry.info.type, entryValue);
@@ -451,7 +451,7 @@ abstract class Entity extends Observable implements Externalizable {
    * The [Serializer] is used to perform special conversions if needed, i.e. to create an [int] value from a [DateTime] value
    * value which contains the millisecondsSinceEpoch value.
    */
-  void writeExternal(Map<String, dynamic> data, Serializer serializer) => _writeExternalImpl(data, null, serializer);
+  void writeExternal(Map<String, dynamic> data, Serializer serializer) => _writeExternalImpl(data, serializer);
   
   /**
    * Converts the [Entity] into a JSON representation.
@@ -570,19 +570,18 @@ abstract class Entity extends Observable implements Externalizable {
     return 0;
   }
   
-  void _writeExternalImpl(Map<String, dynamic> data, Map<Entity, Map<String, dynamic>> convertedEntities, Serializer serializer) {
+  void _writeExternalImpl(Map<String, dynamic> data, Serializer serializer) {
     data[SerializationType.ENTITY_TYPE] = _scan._root.refClassName;
     data[SerializationType.UID] = _uid;
     
-    if (convertedEntities == null) convertedEntities = <Entity, Map<String, dynamic>>{this: data};
-    else convertedEntities[this] = data;
+    serializer.convertedEntities[this] = data;
     
     _scan._proxies.forEach(
-      (_DormProxyPropertyInfo entry) => _writeExternalProxy(entry, data, convertedEntities, serializer)
+      (_DormProxyPropertyInfo entry) => _writeExternalProxy(entry, data, serializer)
     );
   }
   
-  void _writeExternalProxy(_DormProxyPropertyInfo entry, Map<String, dynamic> data, Map<Entity, Map<String, dynamic>> convertedEntities, Serializer serializer) {
+  void _writeExternalProxy(_DormProxyPropertyInfo entry, Map<String, dynamic> data, Serializer serializer) {
     Map<String, dynamic> pointerMap, entityMap;
     List<dynamic> subList, dataList;
     Entity subEntity;
@@ -590,7 +589,7 @@ abstract class Entity extends Observable implements Externalizable {
     if (entry.proxy._value is Entity) {
       subEntity = entry.proxy._value;
       
-      if (convertedEntities[subEntity] != null) {
+      if (serializer.convertedEntities[subEntity] != null) {
         pointerMap = <String, dynamic>{
           SerializationType.POINTER: subEntity._uid,
           SerializationType.ENTITY_TYPE: subEntity._scan._root.refClassName
@@ -606,7 +605,7 @@ abstract class Entity extends Observable implements Externalizable {
       } else {
         entityMap = data[entry.info.property] = <String, dynamic>{};
         
-        subEntity._writeExternalImpl(entityMap, convertedEntities, serializer);
+        subEntity._writeExternalImpl(entityMap, serializer);
       }
     } else if (entry.proxy._value is List) {
       subList = serializer.convertOut(entry.info.type, entry.proxy._value);
@@ -618,7 +617,7 @@ abstract class Entity extends Observable implements Externalizable {
               Entity subEntity = listEntry as Entity;
               Map<String, dynamic> entryData;
               
-              if (convertedEntities[subEntity] != null) {
+              if (serializer.convertedEntities[subEntity] != null) {
                 Map<String, dynamic> pointerMap = <String, dynamic>{
                   SerializationType.POINTER: subEntity._uid,
                   SerializationType.ENTITY_TYPE: subEntity._scan._root.refClassName
@@ -634,7 +633,7 @@ abstract class Entity extends Observable implements Externalizable {
               } else {
                 entryData = <String, dynamic>{};
                 
-                subEntity._writeExternalImpl(entryData, convertedEntities, serializer);
+                subEntity._writeExternalImpl(entryData, serializer);
                 
                 dataList.add(entryData);
               }

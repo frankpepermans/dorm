@@ -11,6 +11,8 @@ abstract class Serializer<T> {
   Iterable incoming(T data);
   T outgoing(dynamic data);
   
+  Map<Entity, Map<String, dynamic>> get convertedEntities;
+  
   void addRule(Type forType, dynamic incoming(dynamic value), dynamic outgoing(dynamic value));
   void removeRule(Type forType);
   
@@ -28,6 +30,7 @@ abstract class SerializerMixin<T> implements Serializer {
   //-----------------------------------
   
   List<_InternalConvertor> _convertors = <_InternalConvertor>[];
+  Map<Entity, Map<String, dynamic>> convertedEntities;
   
   //-----------------------------------
   //

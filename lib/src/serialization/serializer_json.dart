@@ -29,6 +29,8 @@ class SerializerJson extends SerializerBase {
   String outgoing(dynamic data) {
     Entity._serializerWorkaround = this;
     
+    convertedEntities = <Entity, Map<String, dynamic>>{};
+    
     if (
         (data is List) ||
         (data is Map)
