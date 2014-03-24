@@ -127,9 +127,7 @@ class EntityScan {
          if (clonedEntry.info.metadataCache.isId) {
            newScan._identityProxies.add(clonedEntry);
            
-           if (clonedEntry.info.metadataCache.isMutable) clonedEntry.proxy._changeHandler = () {
-             if (!forEntity.isUnsaved()) forEntity._scan.buildKey();
-           };
+           if (clonedEntry.info.metadataCache.isMutable) clonedEntry.proxy._changeHandler = newScan._entity_identityChangeHandler;
          }
        }
     );
@@ -142,6 +140,10 @@ class EntityScan {
   // Private methods
   //
   //---------------------------------
+  
+  void _entity_identityChangeHandler() {
+    if (!entity.isUnsaved()) buildKey();
+  }
   
   void _initialize() {
     if (_identityProxies == null) {
