@@ -127,7 +127,7 @@ class EntityScan {
          if (clonedEntry.info.metadataCache.isId) {
            newScan._identityProxies.add(clonedEntry);
            
-           if (clonedEntry.info.metadataCache.isMutable) clonedEntry.proxy._changeHandler = newScan._entity_identityChangeHandler;
+           if (clonedEntry.info.metadataCache.isMutable) clonedEntry._changeHandler = newScan._entity_identityChangeHandler;
          }
        }
     );
@@ -185,7 +185,14 @@ class _DormProxyPropertyInfo<T extends _DormProxyPropertyInfo> extends Comparabl
   
   final _DormPropertyInfo info;
   
-  DormProxy proxy;
+  DormProxy _proxy;
+  
+  DormProxy get proxy => _proxy;
+  void set proxy(DormProxy value) {
+    _proxy = value.._changeHandler = _changeHandler;
+  }
+  
+  Function _changeHandler;
   
   _DormProxyPropertyInfo(this.info);
   
