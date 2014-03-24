@@ -117,8 +117,6 @@ class EntityScan {
   factory EntityScan.fromRootScan(EntityRootScan root, Entity forEntity) {
     final EntityScan newScan = new EntityScan(root, forEntity).._initialize();
     
-    bool useChangeListener = false;
-    
     root._rootProxies.forEach(
        (_DormPropertyInfo entry) {
          final _DormProxyPropertyInfo clonedEntry = new _DormProxyPropertyInfo.from(entry);
@@ -126,14 +124,14 @@ class EntityScan {
          newScan._proxies.add(clonedEntry);
          newScan._proxyMap[clonedEntry.info.property] = clonedEntry;
          
-         if (clonedEntry.info.metadataCache.isId) newScan._identityProxies.add(clonedEntry);
-         
-         if (clonedEntry.info.metadataCache.isId && clonedEntry.info.metadataCache.isMutable) useChangeListener = true;
+         if (clonedEntry.info.metadataCache.isId) {
+           newScan._identityProxies.add(clonedEntry);
+           
+           if (clonedEntry.info.metadataCache.isMutable) clonedEntry.proxy._changeHandler = () {
+             if (!forEntity.isUnsaved()) forEntity._scan.buildKey();
+           };
+         }
        }
-    );
-    
-    if (useChangeListener) forEntity.changes.listen(
-      (List<ChangeRecord> changes) => _entity_changeHandler(forEntity, changes)    
     );
     
     return newScan;
@@ -150,22 +148,6 @@ class EntityScan {
       _identityProxies = <_DormProxyPropertyInfo>[];
       _proxies = <_DormProxyPropertyInfo>[];
       _proxyMap = <String, _DormProxyPropertyInfo>{};
-    }
-  }
-  
-  static void _entity_changeHandler(Entity forEntity, List<ChangeRecord> changes) {
-    if (!forEntity.isUnsaved()) {
-      final HashSet<Symbol> identitySymbols = forEntity.getIdentityFields();
-      
-      PropertyChangeRecord matchingChange = changes.firstWhere(
-          (ChangeRecord change) => (
-              (change is PropertyChangeRecord) && 
-              identitySymbols.contains(change.name)
-          ),
-          orElse: () => null
-      );
-      
-      forEntity._scan.buildKey();
     }
   }
 }
