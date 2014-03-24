@@ -40,7 +40,7 @@ class SerializerJson extends SerializerBase {
   }
   
   dynamic convertIn(Type forType, dynamic inValue) {
-    _InternalConvertor convertor = _convertors.firstWhere(
+    final _InternalConvertor convertor = _convertors.firstWhere(
       (_InternalConvertor tmpConvertor) => (tmpConvertor.forType == forType),
       orElse: () => null
     );
@@ -49,7 +49,7 @@ class SerializerJson extends SerializerBase {
   }
   
   dynamic convertOut(Type forType, dynamic outValue) {
-    _InternalConvertor convertor = _convertors.firstWhere(
+    final _InternalConvertor convertor = _convertors.firstWhere(
         (_InternalConvertor tmpConvertor) => (tmpConvertor.forType == forType),
         orElse: () => null
     );

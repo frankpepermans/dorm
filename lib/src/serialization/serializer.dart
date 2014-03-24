@@ -45,7 +45,7 @@ abstract class SerializerMixin<T> implements Serializer {
     _convertors.add(new _InternalConvertor(forType, incoming, outgoing));
   
   void removeRule(Type forType) => _convertors.removeWhere(
-      (_InternalConvertor convertor) => (convertor.forType == forType)
+    (_InternalConvertor convertor) => (convertor.forType == forType)
   );
   
   dynamic convertIn(Type forType, dynamic inValue) => inValue;
