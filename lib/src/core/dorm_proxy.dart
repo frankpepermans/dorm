@@ -66,11 +66,12 @@ class DormProxy<T> {
   MetadataValidationResult validate(Entity entity) {
     if (!entity.isMutable) return new MetadataValidationResult(entity, _property, _propertySymbol, MetadataValidationReason.ENTITY_NOT_MUTABLE);
     
-    if (!isMutable) return new MetadataValidationResult(entity, _property, _propertySymbol, MetadataValidationReason.PROPERTY_NOT_MUTABLE);
-    
     if (
-      !isNullable &&
-      (_value == null)
+      !isMutable ||
+      (
+        !isNullable &&
+        (_value == null)
+      )
     ) return new MetadataValidationResult(entity, _property, _propertySymbol, MetadataValidationReason.PROPERTY_NOT_NULLABLE);
     
     return null;

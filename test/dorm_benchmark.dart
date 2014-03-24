@@ -4,31 +4,24 @@ import 'package:dorm/dorm.dart';
 import 'package:dorm/dorm_test.dart';
 import 'package:benchmark_harness/benchmark_harness.dart';
 
-EntityFactory entityFactory;
-Serializer serializer;
 String jsonData;
 
-main() {
-  TemplateBenchmark.main();
-}
+final EntityCodec<List<TestEntity>, String> codec = new EntityCodec(ConflictManager.ACCEPT_CLIENT, new SerializerJson());
+
+void main() => TemplateBenchmark.main();
 
 class TemplateBenchmark extends BenchmarkBase {
   
   const TemplateBenchmark() : super("Template");
 
-  static void main() {
-    new TemplateBenchmark().report();
-  }
+  static void main() => new TemplateBenchmark().report();
   
-  void run() => _runBenchmark();
+  List<TestEntity> run() => codec.decode(jsonData);
 
   void setup() {
     final int loopCount = 10000;
     List<String> jsonRaw = <String>[];
     int i = loopCount;
-    
-    entityFactory = new EntityFactory();
-    serializer = new SerializerJson();
     
     Entity.ASSEMBLER.scan(TestEntity, 'entities.TestEntity', TestEntity.construct);
     
@@ -37,19 +30,3 @@ class TemplateBenchmark extends BenchmarkBase {
     jsonData = '[' + jsonRaw.join(',') + ']';
   }
 }
-
-void _runBenchmark() {
-  Iterable<TestEntity> testEntities = entityFactory.spawn(serializer.incoming(jsonData), serializer, handleConflictAcceptClient);
-  
-  testEntities.forEach(
-    (TestEntity testEntity) {
-      int id = testEntity[TestEntitySuperClass.ID_SYMBOL];
-      String name = testEntity[TestEntity.NAME_SYMBOL];
-    }
-  );
-  //out.innerHtml += 'json to Map $t1 ms, dorm to entity class model $t2 ms<br>';
-}
-
-ConflictManager handleConflictAcceptClient(Entity serverEntity, Entity clientEntity) => ConflictManager.ACCEPT_CLIENT;
-
-ConflictManager handleConflictAcceptServer(Entity serverEntity, Entity clientEntity) => ConflictManager.ACCEPT_SERVER;

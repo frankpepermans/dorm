@@ -45,7 +45,7 @@ class EntityFactory<T extends Entity> {
     final ObservableList<T> results = new ObservableList<T>();
     
     rawData.forEach(
-        (Map<String, dynamic> rawData) => results.add(spawnSingle(rawData, serializer, onConflict, proxy: proxy))
+        (Map<String, dynamic> entry) => results.add(spawnSingle(entry, serializer, onConflict, proxy: proxy))
     );
     
     return results;
