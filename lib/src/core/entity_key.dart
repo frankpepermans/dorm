@@ -11,18 +11,26 @@ class EntityKeyChain {
   static final EntityKeyChain rootKeyChain = new EntityKeyChain();
   
   static Entity getFirstSibling(EntityScan forScan, {bool allowPointers: true}) {
-    EntityScan result = forScan._keyChain.entityScans.firstWhere(
-      (EntityScan scan) => (
-          (scan.entity != forScan.entity) && 
-          (allowPointers || !scan.entity._isPointer)
-      ),
+    if (forScan._keyChain.entityScans.length == 0) return null;
+    
+    final EntityScan firstScan = forScan._keyChain.entityScans.first;
+    
+    if (siblingCheck(firstScan, forScan, allowPointers)) return firstScan.entity;
+    
+    final EntityScan result = forScan._keyChain.entityScans.firstWhere(
+      (EntityScan scan) => siblingCheck(scan, forScan, allowPointers),
       orElse: () => null
     );
     
     return (result != null) ? result.entity : null;
   }
   
-  static bool areSameKeySignature(EntityScan scanA, EntityScan scanB) => scanA._keyChain.entityScans.contains(scanB);
+  static bool siblingCheck(EntityScan scanA, EntityScan scanB, bool allowPointers) => (
+    (scanA.entity != scanB.entity) &&
+    (allowPointers || !scanA.entity._isPointer)
+  );
+  
+  static bool areSameKeySignature(EntityScan scanA, EntityScan scanB) => (scanA._keyChain == scanB._keyChain);
   
   //---------------------------------
   //
@@ -30,7 +38,7 @@ class EntityKeyChain {
   //
   //---------------------------------
   
-  HashMap<Symbol, HashMap<dynamic, EntityKeyChain>> _map;
+  final HashMap<Symbol, HashMap<dynamic, EntityKeyChain>> _map = new HashMap<Symbol, HashMap<dynamic, EntityKeyChain>>.identity();
   
   //---------------------------------
   //
@@ -65,8 +73,6 @@ class EntityKeyChain {
   //---------------------------------
   
   EntityKeyChain _setKeyValue(Symbol key, dynamic value) {
-    if (_map == null) _map = new HashMap<Symbol, HashMap<dynamic, EntityKeyChain>>.identity();
-    
     EntityKeyChain returnValue;
     HashMap<dynamic, EntityKeyChain> mainKey = _map[key];
     
@@ -92,8 +98,6 @@ class EntityKeyChain {
   }
   
   void _setKeyValueNoReturn(Symbol key, dynamic value) {
-    if (_map == null) _map = new HashMap<Symbol, HashMap<dynamic, EntityKeyChain>>.identity();
-    
     HashMap<dynamic, EntityKeyChain> mainKey = _map[key];
     
     if (mainKey == null) {

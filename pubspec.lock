@@ -24,7 +24,7 @@ packages:
   dart_flex:
     description: dart_flex
     source: hosted
-    version: "0.8.25"
+    version: "0.8.26"
   logging:
     description: logging
     source: hosted

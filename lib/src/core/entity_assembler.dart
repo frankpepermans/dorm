@@ -109,8 +109,8 @@ class EntityAssembler {
       scanProxy.proxy = proxy;
       
       proxy._updateWithMetadata(
-          scanProxy, 
-           entity._scan
+        scanProxy, 
+        entity._scan
       );
     }
   }
@@ -242,8 +242,8 @@ class EntityAssembler {
           containsEntities = (listEntry is Entity);
           
           if (
-              containsEntities &&
-              EntityKeyChain.areSameKeySignature(listEntry._scan, actualEntity._scan)
+            containsEntities &&
+            EntityKeyChain.areSameKeySignature(listEntry._scan, actualEntity._scan)
           ) entityList[i] = actualEntity;
           
           if (containsEntities && !hasPointers) hasPointers = (entityList[i] as Entity)._isPointer;
