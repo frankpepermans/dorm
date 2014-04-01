@@ -195,6 +195,19 @@ class EntityAssembler {
             if (entryMatch != null && entryMatch.proxy.hasDelta) entryA.proxy.setInitialValue(existingEntity.notifyPropertyChange(entryA.proxy._propertySymbol, entryA.proxy._value, entryMatch.proxy._value));
           }
       );
+    } else if (conflictManager == ConflictManager.ACCEPT_SERVER_DIRTY) {
+      entryProxies = existingEntity._scan._proxies;
+            
+      entryProxies.forEach(
+          (_DormProxyPropertyInfo entryA) {
+            final _DormProxyPropertyInfo entryMatch = spawnee._scan._proxies.firstWhere(
+              (_DormProxyPropertyInfo entryB) => (entryA.info.property == entryB.info.property),
+              orElse: () => null
+            );
+            
+            if (entryMatch != null && entryMatch.proxy.hasDelta) entryA.proxy.value = existingEntity.notifyPropertyChange(entryA.proxy._propertySymbol, entryA.proxy._value, entryMatch.proxy._value);
+          }
+      );
     }
   }
   
