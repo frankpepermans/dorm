@@ -94,10 +94,14 @@ class EntityAssembler {
     final EntityScan scan = entity._scan;
     
     proxies.forEach(
-      (DormProxy proxy) => proxy._updateWithMetadata(
-        scan._proxyMap[proxy._property]..proxy = proxy, 
-        scan
-      )
+      (DormProxy proxy) {
+        proxy._updateWithMetadata(
+          scan._proxyMap[proxy._property]..proxy = proxy, 
+          scan
+        );
+        
+        if (proxy.isLazy) _initLazyLoading(entity, proxy);
+      }
     );
   }
   
@@ -106,6 +110,29 @@ class EntityAssembler {
   // Library protected methods
   //
   //---------------------------------
+  
+  void _initLazyLoading(Entity entity, DormProxy proxy) {
+    proxy._lazyHandler = (DormProxy lazyProxy) {
+      final ObservableList list = lazyProxy._value as ObservableList;
+      
+      if (!entity.isUnsaved()) {
+        final EntityFactory factory = new EntityFactory();
+        final EntityLazyHandler handler = factory._lazyHandlers.firstWhere(
+          (EntityLazyHandler lazyHandler) => (lazyHandler.propertySymbol == lazyProxy._propertySymbol),
+          orElse: () => null
+        );
+        
+        if (handler == null) throw new DormError('Missing a lazy handler for ${lazyProxy._property} on entity $entity');
+        else handler.handler(entity, lazyProxy._propertySymbol).then(
+          (List<dynamic> resultSet) {
+            if (resultSet != null && resultSet.length > 0) list.addAll(resultSet);
+            
+            list.notifyPropertyChange(IS_LAZILY_LOADED, null, list);
+          }
+        );
+      } else list.notifyPropertyChange(IS_LAZILY_LOADED, null, list);
+    };
+  }
   
   EntityScan _createEntityScan(Entity entity) {
     EntityRootScan scan = _entityScans[entity.refClassName];

@@ -10,9 +10,9 @@ class DormProxy<T> {
   
   T _insertValue, _defaultValue, _value;
   
-  Future<T> _lazyFuture;
+  bool _isLazyLoadingTriggered = false;
   
-  Function _changeHandler;
+  Function _changeHandler, _lazyHandler;
   
   //-----------------------------------
   //
@@ -24,7 +24,20 @@ class DormProxy<T> {
   // value
   //-----------------------------------
   
-  T get value => _value;
+  T get value {
+    if (isLazy) {
+      if (_isLazyLoadingTriggered) {
+        (_value as ObservableList).notifyPropertyChange(IS_LAZILY_LOADED, null, _value);
+      } else {
+        _isLazyLoadingTriggered = true;
+          
+        if (_lazyHandler != null) _lazyHandler(this);
+      }
+    }
+    
+    return _value;
+  }
+  
   set value(T newValue) {
     if (_isValueUpdateRequired(_value, newValue)) {
       _value = newValue;
@@ -32,9 +45,6 @@ class DormProxy<T> {
       if (_changeHandler != null) _changeHandler();
     }
   }
-  
-  Future<T> get lazyFuture => _lazyFuture;
-  set lazyFuture(Future<T> newValue) => _lazyFuture = newValue;
   
   final String _property;
   final Symbol _propertySymbol;

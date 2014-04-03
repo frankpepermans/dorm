@@ -431,10 +431,10 @@ abstract class Entity extends Observable implements Externalizable {
          dynamic entryValue = data[entry.info.property];
          dynamic value;
          
-         if (entryValue is Map) value = serializer.convertIn(Entity, FACTORY.spawnSingle(entryValue, serializer, onConflict, proxy:proxy));
-         else if (entryValue is Iterable) {
-           value = serializer.convertIn(entry.info.type, FACTORY.spawn(entryValue, serializer, onConflict, proxy:proxy));
-         } else if (entryValue != null) value = serializer.convertIn(entry.info.type, entryValue);
+         if (proxy.isLazy)                value = serializer.convertIn(entry.info.type, new ObservableList());
+         else if (entryValue is Map)      value = serializer.convertIn(Entity, FACTORY.spawnSingle(entryValue, serializer, onConflict, proxy:proxy));
+         else if (entryValue is Iterable) value = serializer.convertIn(entry.info.type, FACTORY.spawn(entryValue, serializer, onConflict, proxy:proxy));
+         else if (entryValue != null)     value = serializer.convertIn(entry.info.type, entryValue);
          
          try {
            proxy.setInitialValue(value);

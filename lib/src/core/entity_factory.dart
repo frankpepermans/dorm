@@ -10,6 +10,7 @@ class EntityFactory<T extends Entity> {
   
   final EntityAssembler _assembler = new EntityAssembler();
   final List<EntityPostProcessor> _postProcessors = <EntityPostProcessor>[];
+  final List<EntityLazyHandler> _lazyHandlers = <EntityLazyHandler>[];
   
   //---------------------------------
   //
@@ -41,6 +42,12 @@ class EntityFactory<T extends Entity> {
     (EntityPostProcessor tmpPostProcessor) => (tmpPostProcessor == postProcessor)
   );
   
+  void addLazyHandler(EntityLazyHandler lazyHandler) => _lazyHandlers.add(lazyHandler);
+  
+  void removeLazyHandler(EntityLazyHandler lazyHandler) => _lazyHandlers.removeWhere(
+    (EntityLazyHandler tmpLazyHandler) => (tmpLazyHandler == lazyHandler)
+  );
+  
   ObservableList<T> spawn(Iterable<Map<String, dynamic>> rawData, Serializer serializer, OnConflictFunction onConflict, {DormProxy proxy}) {
     final ObservableList<T> results = new ObservableList<T>();
     
@@ -67,5 +74,14 @@ class EntityPostProcessor {
   final PostProcessorMethod handler;
   
   const EntityPostProcessor(this.handler);
+  
+}
+
+class EntityLazyHandler {
+  
+  final Symbol propertySymbol;
+  final LazyLoaderMethod handler;
+  
+  const EntityLazyHandler(this.propertySymbol, this.handler);
   
 }
