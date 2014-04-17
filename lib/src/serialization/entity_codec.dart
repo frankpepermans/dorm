@@ -58,6 +58,8 @@ class EntityDecoder extends Converter<String, List<Entity>> {
     final List<Map<String, dynamic>> result = _serializer.incoming(rawData);
     final EntityFactory factory = new EntityFactory();
     
+    //factory._assembler._pendingProxies = <DormProxy>[];
+    
     return factory.spawn(result, _serializer, (Entity serverEntity, Entity clientEntity) => _conflictManager);
   }
   

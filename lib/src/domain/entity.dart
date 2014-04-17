@@ -57,7 +57,7 @@ abstract class Entity extends Observable implements Externalizable {
         orElse: () => null
     );
     
-    if (result != null) result.proxy._value = notifyPropertyChange(
+    if (result != null) result.proxy.value = notifyPropertyChange(
         result.proxy._propertySymbol, 
         result.proxy._value,
         propertyValue
@@ -399,16 +399,31 @@ abstract class Entity extends Observable implements Externalizable {
    * Scans the [Entity]'s properties for any changes, returns [true] if the [Entity] has changes,
    * or returns [false] if it is untouched.
    */
-  bool isDirty({bool ignoresUnsavedStatus: false}) => (
-      isMutable &&
-      (
-          (ignoresUnsavedStatus ? false : isUnsaved()) ||
-          _scan._proxies.firstWhere(
-              (_DormProxyPropertyInfo entry) => (entry.proxy._value != entry.proxy._defaultValue),
-              orElse: () => null
-          ) != null
-      )    
-  );
+  bool isDirty({bool ignoresUnsavedStatus: false, Iterable<String> ignoredProperties}) {
+    if (!isMutable) return false;
+    
+    final bool isNew = ignoresUnsavedStatus ? false : isUnsaved();
+    
+    bool hasDirtyProperty = false;
+    
+    if (!isNew) {
+      final _DormProxyPropertyInfo dirtyProperty = _scan._proxies.firstWhere(
+          (_DormProxyPropertyInfo entry) => (
+              (entry.proxy._value != entry.proxy._defaultValue) &&
+              ((ignoredProperties == null) || !ignoredProperties.contains(entry.info.property)) &&
+              (
+                !(entry.proxy._value is Iterable) &&
+                !(entry.proxy._defaultValue is Iterable)  
+              )
+          ),
+          orElse: () => null
+      );
+      
+      hasDirtyProperty = (dirtyProperty != null);
+    }
+    
+    return (isNew || hasDirtyProperty);
+  }
   
   /**
    * Converts raw [Map] data into an [Entity], including the full cyclic chain.

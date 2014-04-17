@@ -11,6 +11,7 @@ class DormManager extends Observable {
   List<Entity> _observeList = <Entity>[];
   List<Entity> _queue = <Entity>[];
   List<Entity> _deleteQueue = <Entity>[];
+  List<String> _ignoredProperties = <String>[];
   HashMap<Entity, StreamSubscription> _dirtyListeners = new HashMap<Entity, StreamSubscription>.identity();
   bool _forcedDirtyStatus = false;
   
@@ -41,6 +42,19 @@ class DormManager extends Observable {
   bool _isCommitRequired = false;
   
   bool get isCommitRequired => _isCommitRequired;
+  void set isCommitRequired(bool value) {
+    if (value != _isCommitRequired) {
+      _isCommitRequired = value;
+      
+      notifyChange(
+          new PropertyChangeRecord(
+              this,
+              value ? IS_COMMIT_REQUIRED : IS_COMMIT_NOT_REQUIRED,
+              false, true
+          )    
+      );
+    }
+  }
   
   void _updateIsCommitRequired() {
     bool status = false;
@@ -50,25 +64,15 @@ class DormManager extends Observable {
       ..addAll(_queue)
       ..addAll(_deleteQueue);
       
-      status = (
-          fullList.firstWhere(
-            (Entity entity) => entity.isDirty(ignoresUnsavedStatus: ignoresUnsavedStatus), 
-            orElse: () => null
-          ) != null 
+      final Entity firstDirtyEntity = fullList.firstWhere(
+        (Entity entity) => entity.isDirty(ignoresUnsavedStatus: ignoresUnsavedStatus, ignoredProperties: _ignoredProperties), 
+        orElse: () => null
       );
+      
+      status = (firstDirtyEntity != null);
     } else status = true;
     
-    if (status != _isCommitRequired) {
-      _isCommitRequired = status;
-      
-      notifyChange(
-          new PropertyChangeRecord(
-              this,
-              status ? IS_COMMIT_REQUIRED : IS_COMMIT_NOT_REQUIRED,
-              false, true
-          )    
-      );
-    }
+    isCommitRequired = status;
   }
   
   //-----------------------------------
@@ -86,6 +90,8 @@ class DormManager extends Observable {
   // Public methods
   //
   //-----------------------------------
+  
+  void addPropertyToIgnore(String propertyName) => _ignoredProperties.add(propertyName);
   
   void invalidateCommitStatus() {
     if (!_isCommitStatusInvalidated) {
@@ -105,7 +111,7 @@ class DormManager extends Observable {
   }
   
   void resetCommitStatus() {
-    _isCommitRequired = false;
+    isCommitRequired = false;
   }
   
   void forceDirtyStatus(bool value) {

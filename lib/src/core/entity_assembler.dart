@@ -209,7 +209,7 @@ class EntityAssembler {
         existingEntity
     );
     
-    if (conflictManager == ConflictManager.ACCEPT_SERVER) {
+    if (!spawnee.isMutable || (conflictManager == ConflictManager.ACCEPT_SERVER)) {
       entryProxies = existingEntity._scan._proxies;
       
       entryProxies.forEach(
@@ -253,7 +253,7 @@ class EntityAssembler {
         if (EntityKeyChain.areSameKeySignature(entity._scan, actualEntity._scan)) {
           proxy.setInitialValue(actualEntity);
           
-          _pendingProxies.remove(proxy);
+          //_pendingProxies.remove(proxy);
         }
       } else if (proxy._value is Iterable) {
         final List entityList = proxy._value as Iterable;
@@ -275,7 +275,7 @@ class EntityAssembler {
           if (containsEntities && !hasPointers) hasPointers = (entityList[i] as Entity)._isPointer;
         }
         
-        if (!hasPointers) _pendingProxies.remove(proxy);
+        //if (!hasPointers) _pendingProxies.remove(proxy);
       }
     }
   }
