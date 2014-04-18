@@ -130,6 +130,8 @@ part 'src/serialization/serialization_type.dart';
 part 'src/serialization/serializer.dart';
 part 'src/serialization/serializer_json.dart';
 
+bool evictEntity(Entity entity) => entity._scan._evictEntity(entity);
+
 const Symbol IS_LAZILY_LOADED = const Symbol('dorm.core.IsLazyLoaded');
 
 abstract class SerializerBase = Object with SerializerMixin;

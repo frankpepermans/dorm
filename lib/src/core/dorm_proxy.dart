@@ -87,13 +87,14 @@ class DormProxy<T> {
     return null;
   }
   
-  void setInsertValue(T value) {
-    _insertValue = value;
+  void setInsertValue(T insertValue) {
+    _insertValue = insertValue;
   }
   
-  void setInitialValue(T value) {
-    _defaultValue = value;
-    _value = value;
+  void setInitialValue(T initialValue) {
+    _defaultValue = initialValue;
+    
+    value = initialValue;
   }
   
   //-----------------------------------

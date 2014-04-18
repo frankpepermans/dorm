@@ -219,7 +219,15 @@ class EntityAssembler {
               orElse: () => null
             );
             
-            if (entryMatch != null && entryMatch.proxy.hasDelta) entryA.proxy.setInitialValue(existingEntity.notifyPropertyChange(entryA.proxy._propertySymbol, entryA.proxy._value, entryMatch.proxy._value));
+            if (entryMatch != null && entryMatch.proxy.hasDelta) {
+              entryA.proxy.setInitialValue(existingEntity.notifyPropertyChange(entryA.proxy._propertySymbol, entryA.proxy._value, entryMatch.proxy._value));
+              
+              if (entryMatch.proxy._value is Entity) {
+                final Entity entityCast = entryMatch.proxy._value as Entity;
+                
+                if (entityCast._isPointer) _pendingProxies.add(entryMatch.proxy);
+              }
+            }
           }
       );
     } else if (conflictManager == ConflictManager.ACCEPT_SERVER_DIRTY) {
@@ -232,7 +240,15 @@ class EntityAssembler {
               orElse: () => null
             );
             
-            if (entryMatch != null && entryMatch.proxy.hasDelta) entryA.proxy.value = existingEntity.notifyPropertyChange(entryA.proxy._propertySymbol, entryA.proxy._value, entryMatch.proxy._value);
+            if (entryMatch != null && entryMatch.proxy.hasDelta) {
+              entryA.proxy.value = existingEntity.notifyPropertyChange(entryA.proxy._propertySymbol, entryA.proxy._value, entryMatch.proxy._value);
+              
+              if (entryMatch.proxy._value is Entity) {
+                final Entity entityCast = entryMatch.proxy._value as Entity;
+                
+                if (entityCast._isPointer) _pendingProxies.add(entryMatch.proxy);
+              }
+            }
           }
       );
     }

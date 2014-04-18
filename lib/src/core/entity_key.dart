@@ -72,6 +72,8 @@ class EntityKeyChain {
   //
   //---------------------------------
   
+  bool evictEntity(Entity entity) => entityScans.remove(entity._scan);
+  
   EntityKeyChain _setKeyValue(Symbol key, dynamic value) {
     EntityKeyChain returnValue;
     HashMap<dynamic, EntityKeyChain> mainKey = _map[key];

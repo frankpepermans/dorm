@@ -141,7 +141,15 @@ class EntityScan {
   //
   //---------------------------------
   
+  bool _evictEntity(Entity entity) {
+    if (_keyChain != null) return _keyChain.evictEntity(entity);
+    
+    return false;
+  }
+  
   void _entity_identityChangeHandler() {
+    evictEntity(entity);
+    
     if (!entity.isUnsaved()) buildKey();
   }
   
