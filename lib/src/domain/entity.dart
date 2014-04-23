@@ -15,7 +15,7 @@ abstract class Entity extends Observable implements Externalizable {
   //-----------------------------------
   
   EntityScan _scan;
-  bool _isPointer;
+  bool _isPointer = false;
   int _uid = _nextUid++;
   
   //-----------------------------------
@@ -109,6 +109,12 @@ abstract class Entity extends Observable implements Externalizable {
     if (result != null) {
       result.proxy._defaultValue = propertyValue;
       result.proxy._value = propertyValue;
+      
+      if (!isUnsaved()) {
+        _scan.buildKey();
+        
+        if (!_scan._keyChain.entityScans.contains(_scan)) _scan._keyChain.entityScans.add(_scan);
+      }
       
       return true;
     }

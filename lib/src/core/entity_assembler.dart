@@ -135,7 +135,7 @@ class EntityAssembler {
   }
   
   EntityScan _createEntityScan(Entity entity) {
-    EntityRootScan scan = _entityScans[entity.refClassName];
+    final EntityRootScan scan = _entityScans[entity.refClassName];
     
     if(scan != null) return new EntityScan.fromRootScan(scan, entity);
     
@@ -222,11 +222,11 @@ class EntityAssembler {
             if (entryMatch != null && entryMatch.proxy.hasDelta) {
               entryA.proxy.setInitialValue(existingEntity.notifyPropertyChange(entryA.proxy._propertySymbol, entryA.proxy._value, entryMatch.proxy._value));
               
-              if (entryMatch.proxy._value is Entity) {
-                final Entity entityCast = entryMatch.proxy._value as Entity;
+              if (entryA.proxy._value is Entity) {
+                final Entity entityCast = entryA.proxy._value as Entity;
                 
-                if (entityCast._isPointer) _pendingProxies.add(entryMatch.proxy);
-              }
+                if (entityCast._isPointer) _pendingProxies.add(entryA.proxy);
+              } else if (entryA.proxy._value is Iterable) _pendingProxies.add(entryA.proxy);
             }
           }
       );
@@ -240,14 +240,14 @@ class EntityAssembler {
               orElse: () => null
             );
             
-            if (entryMatch != null && entryMatch.proxy.hasDelta) {
+            if (entryMatch != null) {
               entryA.proxy.value = existingEntity.notifyPropertyChange(entryA.proxy._propertySymbol, entryA.proxy._value, entryMatch.proxy._value);
               
-              if (entryMatch.proxy._value is Entity) {
-                final Entity entityCast = entryMatch.proxy._value as Entity;
+              if (entryA.proxy._value is Entity) {
+                final Entity entityCast = entryA.proxy._value as Entity;
                 
-                if (entityCast._isPointer) _pendingProxies.add(entryMatch.proxy);
-              }
+                if (entityCast._isPointer) _pendingProxies.add(entryA.proxy);
+              } else if (entryA.proxy._value is Iterable) _pendingProxies.add(entryA.proxy);
             }
           }
       );
@@ -269,7 +269,7 @@ class EntityAssembler {
         if (EntityKeyChain.areSameKeySignature(entity._scan, actualEntity._scan)) {
           proxy.setInitialValue(actualEntity);
           
-          //_pendingProxies.remove(proxy);
+          _pendingProxies.remove(proxy);
         }
       } else if (proxy._value is Iterable) {
         final List entityList = proxy._value as Iterable;
@@ -291,7 +291,7 @@ class EntityAssembler {
           if (containsEntities && !hasPointers) hasPointers = (entityList[i] as Entity)._isPointer;
         }
         
-        //if (!hasPointers) _pendingProxies.remove(proxy);
+        if (!hasPointers) _pendingProxies.remove(proxy);
       }
     }
   }

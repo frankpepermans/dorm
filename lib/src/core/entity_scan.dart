@@ -103,6 +103,8 @@ class EntityScan {
       if (_keyChain != null) _keyChain.entityScans.remove(this);
       
       _keyChain = nextKey;
+      
+      _keyChain.ident = _identityProxies.first.proxy._value;
     }
   }
   
@@ -127,7 +129,7 @@ class EntityScan {
          if (clonedEntry.info.metadataCache.isId) {
            newScan._identityProxies.add(clonedEntry);
            
-           if (clonedEntry.info.metadataCache.isMutable) clonedEntry._changeHandler = newScan._entity_identityChangeHandler;
+           //if (clonedEntry.info.metadataCache.isMutable) clonedEntry._changeHandler = newScan._entity_identityChangeHandler;
          }
        }
     );
@@ -148,9 +150,11 @@ class EntityScan {
   }
   
   void _entity_identityChangeHandler() {
-    evictEntity(entity);
-    
-    if (!entity.isUnsaved()) buildKey();
+    if (!entity.isUnsaved()) {
+      buildKey();
+      
+      if (!_keyChain.entityScans.contains(this)) _keyChain.entityScans.add(this);
+    }
   }
   
   void _initialize() {
