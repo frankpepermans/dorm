@@ -28,6 +28,8 @@ class MetadataCache {
       else if (type == LabelField)    entry.metadataCache.isLabelField = true;
       else if (type == Immutable)     entry.metadataCache.isMutable = false;
       else if (type == Lazy)          entry.metadataCache.isLazy = true;
+      else if (type == Silent)        entry.metadataCache.isSilent = true;
+      else if (type == Annotation)    entry.metadataCache.genericAnnotations = (reflectee as Annotation).params;
   }
 }
 
@@ -47,6 +49,8 @@ class _PropertyMetadataCache {
   bool isLabelField = false;
   bool isMutable = true;
   bool isLazy = false;
+  bool isSilent = false;
+  Map<String, dynamic> genericAnnotations;
   
   dynamic insertValue = null;
   dynamic initialValue = null;
@@ -60,7 +64,9 @@ class _PropertyMetadataCache {
         isNullable, 
         isLabelField, 
         isMutable,
-        isLazy
+        isLazy,
+        isSilent,
+        genericAnnotations
     );
   }
 }
@@ -73,7 +79,9 @@ class MetadataExternalized {
   final bool isLabelField;
   final bool isMutable;
   final bool isLazy;
+  final bool isSilent;
+  final Map<String, dynamic> genericAnnotations;
   
-  const MetadataExternalized(this.isId, this.isTransient, this.isNullable, this.isLabelField, this.isMutable, this.isLazy);
+  const MetadataExternalized(this.isId, this.isTransient, this.isNullable, this.isLabelField, this.isMutable, this.isLazy, this.isSilent, this.genericAnnotations);
   
 }

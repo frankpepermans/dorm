@@ -118,14 +118,25 @@ class LabelField {
 }
 
 //-----------------------------------
-// Annotation annotation
+// Silent annotation
+//-----------------------------------
+
+class Silent {
+
+const Silent();
+
+String toString() => 'silent';
+}
+
+//-----------------------------------
+// Generic annotation
 //-----------------------------------
 
 class Annotation {
   
-  final int maxStringLength = -1;
+  final Map<String, dynamic> params;
   
-  const Annotation({int maxStringLength});
+  const Annotation(this.params);
   
-  String toString() => 'annotation';
+  String toString() => 'generic annotation';
 }

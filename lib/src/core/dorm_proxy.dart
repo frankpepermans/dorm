@@ -56,6 +56,8 @@ class DormProxy<T> {
   bool isNullable = true;
   bool isLabelField = false;
   bool isLazy = false;
+  bool isSilent = false;
+  Map<String, dynamic> genericAnnotations;
   
   int dataType = 0;
   
@@ -121,6 +123,9 @@ class DormProxy<T> {
     isLabelField = cache.isLabelField;
     isMutable = (scan._root.isMutableEntity && cache.isMutable);
     isLazy = cache.isLazy;
+    isSilent = cache.isSilent;
+    
+    genericAnnotations = cache.genericAnnotations;
     
     setInsertValue(cache.insertValue);
     setInitialValue(cache.initialValue);

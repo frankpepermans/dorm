@@ -253,7 +253,7 @@ abstract class Entity extends Observable implements Externalizable {
   }
   
   /**
-   * Returns a the String representation of a property using the property symbol
+   * Returns the String representation of a property using the property symbol
    */
   String getPropertyByField(Symbol propertyField) {
     final _DormProxyPropertyInfo matchingInfo = _scan._proxies.firstWhere(
@@ -261,6 +261,20 @@ abstract class Entity extends Observable implements Externalizable {
     );
     
     return (matchingInfo != null) ? matchingInfo.info.property : null;
+  }
+  
+  /**
+   * Returns generic annotation attached to a property field, if any exists
+   */
+  Map<String, dynamic> getGenericAnnotations(Symbol propertyField) {
+    final Map<String, dynamic> defaultReturn = const <String, dynamic>{};
+    final _DormProxyPropertyInfo matchingInfo = _scan._proxies.firstWhere(
+      (_DormProxyPropertyInfo proxyInfo) => (proxyInfo.info.propertySymbol == propertyField)    
+    );
+    
+    final Map<String, dynamic> result = (matchingInfo != null) ? matchingInfo.proxy.genericAnnotations : defaultReturn;
+    
+    return (result == null) ? defaultReturn : result;
   }
   
   /**
@@ -415,6 +429,7 @@ abstract class Entity extends Observable implements Externalizable {
     if (!isNew) {
       final _DormProxyPropertyInfo dirtyProperty = _scan._proxies.firstWhere(
           (_DormProxyPropertyInfo entry) => (
+              !entry.proxy.isSilent &&
               (entry.proxy._value != entry.proxy._defaultValue) &&
               ((ignoredProperties == null) || !ignoredProperties.contains(entry.info.property)) &&
               (
