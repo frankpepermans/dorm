@@ -8,8 +8,6 @@ class EntityKeyChain {
   //
   //---------------------------------
   
-  int ident = 0;
-  
   static final EntityKeyChain rootKeyChain = new EntityKeyChain();
   
   static Entity getFirstSibling(EntityScan forScan, {bool allowPointers: true}) {

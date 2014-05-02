@@ -103,8 +103,6 @@ class EntityScan {
       if (_keyChain != null) _keyChain.entityScans.remove(this);
       
       _keyChain = nextKey;
-      
-      _keyChain.ident = _identityProxies.first.proxy._value;
     }
   }
   
