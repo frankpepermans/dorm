@@ -36,7 +36,7 @@ class EntityEncoder extends Converter<List<Entity>, String> {
   EntityEncoder(this._convertedEntities, this._serializer);
   
   String convert(List<Entity> entities) {
-    final List<String> result = new List<String>(entities.length);
+    final List<String> result = new List<String>();
     
     entities.forEach(
       (Entity entity) => result.add(entity.toJson(convertedEntities: _convertedEntities))
