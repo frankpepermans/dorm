@@ -31,6 +31,9 @@ class SerializerJson extends SerializerBase {
     
     convertedEntities = <Entity, Map<String, dynamic>>{};
     
+    //if (data is Map) _convertMap(data);
+    //else if (data is Iterable) _convertList(data);
+    
     if (
         (data is List) ||
         (data is Map)
@@ -55,5 +58,30 @@ class SerializerJson extends SerializerBase {
     );
     
     return (convertor == null) ? outValue : convertor.outgoing(outValue);
+  }
+  
+  void _convertMap(Map data, {Map<String, Map<String, dynamic>> convertedEntities: null}) {
+    if (convertedEntities == null) convertedEntities = <String, Map<String, dynamic>>{};
+    
+    data.forEach(
+      (K, V) {
+        if (V is Map) _convertMap(V, convertedEntities: convertedEntities);
+        else if (V is Entity) data[K] = V.toJson(convertedEntities: convertedEntities);
+      }
+    );
+  }
+  
+  void _convertList(List data, {Map<String, Map<String, dynamic>> convertedEntities: null}) {
+    if (convertedEntities == null) convertedEntities = <String, Map<String, dynamic>>{};
+    
+    final int len = data.length;
+    dynamic entry;
+    int i;
+    
+    for (i=0; i<len; i++) {
+      entry = data[i];
+      
+      if (entry is Entity) data[i] = entry.toJson(convertedEntities: convertedEntities);
+    }
   }
 }
