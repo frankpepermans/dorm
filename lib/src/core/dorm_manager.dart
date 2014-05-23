@@ -43,17 +43,15 @@ class DormManager extends Observable {
   
   bool get isCommitRequired => _isCommitRequired;
   void set isCommitRequired(bool value) {
-    if (value != _isCommitRequired) {
-      _isCommitRequired = value;
-      
-      notifyChange(
-          new PropertyChangeRecord(
-              this,
-              value ? IS_COMMIT_REQUIRED : IS_COMMIT_NOT_REQUIRED,
-              false, true
-          )    
-      );
-    }
+    if (value != _isCommitRequired) _isCommitRequired = value;
+    
+    notifyChange(
+        new PropertyChangeRecord(
+            this,
+            value ? IS_COMMIT_REQUIRED : IS_COMMIT_NOT_REQUIRED,
+            false, true
+        )    
+    );
   }
   
   void _updateIsCommitRequired() {
@@ -210,11 +208,11 @@ class DormManager extends Observable {
     clear();
   }
   
-  void clear() {
+  void clear({bool clearNormalQueue: true, bool clearDeleteQueue: true}) {
     _forcedDirtyStatus = false;
     //_isCommitRequired = false;
     
-    _flushInternal();
+    _flushInternal(clearNormalQueue, clearDeleteQueue);
     
     invalidateCommitStatus();
   }
@@ -239,7 +237,7 @@ class DormManager extends Observable {
     _queue = queueRecursive;
     _deleteQueue = deleteQueueRecursive;
     
-    _flushInternal();
+    _flushInternal(true, true);
     
     _queue.forEach(
         (Entity entity) => entity.validate()
@@ -294,9 +292,9 @@ class DormManager extends Observable {
     );
   }
   
-  void _flushInternal() {
-    _queue = <Entity>[];
-    _deleteQueue = <Entity>[];
+  void _flushInternal(bool clearNormalQueue, bool clearDeleteQueue) {
+    if (clearNormalQueue) _queue = <Entity>[];
+    if (clearDeleteQueue) _deleteQueue = <Entity>[];
   }
   
 }
