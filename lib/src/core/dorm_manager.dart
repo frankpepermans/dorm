@@ -1,5 +1,7 @@
 part of dorm;
 
+typedef bool IsDirtyHandler(Entity instance);
+
 class DormManager extends Observable {
   
   //-----------------------------------
@@ -30,6 +32,20 @@ class DormManager extends Observable {
   String get id => _id;
   
   bool ignoresUnsavedStatus = false;
+  
+  //-----------------------------------
+  // dirtyHandler
+  //-----------------------------------
+  
+  IsDirtyHandler _dirtyHandler;
+  
+  IsDirtyHandler get dirtyHandler => _dirtyHandler;
+  
+  void set dirtyHandler(IsDirtyHandler value) {
+    if (value != _dirtyHandler) {
+      _dirtyHandler = value;
+    }
+  }
   
   //-----------------------------------
   // queueLength
@@ -63,7 +79,7 @@ class DormManager extends Observable {
       ..addAll(_deleteQueue);
       
       final Entity firstDirtyEntity = fullList.firstWhere(
-        (Entity entity) => entity.isDirty(ignoresUnsavedStatus: ignoresUnsavedStatus, ignoredProperties: _ignoredProperties), 
+        (Entity entity) => _getDirtyStatus(entity), 
         orElse: () => null
       );
       
@@ -255,6 +271,12 @@ class DormManager extends Observable {
   // Private methods
   //
   //-----------------------------------
+  
+  bool _getDirtyStatus(Entity entity) {
+    if (_dirtyHandler != null) return _dirtyHandler(entity);
+    
+    return entity.isDirty(ignoresUnsavedStatus: ignoresUnsavedStatus, ignoredProperties: _ignoredProperties);
+  }
   
   void _scanRecursively(Entity entity, List<Entity> list, bool ignoreMutable, bool ignoreDirty) {
     entity._scan._proxies.forEach(
