@@ -219,7 +219,7 @@ class EntityAssembler {
               orElse: () => null
             );
             
-            if (entryMatch != null && entryMatch.proxy.hasDelta) {
+            if (entryMatch != null) {
               entryA.proxy.setInitialValue(existingEntity.notifyPropertyChange(entryA.proxy._propertySymbol, entryA.proxy._value, entryMatch.proxy._value));
               
               if (entryA.proxy._value is Entity) {
