@@ -6,7 +6,7 @@ import 'package:benchmark_harness/benchmark_harness.dart';
 
 String jsonData;
 
-final EntityCodec<List<TestEntity>, String> codec = new EntityCodec(ConflictManager.ACCEPT_CLIENT, new SerializerJson());
+final EntityCodec<List<TestEntity>, String> codec = new EntityCodec((Entity serverEntity, Entity clientEntity) => ConflictManager.ACCEPT_CLIENT, new SerializerJson());
 
 void main() => TemplateBenchmark.main();
 
