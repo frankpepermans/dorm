@@ -1,5 +1,7 @@
 part of dorm;
 
+typedef bool IsDirtyHandler(Entity instance);
+
 class DormManager extends Observable {
   
   //-----------------------------------
@@ -32,6 +34,20 @@ class DormManager extends Observable {
   bool ignoresUnsavedStatus = false;
   
   //-----------------------------------
+  // dirtyHandler
+  //-----------------------------------
+  
+  IsDirtyHandler _dirtyHandler;
+  
+  IsDirtyHandler get dirtyHandler => _dirtyHandler;
+  
+  void set dirtyHandler(IsDirtyHandler value) {
+    if (value != _dirtyHandler) {
+      _dirtyHandler = value;
+    }
+  }
+  
+  //-----------------------------------
   // queueLength
   //-----------------------------------
   
@@ -43,17 +59,15 @@ class DormManager extends Observable {
   
   bool get isCommitRequired => _isCommitRequired;
   void set isCommitRequired(bool value) {
-    if (value != _isCommitRequired) {
-      _isCommitRequired = value;
-      
-      notifyChange(
-          new PropertyChangeRecord(
-              this,
-              value ? IS_COMMIT_REQUIRED : IS_COMMIT_NOT_REQUIRED,
-              false, true
-          )    
-      );
-    }
+    if (value != _isCommitRequired) _isCommitRequired = value;
+    
+    notifyChange(
+        new PropertyChangeRecord(
+            this,
+            value ? IS_COMMIT_REQUIRED : IS_COMMIT_NOT_REQUIRED,
+            false, true
+        )    
+    );
   }
   
   void _updateIsCommitRequired() {
@@ -65,7 +79,7 @@ class DormManager extends Observable {
       ..addAll(_deleteQueue);
       
       final Entity firstDirtyEntity = fullList.firstWhere(
-        (Entity entity) => entity.isDirty(ignoresUnsavedStatus: ignoresUnsavedStatus, ignoredProperties: _ignoredProperties), 
+        (Entity entity) => _getDirtyStatus(entity), 
         orElse: () => null
       );
       
@@ -210,11 +224,11 @@ class DormManager extends Observable {
     clear();
   }
   
-  void clear() {
+  void clear({bool clearNormalQueue: true, bool clearDeleteQueue: true}) {
     _forcedDirtyStatus = false;
     //_isCommitRequired = false;
     
-    _flushInternal();
+    _flushInternal(clearNormalQueue, clearDeleteQueue);
     
     invalidateCommitStatus();
   }
@@ -239,7 +253,7 @@ class DormManager extends Observable {
     _queue = queueRecursive;
     _deleteQueue = deleteQueueRecursive;
     
-    _flushInternal();
+    _flushInternal(true, true);
     
     _queue.forEach(
         (Entity entity) => entity.validate()
@@ -257,6 +271,12 @@ class DormManager extends Observable {
   // Private methods
   //
   //-----------------------------------
+  
+  bool _getDirtyStatus(Entity entity) {
+    if (_dirtyHandler != null) return _dirtyHandler(entity);
+    
+    return entity.isDirty(ignoresUnsavedStatus: ignoresUnsavedStatus, ignoredProperties: _ignoredProperties);
+  }
   
   void _scanRecursively(Entity entity, List<Entity> list, bool ignoreMutable, bool ignoreDirty) {
     entity._scan._proxies.forEach(
@@ -294,9 +314,9 @@ class DormManager extends Observable {
     );
   }
   
-  void _flushInternal() {
-    _queue = <Entity>[];
-    _deleteQueue = <Entity>[];
+  void _flushInternal(bool clearNormalQueue, bool clearDeleteQueue) {
+    if (clearNormalQueue) _queue = <Entity>[];
+    if (clearDeleteQueue) _deleteQueue = <Entity>[];
   }
   
 }
