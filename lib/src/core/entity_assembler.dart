@@ -60,7 +60,7 @@ class EntityAssembler {
   //---------------------------------
   
   /**
-   * TO_DO: scan requires mirrors, it would be better to move this to a build file later
+   * TODO: scan requires mirrors, it would be better to move this to a build file later
    */
   EntityRootScan scan(Type forType, String refClassName, Function constructorMethod) {
     EntityRootScan scan = _entityScans[refClassName];
