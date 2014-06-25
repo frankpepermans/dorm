@@ -12,7 +12,7 @@ packages:
   barback:
     description: barback
     source: hosted
-    version: "0.11.0+1"
+    version: "0.14.1+1"
   benchmark_harness:
     description: benchmark_harness
     source: hosted
@@ -21,6 +21,10 @@ packages:
     description: browser
     source: hosted
     version: "0.9.0"
+  collection:
+    description: collection
+    source: hosted
+    version: "0.9.3+1"
   dart_flex:
     description: dart_flex
     source: hosted
@@ -32,7 +36,7 @@ packages:
   observe:
     description: observe
     source: hosted
-    version: "0.9.3"
+    version: "0.9.3+1"
   path:
     description: path
     source: hosted
