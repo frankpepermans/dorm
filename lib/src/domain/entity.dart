@@ -264,6 +264,17 @@ abstract class Entity extends Observable implements Externalizable {
   }
   
   /**
+   * Returns the Symbol representation of a property using the property name as String
+   */
+  Symbol getFieldByProperty(String property) {
+    final _DormProxyPropertyInfo matchingInfo = _scan._proxies.firstWhere(
+      (_DormProxyPropertyInfo proxyInfo) => (proxyInfo.info.property == property)    
+    );
+    
+    return (matchingInfo != null) ? matchingInfo.info.propertySymbol : null;
+  }
+  
+  /**
    * Returns generic annotation attached to a property field, if any exists
    */
   Map<String, dynamic> getGenericAnnotations(Symbol propertyField) {
