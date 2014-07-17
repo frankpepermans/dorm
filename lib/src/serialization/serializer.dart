@@ -14,7 +14,7 @@ abstract class Serializer<T> {
   Map<Entity, Map<String, dynamic>> get convertedEntities;
   
   void addRule(Type forType, dynamic incoming(dynamic value), dynamic outgoing(dynamic value));
-  void removeRule(Type forType);
+  _InternalConvertor removeRule(Type forType);
   
   dynamic convertIn(Type forType, dynamic inValue);
   dynamic convertOut(Type forType, dynamic outValue);
@@ -29,7 +29,8 @@ abstract class SerializerMixin<T> implements Serializer {
   //
   //-----------------------------------
   
-  List<_InternalConvertor> _convertors = <_InternalConvertor>[];
+  final Map<Type, _InternalConvertor> _convertors = <Type, _InternalConvertor>{};
+  
   Map<Entity, Map<String, dynamic>> convertedEntities;
   
   //-----------------------------------
@@ -41,12 +42,11 @@ abstract class SerializerMixin<T> implements Serializer {
   Iterable incoming(T data);
   T outgoing(dynamic data);
   
-  void addRule(Type forType, dynamic incoming(dynamic value), dynamic outgoing(dynamic value)) =>
-    _convertors.add(new _InternalConvertor(forType, incoming, outgoing));
+  void addRule(Type forType, dynamic incoming(dynamic value), dynamic outgoing(dynamic value)) {
+    _convertors[forType] = new _InternalConvertor(forType, incoming, outgoing);
+  } 
   
-  void removeRule(Type forType) => _convertors.removeWhere(
-    (_InternalConvertor convertor) => (convertor.forType == forType)
-  );
+  _InternalConvertor removeRule(Type forType) => _convertors.remove(forType);
   
   dynamic convertIn(Type forType, dynamic inValue) => inValue;
   dynamic convertOut(Type forType, dynamic outValue) => outValue;
