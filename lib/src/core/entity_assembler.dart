@@ -257,14 +257,17 @@ class EntityAssembler {
   void _updateCollectionsWith(Entity actualEntity) {
     List<dynamic> collectionEntry;
     DormProxy proxy;
+    Entity entity;
+    dynamic listEntry;
     bool collectionEntryHasPointers;
-    int i = _pendingProxies.length;
+    List entityList;
+    int i = _pendingProxies.length, j;
     
     while (i > 0) {
       proxy = _pendingProxies[--i];
       
       if (proxy._value is Entity) {
-        final Entity entity = proxy._value as Entity;
+        entity = proxy._value as Entity;
         
         if (EntityKeyChain.areSameKeySignature(entity._scan, actualEntity._scan)) {
           proxy.setInitialValue(actualEntity);
@@ -272,23 +275,23 @@ class EntityAssembler {
           _pendingProxies.remove(proxy);
         }
       } else if (proxy._value is Iterable) {
-        final List entityList = proxy._value as Iterable;
+        entityList = proxy._value as List;
         
-        dynamic listEntry;
-        int i = entityList.length;
+        j = entityList.length;
+        
         bool hasPointers = false, containsEntities;
         
-        while (i > 0) {
-          listEntry = entityList[--i];
+        while (j > 0) {
+          listEntry = entityList[--j];
           
           containsEntities = (listEntry is Entity);
           
           if (
             containsEntities &&
             EntityKeyChain.areSameKeySignature(listEntry._scan, actualEntity._scan)
-          ) entityList[i] = actualEntity;
+          ) entityList[j] = actualEntity;
           
-          if (containsEntities && !hasPointers) hasPointers = (entityList[i] as Entity)._isPointer;
+          if (containsEntities && !hasPointers) hasPointers = (entityList[j] as Entity)._isPointer;
         }
         
         if (!hasPointers) _pendingProxies.remove(proxy);
