@@ -18,6 +18,8 @@ abstract class Entity extends Observable implements Externalizable {
   bool _isPointer = false;
   int _uid = _nextUid++;
   
+  bool get isPointer => _isPointer;
+  
   //-----------------------------------
   //
   // Public properties
@@ -268,7 +270,8 @@ abstract class Entity extends Observable implements Externalizable {
    */
   Symbol getFieldByProperty(String property) {
     final _DormProxyPropertyInfo matchingInfo = _scan._proxies.firstWhere(
-      (_DormProxyPropertyInfo proxyInfo) => (proxyInfo.info.property == property)    
+      (_DormProxyPropertyInfo proxyInfo) => (proxyInfo.info.property == property),
+      orElse: () => null
     );
     
     return (matchingInfo != null) ? matchingInfo.info.propertySymbol : null;
@@ -642,10 +645,8 @@ abstract class Entity extends Observable implements Externalizable {
           SerializationType.ENTITY_TYPE: subEntity._scan._root.refClassName
         };
         
-        subEntity._scan._proxies.forEach(
-            (_DormProxyPropertyInfo subEntry) {
-              if (subEntry.proxy.isId) pointerMap[subEntry.info.property] = subEntry.proxy._value;
-            }
+        subEntity._scan._identityProxies.forEach(
+            (_DormProxyPropertyInfo I) => pointerMap[I.info.property] = I.proxy._value
         );
         
         data[entry.info.property] = pointerMap;
@@ -665,15 +666,13 @@ abstract class Entity extends Observable implements Externalizable {
               Map<String, dynamic> entryData;
               
               if (serializer.convertedEntities[subEntity] != null) {
-                Map<String, dynamic> pointerMap = <String, dynamic>{
+                pointerMap = <String, dynamic>{
                   SerializationType.POINTER: subEntity._uid,
                   SerializationType.ENTITY_TYPE: subEntity._scan._root.refClassName
                 };
                 
-                subEntity._scan._proxies.forEach(
-                    (_DormProxyPropertyInfo subEntry) {
-                      if (subEntry.proxy.isId) pointerMap[subEntry.info.property] = subEntry.proxy._value;
-                    }
+                subEntity._scan._identityProxies.forEach(
+                    (_DormProxyPropertyInfo I) => pointerMap[I.info.property] = I.proxy._value
                 );
                 
                 dataList.add(pointerMap);

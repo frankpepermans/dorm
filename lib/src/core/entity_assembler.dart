@@ -105,6 +105,34 @@ class EntityAssembler {
     );
   }
   
+  HashSet<Symbol> getPropertyFieldsForType(String refClassName) {
+    final EntityRootScan entityScan = _entityScans[refClassName];
+    final HashSet<Symbol> set = new HashSet<Symbol>.identity();
+        
+    if (entityScan == null) throw new DormError('Scan for entity not found: $refClassName');
+    
+    entityScan._rootProxies.forEach(
+      (_DormPropertyInfo I) => set.add(I.propertySymbol)
+    );
+    
+    return set;
+  }
+  
+  HashSet<String> getIdentityPropertyFieldsForType(String refClassName) {
+    final EntityRootScan entityScan = _entityScans[refClassName];
+    final HashSet<String> set = new HashSet<String>.identity();
+        
+    if (entityScan == null) throw new DormError('Scan for entity not found: $refClassName');
+    
+    entityScan._rootProxies.forEach(
+      (_DormPropertyInfo I) {
+        if (I.metadataCache.isId) set.add(I.property);
+      }
+    );
+    
+    return set;
+  }
+  
   //---------------------------------
   //
   // Library protected methods
@@ -144,6 +172,7 @@ class EntityAssembler {
   
   Entity _assemble(Map<String, dynamic> rawData, DormProxy owningProxy, Serializer serializer, OnConflictFunction onConflict) {
     final String refClassName = rawData[SerializationType.ENTITY_TYPE];
+    final bool isDetached = rawData.containsKey(SerializationType.DETACHED);
     EntityRootScan entityScan;
     Entity spawnee, localNonPointerEntity;
     
@@ -159,6 +188,8 @@ class EntityAssembler {
     else entityScan._unusedInstance = null;
     
     spawnee.readExternal(rawData, serializer, onConflict);
+    
+    if (isDetached) return spawnee;
     
     final bool isSpawneeUnsaved = spawnee.isUnsaved();
     

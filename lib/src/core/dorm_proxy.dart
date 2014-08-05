@@ -57,6 +57,7 @@ class DormProxy<T> {
   bool isLabelField = false;
   bool isLazy = false;
   bool isSilent = false;
+  String transformFrom, transformTo;
   Map<String, dynamic> genericAnnotations;
   
   int dataType = 0;
@@ -124,6 +125,8 @@ class DormProxy<T> {
     isMutable = (scan._root.isMutableEntity && cache.isMutable);
     isLazy = cache.isLazy;
     isSilent = cache.isSilent;
+    transformFrom = cache.transformFrom;
+    transformTo = cache.transformTo;
     
     genericAnnotations = cache.genericAnnotations;
     

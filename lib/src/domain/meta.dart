@@ -122,10 +122,24 @@ class LabelField {
 //-----------------------------------
 
 class Silent {
+  
+  const Silent();
+  
+  String toString() => 'silent';
+}
 
-const Silent();
+//-----------------------------------
+// Transform annotation
+//-----------------------------------
 
-String toString() => 'silent';
+class Transform {
+  
+  final String from, to;
+  
+  const Transform(this.from, this.to);
+  
+  String toString() => 'transform $from to $to';
+
 }
 
 //-----------------------------------

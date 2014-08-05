@@ -29,6 +29,10 @@ class MetadataCache {
       else if (type == Immutable)     entry.metadataCache.isMutable = false;
       else if (type == Lazy)          entry.metadataCache.isLazy = true;
       else if (type == Silent)        entry.metadataCache.isSilent = true;
+      else if (type == Transform)     {
+        entry.metadataCache.transformFrom = (reflectee as Transform).from;
+        entry.metadataCache.transformTo = (reflectee as Transform).to;
+      }
       else if (type == Annotation)    entry.metadataCache.genericAnnotations = (reflectee as Annotation).params;
   }
 }
@@ -50,6 +54,7 @@ class _PropertyMetadataCache {
   bool isMutable = true;
   bool isLazy = false;
   bool isSilent = false;
+  String transformFrom, transformTo;
   Map<String, dynamic> genericAnnotations;
   
   dynamic insertValue = null;
@@ -66,6 +71,8 @@ class _PropertyMetadataCache {
         isMutable,
         isLazy,
         isSilent,
+        transformFrom,
+        transformTo,
         genericAnnotations
     );
   }
@@ -80,8 +87,9 @@ class MetadataExternalized {
   final bool isMutable;
   final bool isLazy;
   final bool isSilent;
+  final String transformFrom, transformTo;
   final Map<String, dynamic> genericAnnotations;
   
-  const MetadataExternalized(this.isId, this.isTransient, this.isNullable, this.isLabelField, this.isMutable, this.isLazy, this.isSilent, this.genericAnnotations);
+  const MetadataExternalized(this.isId, this.isTransient, this.isNullable, this.isLabelField, this.isMutable, this.isLazy, this.isSilent, this.transformFrom, this.transformTo, this.genericAnnotations);
   
 }
