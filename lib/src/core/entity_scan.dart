@@ -20,16 +20,6 @@ class EntityRootScan {
   //
   //---------------------------------
   
-  void detectIfMutable(List<Map<String, dynamic>> meta) {
-    if (
-        isMutableEntity &&
-        meta.firstWhere(
-            (Map<String, dynamic> M) => M['metatags'].firstWhere,
-            orElse: () => null
-        ) != null
-    ) isMutableEntity = false;
-  }
-  
   void registerMetadataUsing(Map<String, dynamic> M) {
     final Symbol S = M['symbol'] as Symbol;
         

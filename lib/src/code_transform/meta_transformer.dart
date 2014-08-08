@@ -28,6 +28,8 @@ class MetaTransformer extends Transformer {
             final String partOf = partOfMatch.group(0);
             final String className = classNameExp.firstMatch(codeBody).group(1);
             final String ref = refMeta.first;
+            final String header = codeBody.substring(0, codeBody.indexOf('class $className'));
+            final bool isImmutable = (_scanMeta('Immutable', header) != null);
             
             definitions.forEach(
               (_PropertyDefinition D) {
@@ -37,7 +39,7 @@ class MetaTransformer extends Transformer {
               }
             );
             
-            final String scanLine = "Entity.ASSEMBLER.scan(construct().refClassName, construct().__CTOR__, <Map<String, dynamic>>[]\r${metadef.join('\r')});";
+            final String scanLine = "Entity.ASSEMBLER.scan(construct().refClassName, construct().__CTOR__, <Map<String, dynamic>>[]\r${metadef.join('\r')}, ${isImmutable ? 'false' : 'true'});";
             final String proxyLine = 'Entity.ASSEMBLER.registerProxies(this, <DormProxy>[${proxydef.join(',')}]);';
             
             transform.addOutput(
@@ -53,7 +55,7 @@ class MetaTransformer extends Transformer {
   }
   
   List<_PropertyDefinition> _extractAllMetatags(String codeBody) {
-    final RegExp exp = new RegExp(r"@[^;{]+\n");
+    final RegExp exp = new RegExp(r"@[^;]+\n");
     final List<String> tags = const <String>['NotNullable', 'DefaultValue', 'Transient', 'Id', 'Immutable', 'Lazy', 'LabelField', 'Silent', 'Transform', 'Annotation'];
     final List<_PropertyDefinition> definitions = <_PropertyDefinition>[];
     
