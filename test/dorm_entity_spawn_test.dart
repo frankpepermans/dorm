@@ -9,11 +9,7 @@ Serializer serializer;
 int nextId = 1;
 
 main() {
-  EntityAssembler assembler = new EntityAssembler();
-  
-  assembler.scan(TestEntity, 'entities.TestEntity', TestEntity.construct);
-  assembler.scan(AnotherTestEntity, 'entities.AnotherTestEntity', AnotherTestEntity.construct);
-  
+  ormInitialize();
   setup();
   run();
 }

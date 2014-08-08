@@ -8,7 +8,11 @@ String jsonData;
 
 final EntityCodec<List<TestEntity>, String> codec = new EntityCodec((Entity serverEntity, Entity clientEntity) => ConflictManager.ACCEPT_CLIENT, new SerializerJson());
 
-void main() => TemplateBenchmark.main();
+void main() {
+  ormInitialize();
+  
+  TemplateBenchmark.main();
+}
 
 class TemplateBenchmark extends BenchmarkBase {
   
@@ -22,8 +26,6 @@ class TemplateBenchmark extends BenchmarkBase {
     final int loopCount = 10000;
     List<String> jsonRaw = <String>[];
     int i = loopCount;
-    
-    Entity.ASSEMBLER.scan(TestEntity, 'entities.TestEntity', TestEntity.construct);
     
     while (i > 0) jsonRaw.add('{"id":${--i},"name":"Speed test","type":"type_${i}","?t":"entities.TestEntity"}');
   

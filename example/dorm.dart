@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:convert';
 import 'dart:html';
 
@@ -24,6 +23,8 @@ ConflictManager handleConflictAcceptClient(Entity serverEntity, Entity clientEnt
 ConflictManager handleConflictAcceptServer(Entity serverEntity, Entity clientEntity) {
   return ConflictManager.ACCEPT_SERVER;
 }
+
+void ormInitialize() {}
 
 void main() {
   Map<String, dynamic> person = <String, dynamic>{};
@@ -59,12 +60,6 @@ void main() {
   person['properties'] = properties;
   
   print(JSON.encode(person));
-  
-  // !!! MAKE SURE TO START THE DART SERVER, RUN run_mock_server.dart !!!
-  
-  // make sure to add this call,
-  // it will run reflection on the client-side entities
-  ormInitialize();
   
   /*serializer.addRule(
     String,

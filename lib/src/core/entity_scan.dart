@@ -20,49 +20,38 @@ class EntityRootScan {
   //
   //---------------------------------
   
-  void detectIfMutable(ClassMirror classMirror) {
+  void detectIfMutable(List<Map<String, dynamic>> meta) {
     if (
         isMutableEntity &&
-        classMirror.metadata.firstWhere(
-            (InstanceMirror classMetaData) => (classMetaData.reflectee is Immutable),
+        meta.firstWhere(
+            (Map<String, dynamic> M) => M['metatags'].firstWhere,
             orElse: () => null
         ) != null
     ) isMutableEntity = false;
   }
   
-  void registerMetadataUsing(VariableMirror mirror) {
-    InstanceMirror instanceMirror;
-    _DormPropertyInfo entry;
-    Property property;
-    int i = mirror.metadata.length, j;
-    bool isIdentity;
-    dynamic metatag;
+  void registerMetadataUsing(Map<String, dynamic> M) {
+    final Symbol S = M['symbol'] as Symbol;
+        
+    if (_rootProxies.firstWhere((_DormPropertyInfo I) => (I.propertySymbol == S), orElse: () => null) != null) return;
+    
+    final List allMeta = M['metatags'] as List;
+    final String N = M['name'] as String;
+    final Type T = M['type'] as Type;
+    final _DormPropertyInfo entry = new _DormPropertyInfo(N, S, T, new _PropertyMetadataCache(N));
+    bool isIdentity = false;
     
     _metadataCache = new MetadataCache();
     
-    while (i > 0) {
-      instanceMirror = mirror.metadata[--i];
-      
-      if (instanceMirror.reflectee is Property) {
-        property = instanceMirror.reflectee as Property;
+    allMeta.forEach(
+      (Object meta) {
+        _metadataCache.registerTagForProperty(entry, meta);
         
-        entry = new _DormPropertyInfo(property.property, property.propertySymbol, property.type, new _PropertyMetadataCache(property.property));
-        
-        isIdentity = false;
-        
-        j = mirror.metadata.length;
-        
-        while (j > 0) {
-          metatag = mirror.metadata[--j].reflectee;
-          
-          _metadataCache.registerTagForProperty(entry, metatag);
-          
-          if (metatag is Id) isIdentity = true;
-        }
-        
-        _rootProxies.add(entry);
+        if (meta is Id) isIdentity = true;
       }
-    }
+    );
+    
+    _rootProxies.add(entry);
   }
 }
 

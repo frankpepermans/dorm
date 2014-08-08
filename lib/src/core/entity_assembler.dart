@@ -62,28 +62,18 @@ class EntityAssembler {
   /**
    * TODO: scan requires mirrors, it would be better to move this to a build file later
    */
-  EntityRootScan scan(Type forType, String refClassName, Function constructorMethod) {
+  EntityRootScan scan(String refClassName, Function constructorMethod, List<Map<String, dynamic>> meta) {
     EntityRootScan scan = _entityScans[refClassName];
     
-    if(scan != null) return scan;
-    
-    scan = new EntityRootScan(refClassName, constructorMethod);
-    
-    ClassMirror classMirror = reflectClass(forType);
-    
-    while (classMirror.reflectedType != Entity) {
-      if (scan.isMutableEntity) scan.detectIfMutable(classMirror);
+    if(scan == null) {
+      scan = new EntityRootScan(refClassName, constructorMethod);
       
-      classMirror.declarations.forEach(
-          (_, Mirror mirror) {
-            if ((mirror is VariableMirror) && !mirror.isStatic && mirror.isPrivate) scan.registerMetadataUsing(mirror);
-          }
-      );
-      
-      classMirror = classMirror.superclass;
+      _entityScans[refClassName] = scan;
     }
     
-    _entityScans[refClassName] = scan;
+    meta.forEach(
+      (Map<String, dynamic> M) => scan.registerMetadataUsing(M)
+    );
     
     return scan;
   }
@@ -91,11 +81,13 @@ class EntityAssembler {
   void registerProxies(Entity entity, List<DormProxy> proxies) {
     if (entity._scan == null) entity._scan = _createEntityScan(entity);
     
+    if (entity._scan == null) return;
+    
     final EntityScan scan = entity._scan;
     
     proxies.forEach(
       (DormProxy proxy) {
-        proxy._updateWithMetadata(
+        if (scan._proxyMap.containsKey(proxy._property)) proxy._updateWithMetadata(
           scan._proxyMap[proxy._property]..proxy = proxy, 
           scan
         );
@@ -167,7 +159,7 @@ class EntityAssembler {
     
     if(scan != null) return new EntityScan.fromRootScan(scan, entity);
     
-    throw new DormError('Scan for entity not found');
+    return null;
   }
   
   Entity _assemble(Map<String, dynamic> rawData, DormProxy owningProxy, Serializer serializer, OnConflictFunction onConflict) {

@@ -1,7 +1,7 @@
 part of dorm_test;
 
-@Ref('entities.TestEntity')
-class TestEntity extends TestEntitySuperClass {
+@Ref('entities.AnotherTestEntity')
+class AnotherTestEntity extends TestEntitySuperClass {
 
   //---------------------------------
   //
@@ -13,21 +13,21 @@ class TestEntity extends TestEntitySuperClass {
   // refClassName
   //---------------------------------
 
-  String get refClassName => 'entities.TestEntity';
+  String get refClassName => 'entities.AnotherTestEntity';
 
   //---------------------------------
-  // name
+  // anotherName
   //---------------------------------
 
-  @Property(NAME_SYMBOL, 'name', String)
+  @Property(ANOTHERNAME_SYMBOL, 'anotherName', String)
   @LabelField()
-  final DormProxy<String> _name = new DormProxy<String>(NAME, NAME_SYMBOL);
+  final DormProxy<String> _anotherName = new DormProxy<String>(ANOTHERNAME, ANOTHERNAME_SYMBOL);
 
-  static const String NAME = 'name';
-  static const Symbol NAME_SYMBOL = const Symbol('orm_domain.TestEntity.name');
+  static const String ANOTHERNAME = 'anotherName';
+  static const Symbol ANOTHERNAME_SYMBOL = const Symbol('orm_domain.AnotherTestEntity.anotherName');
 
-  String get name => _name.value;
-  set name(String value) => _name.value = notifyPropertyChange(NAME_SYMBOL, _name.value, value);
+  String get anotherName => _anotherName.value;
+  set anotherName(String value) => _anotherName.value = notifyPropertyChange(ANOTHERNAME_SYMBOL, _anotherName.value, value);
   
   //---------------------------------
   // date
@@ -37,7 +37,7 @@ class TestEntity extends TestEntitySuperClass {
   final DormProxy<DateTime> _date = new DormProxy<DateTime>(DATE, DATE_SYMBOL);
 
   static const String DATE = 'date';
-  static const Symbol DATE_SYMBOL = const Symbol('orm_domain.TestEntity.date');
+  static const Symbol DATE_SYMBOL = const Symbol('orm_domain.AnotherTestEntity.date');
 
   DateTime get date => _date.value;
   set date(DateTime value) => _date.value = notifyPropertyChange(DATE_SYMBOL, _date.value, value);
@@ -50,7 +50,7 @@ class TestEntity extends TestEntitySuperClass {
   final DormProxy<TestEntity> _cyclicReference = new DormProxy<TestEntity>(CYCLIC_REFERENCE, CYCLIC_REFERENCE_SYMBOL);
 
   static const String CYCLIC_REFERENCE = 'cyclicReference';
-  static const Symbol CYCLIC_REFERENCE_SYMBOL = const Symbol('orm_domain.TestEntity.cyclicReference');
+  static const Symbol CYCLIC_REFERENCE_SYMBOL = const Symbol('orm_domain.AnotherTestEntity.cyclicReference');
 
   TestEntity get cyclicReference => _cyclicReference.value;
   set cyclicReference(TestEntity value) => _cyclicReference.value = notifyPropertyChange(CYCLIC_REFERENCE_SYMBOL, _cyclicReference.value, value);
@@ -61,7 +61,7 @@ class TestEntity extends TestEntitySuperClass {
   //
   //---------------------------------
 
-  TestEntity() : super();
+  AnotherTestEntity() : super();
   
-  static TestEntity construct() => new TestEntity();
+  static AnotherTestEntity construct() => new AnotherTestEntity();
 }
