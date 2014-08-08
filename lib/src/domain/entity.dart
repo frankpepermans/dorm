@@ -1,6 +1,6 @@
 part of dorm;
 
-abstract class Entity extends Observable implements Externalizable {
+abstract class Entity extends ChangeNotifier implements Externalizable {
   
   static final EntityAssembler ASSEMBLER = new EntityAssembler();
   static final EntityFactory FACTORY = new EntityFactory();

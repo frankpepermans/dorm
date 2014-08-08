@@ -2,7 +2,7 @@ part of dorm;
 
 typedef bool IsDirtyHandler(Entity instance);
 
-class DormManager extends Observable {
+class DormManager extends ChangeNotifier {
   
   //-----------------------------------
   //
