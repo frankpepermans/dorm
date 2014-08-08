@@ -37,13 +37,13 @@ class MetaTransformer extends Transformer {
               }
             );
             
-            final String scanLine = "Entity.ASSEMBLER.scan(refClassName, __CTOR__, <Map<String, dynamic>>[]\r${metadef.join('\r')});";
+            final String scanLine = "Entity.ASSEMBLER.scan(construct().refClassName, construct().__CTOR__, <Map<String, dynamic>>[]\r${metadef.join('\r')});";
             final String proxyLine = 'Entity.ASSEMBLER.registerProxies(this, <DormProxy>[${proxydef.join(',')}]);';
             
             transform.addOutput(
               new Asset.fromString(
                   transform.primaryInput.id, 
-                  codeBody.replaceFirst('${className}() : super();', 'Function get __CTOR__ => construct;\r\r${className}() : super() { ${scanLine}\r$proxyLine }')
+                  codeBody.replaceFirst('${className}() : super();', 'static void __SCAN__() { ${scanLine} }\r\rFunction get __CTOR__ => construct;\r\r${className}() : super() { $proxyLine }')
               )
             );
           }

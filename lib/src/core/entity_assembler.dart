@@ -59,9 +59,6 @@ class EntityAssembler {
   //
   //---------------------------------
   
-  /**
-   * TODO: scan requires mirrors, it would be better to move this to a build file later
-   */
   EntityRootScan scan(String refClassName, Function constructorMethod, List<Map<String, dynamic>> meta) {
     EntityRootScan scan = _entityScans[refClassName];
     
