@@ -15,7 +15,7 @@ class MetaTransformer extends Transformer {
     return transform.primaryInput.readAsString().then(
       (String codeBody) {
         final RegExp partOfExp = new RegExp(r"[^;]+;");
-        final RegExp classNameExp = new RegExp(r"class ([^]+) extends");
+        final RegExp classNameExp = new RegExp(r"class ([^]+) extends ([^{]+)");
         final List<_PropertyDefinition> definitions = _extractAllMetatags(codeBody);
         
         if (definitions.length > 0) {
@@ -26,7 +26,9 @@ class MetaTransformer extends Transformer {
             final List<String> proxydef = <String>[];
             final Match partOfMatch = partOfExp.firstMatch(codeBody);
             final String partOf = partOfMatch.group(0);
-            final String className = classNameExp.firstMatch(codeBody).group(1);
+            final Match declMatch = classNameExp.firstMatch(codeBody);
+            final String className = declMatch.group(1);
+            final String superClassName = declMatch.group(2);
             final String ref = refMeta.first;
             final String header = codeBody.substring(0, codeBody.indexOf('class $className'));
             final bool isImmutable = (_scanMeta('Immutable', header) != null);
@@ -39,13 +41,13 @@ class MetaTransformer extends Transformer {
               }
             );
             
-            final String scanLine = "Entity.ASSEMBLER.scan(construct().refClassName, construct().__CTOR__, <Map<String, dynamic>>[]\r${metadef.join('\r')}, ${isImmutable ? 'false' : 'true'});";
+            final String scanLine = "Entity.ASSEMBLER.scan(R, C, <Map<String, dynamic>>[]\r${metadef.join('\r')}, ${isImmutable ? 'false' : 'true'});";
             final String proxyLine = 'Entity.ASSEMBLER.registerProxies(this, <DormProxy>[${proxydef.join(',')}]);';
             
             transform.addOutput(
               new Asset.fromString(
                   transform.primaryInput.id, 
-                  codeBody.replaceFirst('${className}() : super();', 'static void __SCAN__() { ${scanLine} }\r\rFunction get __CTOR__ => construct;\r\r${className}() : super() { $proxyLine }')
+                  codeBody.replaceFirst('${className}() : super();', 'static void __SCAN__([String R, Function C]) { if (R == null) R = ${ref}; if (C == null) C = ${className}.construct; try { ${superClassName}.__SCAN__(R, C); } catch(error) {} ${scanLine} }\r\rFunction get __CTOR__ => construct;\r\r${className}() : super() { $proxyLine }')
               )
             );
           }
