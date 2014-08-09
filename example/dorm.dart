@@ -24,9 +24,9 @@ ConflictManager handleConflictAcceptServer(Entity serverEntity, Entity clientEnt
   return ConflictManager.ACCEPT_SERVER;
 }
 
-void ormInitialize() {}
-
 void main() {
+  ormInitialize();
+  
   Map<String, dynamic> person = <String, dynamic>{};
   List<Map<String, dynamic>> properties = <Map<String, dynamic>>[];
   

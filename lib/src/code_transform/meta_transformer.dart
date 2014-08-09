@@ -61,7 +61,7 @@ class MetaTransformer extends Transformer {
   }
   
   List<_PropertyDefinition> _extractAllMetatags(String codeBody) {
-    final RegExp exp = new RegExp(r"@[^;]+\n");
+    final RegExp exp = new RegExp(r"@[^;]+\)");
     final List<String> tags = const <String>['NotNullable', 'DefaultValue', 'Transient', 'Id', 'Immutable', 'Lazy', 'LabelField', 'Silent', 'Transform', 'Annotation'];
     final List<_PropertyDefinition> definitions = <_PropertyDefinition>[];
     
