@@ -24,13 +24,10 @@ class TestEntitySuperClass extends Entity {
   @NotNullable()
   @DefaultValue(0)
   @Immutable()
-  final DormProxy<int> _id = new DormProxy<int>(ID, ID_SYMBOL);
-
   static const String ID = 'id';
   static const Symbol ID_SYMBOL = const Symbol('orm_domain.TestEntitySuperClass.id');
 
-  int get id => _id.value;
-  set id(int value) => _id.value = notifyPropertyChange(ID_SYMBOL, _id.value, value);
+  int id;
 
   //---------------------------------
   //

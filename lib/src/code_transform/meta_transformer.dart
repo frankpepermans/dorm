@@ -38,6 +38,10 @@ class MetaTransformer extends Transformer {
                 metadef.add(D.toCodeBody(className));
                 
                 proxydef.add('_${D.nameStr.substring(2, D.nameStr.length - 1)}');
+                
+                final String T = D.typeStr.trim(), N = D.nameStr.replaceAll("'", '').trim(), S = D.symbolStr.trim(), UN = S.substring(0, S.length - 7);
+                
+                codeBody = codeBody.replaceFirst('$T ${N};', 'final DormProxy<${T}> _${N} = new DormProxy<${T}>(${UN}, ${S}); $T get $N => _${N}.value; set ${N}($T value) => _${N}.value = notifyPropertyChange(${D.symbolStr}, _${N}.value, value);');
               }
             );
             

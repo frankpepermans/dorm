@@ -122,7 +122,7 @@ void run() {
       )    
     );
     TestEntity entity = factory.spawnSingle(serializer.incoming(rawDataE).first, serializer, handleConflictAcceptServer);
-  
+    
     expect(entity.id, 1000);
   });
   
