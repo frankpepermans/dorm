@@ -52,7 +52,7 @@ class MetaTransformer extends Transformer {
             transform.addOutput(
               new Asset.fromString(
                   transform.primaryInput.id, 
-                  codeBody.replaceFirst('${className}() : super();', 'static void __SCAN__([String R, Function C]) { if (R == null) R = ${ref}; if (C == null) C = () => new ${className}(); try { ${superClassName}.__SCAN__(R, C); } catch(error) {} ${scanLine} }\r\r${className}() : super() { $proxyLine }')
+                  codeBody.replaceFirst('${className}() : super();', 'static void DO_SCAN([String R, Function C]) { if (R == null) R = ${ref}; if (C == null) C = () => new ${className}(); ${superClassName}.DO_SCAN(R, C); ${scanLine} }\r\r${className}() : super() { $proxyLine }')
               )
             );
           }

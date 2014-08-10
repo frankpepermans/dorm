@@ -20,6 +20,8 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
   
   bool get isPointer => _isPointer;
   
+  static void DO_SCAN([String R, Function C]) {}
+  
   //-----------------------------------
   //
   // Public properties

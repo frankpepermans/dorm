@@ -7,7 +7,7 @@ part 'src/test/test_entity.dart';
 part 'src/test/another_test_entity.dart';
 
 void ormInitialize() {
-  TestEntitySuperClass.__SCAN__();
-  TestEntity.__SCAN__();
-  AnotherTestEntity.__SCAN__();
+  TestEntitySuperClass.DO_SCAN();
+  TestEntity.DO_SCAN();
+  AnotherTestEntity.DO_SCAN();
 }
