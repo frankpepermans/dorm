@@ -84,8 +84,10 @@ class EntityAssembler {
     
     proxies.forEach(
       (DormProxy proxy) {
-        if (scan._proxyMap.containsKey(proxy._property)) proxy._updateWithMetadata(
-          scan._proxyMap[proxy._property]..proxy = proxy, 
+        final _DormProxyPropertyInfo I = scan._proxyMap[proxy._property];
+        
+        if (I != null) proxy._updateWithMetadata(
+          I..proxy = proxy, 
           scan
         );
         

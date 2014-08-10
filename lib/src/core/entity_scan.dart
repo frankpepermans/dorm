@@ -57,7 +57,7 @@ class EntityScan {
   EntityKeyChain _keyChain;
   
   List<_DormProxyPropertyInfo> _identityProxies, _proxies;
-  Map<String, _DormProxyPropertyInfo> _proxyMap;
+  HashMap<String, _DormProxyPropertyInfo> _proxyMap;
   
   //---------------------------------
   //
@@ -138,7 +138,7 @@ class EntityScan {
     if (_identityProxies == null) {
       _identityProxies = <_DormProxyPropertyInfo>[];
       _proxies = <_DormProxyPropertyInfo>[];
-      _proxyMap = <String, _DormProxyPropertyInfo>{};
+      _proxyMap = new HashMap<String, _DormProxyPropertyInfo>.identity();
     }
   }
 }

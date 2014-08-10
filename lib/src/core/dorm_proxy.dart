@@ -100,6 +100,12 @@ class DormProxy<T> {
     value = initialValue;
   }
   
+  void _fromRaw(T initialValue) {
+    _defaultValue = _value = initialValue;
+          
+    if (_changeHandler != null) _changeHandler();
+  }
+  
   //-----------------------------------
   //
   // Private methods

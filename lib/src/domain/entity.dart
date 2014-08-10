@@ -476,21 +476,15 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
     
     proxies.forEach(
        (_DormProxyPropertyInfo entry) {
-         DormProxy proxy = entry.proxy..hasDelta = true;
+         final DormProxy proxy = entry.proxy..hasDelta = true;
+         final dynamic entryValue = data[entry.info.property];
          
-         dynamic entryValue = data[entry.info.property];
-         dynamic value;
-         
-         if (proxy.isLazy)                value = serializer.convertIn(entry.info.type, new ObservableList());
-         else if (entryValue is Map)      value = serializer.convertIn(Entity, FACTORY.spawnSingle(entryValue, serializer, onConflict, proxy:proxy));
-         else if (entryValue is Iterable) value = serializer.convertIn(entry.info.type, FACTORY.spawn(entryValue, serializer, onConflict, proxy:proxy));
-         else if (entryValue != null)     value = serializer.convertIn(entry.info.type, entryValue);
-         
-         try {
-           proxy.setInitialValue(value);
-         } catch (error) {
-           throw new DormError('Could not set the value of ${proxy._propertySymbol} using the value ${value}, perhaps you need to add a rule to the serializer?');
-         }
+         proxy._fromRaw(
+           (proxy.isLazy) ? serializer.convertIn(entry.info.type, new ObservableList()) :
+           (entryValue is Map) ? serializer.convertIn(Entity, FACTORY.spawnSingle(entryValue, serializer, onConflict, proxy:proxy)) :
+           (entryValue is Iterable) ? serializer.convertIn(entry.info.type, FACTORY.spawn(entryValue, serializer, onConflict, proxy:proxy)) :
+           (entryValue != null) ? serializer.convertIn(entry.info.type, entryValue) : null
+         );
        }
     );
   }
