@@ -53,6 +53,4 @@ class TestEntity extends TestEntitySuperClass {
   //---------------------------------
 
   TestEntity() : super();
-  
-  static TestEntity construct() => new TestEntity();
 }
