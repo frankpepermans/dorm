@@ -13,16 +13,16 @@ class EntityKeyChain {
   static Entity getFirstSibling(EntityScan forScan, {bool allowPointers: true}) {
     if (forScan._keyChain.entityScans.length == 0) return null;
     
-    final EntityScan firstScan = forScan._keyChain.entityScans.first;
+    EntityScan S;
+    int i = forScan._keyChain.entityScans.length;
     
-    if (siblingCheck(firstScan, forScan, allowPointers)) return firstScan.entity;
+    while (i > 0) {
+      S = forScan._keyChain.entityScans.elementAt(--i);
+      
+      if (siblingCheck(S, forScan, allowPointers)) return S.entity;
+    }
     
-    final EntityScan result = forScan._keyChain.entityScans.firstWhere(
-      (EntityScan scan) => siblingCheck(scan, forScan, allowPointers),
-      orElse: () => null
-    );
-    
-    return (result != null) ? result.entity : null;
+    return null;
   }
   
   static bool siblingCheck(EntityScan scanA, EntityScan scanB, bool allowPointers) => (

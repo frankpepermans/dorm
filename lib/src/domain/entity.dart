@@ -475,20 +475,22 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
     _isPointer = (data[SerializationType.POINTER] != null);
     
     final Iterable<_DormProxyPropertyInfo> proxies = _isPointer ? _scan._identityProxies : _scan._proxies;
+    final int len = proxies.length;
+    _DormProxyPropertyInfo E;
     
-    proxies.forEach(
-       (_DormProxyPropertyInfo entry) {
-         final DormProxy proxy = entry.proxy..hasDelta = true;
-         final dynamic entryValue = data[entry.info.property];
-         
-         proxy._fromRaw(
-           (proxy.isLazy) ? serializer.convertIn(entry.info.type, new ObservableList()) :
-           (entryValue is Map) ? serializer.convertIn(Entity, FACTORY.spawnSingle(entryValue, serializer, onConflict, proxy:proxy)) :
-           (entryValue is Iterable) ? serializer.convertIn(entry.info.type, FACTORY.spawn(entryValue, serializer, onConflict, proxy:proxy)) :
-           (entryValue != null) ? serializer.convertIn(entry.info.type, entryValue) : null
-         );
-       }
-    );
+    for (int i=0; i<len; i++) {
+      E = proxies.elementAt(i);
+      
+      final DormProxy proxy = E.proxy..hasDelta = true;
+      final dynamic entryValue = data[E.info.property];
+       
+      proxy._fromRaw(
+         (proxy.isLazy) ? serializer.convertIn(E.info.type, new ObservableList()) :
+         (entryValue is Map) ? serializer.convertIn(Entity, FACTORY.spawnSingle(entryValue, serializer, onConflict, proxy:proxy)) :
+         (entryValue is Iterable) ? serializer.convertIn(E.info.type, FACTORY.spawn(entryValue, serializer, onConflict, proxy:proxy)) :
+         (entryValue != null) ? serializer.convertIn(E.info.type, entryValue) : null
+      );
+    }
   }
   
   /**
