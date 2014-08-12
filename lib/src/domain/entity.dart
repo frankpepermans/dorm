@@ -209,24 +209,25 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
     return tree;
   }
   
-  HashSet<Symbol> _identityFieldsList;
-  bool _hasIdentityFieldsList = false;
+  static final Map<String, HashSet<Symbol>> _identityFieldsMap = <String, HashSet<Symbol>>{};
   
   /**
    * Unrolls all [Entity] identity fields to a one-dimensional [List]
    */
   HashSet<Symbol> getIdentityFields() {
-    if (_hasIdentityFieldsList) return _identityFieldsList;
+    HashSet<Symbol> fields = _identityFieldsMap[refClassName];
     
-    _identityFieldsList = new HashSet<Symbol>.identity();
+    if (fields != null) return fields;
+    
+    fields = new HashSet<Symbol>.identity();
     
     _scan._identityProxies.forEach(
-      (_DormProxyPropertyInfo entry) => _identityFieldsList.add(entry.info.propertySymbol) 
+      (_DormProxyPropertyInfo entry) => fields.add(entry.info.propertySymbol) 
     );
     
-    _hasIdentityFieldsList = true;
+    _identityFieldsMap[refClassName] = fields;
     
-    return _identityFieldsList;
+    return fields;
   }
   
   HashMap<Symbol, dynamic> _insertValuesMap;
@@ -446,6 +447,7 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
       final _DormProxyPropertyInfo dirtyProperty = _scan._proxies.firstWhere(
           (_DormProxyPropertyInfo entry) => (
               !entry.proxy.isSilent &&
+              !entry.proxy.isTransient &&
               (entry.proxy._value != entry.proxy._defaultValue) &&
               ((ignoredProperties == null) || !ignoredProperties.contains(entry.info.property)) &&
               (
