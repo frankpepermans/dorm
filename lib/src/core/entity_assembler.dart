@@ -81,19 +81,22 @@ class EntityAssembler {
     if (entity._scan == null) return;
     
     final EntityScan scan = entity._scan;
+    DormProxy proxy;
+    _DormProxyPropertyInfo I;
+    int i = proxies.length;
     
-    proxies.forEach(
-      (DormProxy proxy) {
-        final _DormProxyPropertyInfo I = scan._proxyMap[proxy._property];
-        
-        if (I != null) proxy._updateWithMetadata(
-          I..proxy = proxy, 
-          scan
-        );
-        
-        if (proxy.isLazy) _initLazyLoading(entity, proxy);
-      }
-    );
+    while (i > 0) {
+      proxy = proxies[--i];
+      
+      I = scan._proxyMap[proxy._property];
+      
+      if (I != null) proxy._updateWithMetadata(
+        I..proxy = proxy, 
+        scan
+      );
+      
+      if (proxy.isLazy) _initLazyLoading(entity, proxy);
+    }
   }
   
   HashSet<Symbol> getPropertyFieldsForType(String refClassName) {
@@ -222,6 +225,8 @@ class EntityAssembler {
   void _solveConflictsIfAny(Entity spawnee, Entity existingEntity, OnConflictFunction onConflict) {
     ConflictManager conflictManager;
     Iterable<_DormProxyPropertyInfo> entryProxies, spawneeProxies;
+    _DormProxyPropertyInfo entry, entryMatch;
+    Entity entityCast;
     int i, j;
     
     if (onConflict == null) throw new DormError('Conflict was detected, but no onConflict method is available');
@@ -234,45 +239,49 @@ class EntityAssembler {
     if (!spawnee.isMutable || (conflictManager == ConflictManager.ACCEPT_SERVER)) {
       entryProxies = existingEntity._scan._proxies;
       
-      entryProxies.forEach(
-          (_DormProxyPropertyInfo entryA) {
-            final _DormProxyPropertyInfo entryMatch = spawnee._scan._proxies.firstWhere(
-              (_DormProxyPropertyInfo entryB) => (entryA.info.property == entryB.info.property),
-              orElse: () => null
-            );
+      i = entryProxies.length;
+      
+      while (i > 0) {
+        entry = entryProxies.elementAt(--i);
+        
+        entryMatch = spawnee._scan._proxies.firstWhere(
+          (_DormProxyPropertyInfo E) => (entry.info.property == E.info.property),
+          orElse: () => null
+        );
+        
+        if (entryMatch != null) {
+          entry.proxy.setInitialValue(existingEntity.notifyPropertyChange(entry.proxy._propertySymbol, entry.proxy._value, entryMatch.proxy._value));
+          
+          if (entry.proxy._value is Entity) {
+            entityCast = entry.proxy._value as Entity;
             
-            if (entryMatch != null) {
-              entryA.proxy.setInitialValue(existingEntity.notifyPropertyChange(entryA.proxy._propertySymbol, entryA.proxy._value, entryMatch.proxy._value));
-              
-              if (entryA.proxy._value is Entity) {
-                final Entity entityCast = entryA.proxy._value as Entity;
-                
-                if (entityCast._isPointer) _pendingProxies.add(entryA.proxy);
-              } else if (entryA.proxy._value is Iterable) _pendingProxies.add(entryA.proxy);
-            }
-          }
-      );
+            if (entityCast._isPointer) _pendingProxies.add(entry.proxy);
+          } else if (entry.proxy._value is Iterable) _pendingProxies.add(entry.proxy);
+        }
+      }
     } else if (conflictManager == ConflictManager.ACCEPT_SERVER_DIRTY) {
       entryProxies = existingEntity._scan._proxies;
+      
+      i = entryProxies.length;
+      
+      while (i > 0) {
+        entry = entryProxies.elementAt(--i);
+        
+        entryMatch = spawnee._scan._proxies.firstWhere(
+          (_DormProxyPropertyInfo E) => (entry.info.property == E.info.property),
+          orElse: () => null
+        );
+        
+        if (entryMatch != null) {
+          entry.proxy.value = existingEntity.notifyPropertyChange(entry.proxy._propertySymbol, entry.proxy._value, entryMatch.proxy._value);
+          
+          if (entry.proxy._value is Entity) {
+            entityCast = entry.proxy._value as Entity;
             
-      entryProxies.forEach(
-          (_DormProxyPropertyInfo entryA) {
-            final _DormProxyPropertyInfo entryMatch = spawnee._scan._proxies.firstWhere(
-              (_DormProxyPropertyInfo entryB) => (entryA.info.property == entryB.info.property),
-              orElse: () => null
-            );
-            
-            if (entryMatch != null) {
-              entryA.proxy.value = existingEntity.notifyPropertyChange(entryA.proxy._propertySymbol, entryA.proxy._value, entryMatch.proxy._value);
-              
-              if (entryA.proxy._value is Entity) {
-                final Entity entityCast = entryA.proxy._value as Entity;
-                
-                if (entityCast._isPointer) _pendingProxies.add(entryA.proxy);
-              } else if (entryA.proxy._value is Iterable) _pendingProxies.add(entryA.proxy);
-            }
-          }
-      );
+            if (entityCast._isPointer) _pendingProxies.add(entry.proxy);
+          } else if (entry.proxy._value is Iterable) _pendingProxies.add(entry.proxy);
+        }
+      }
     }
   }
   

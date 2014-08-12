@@ -626,9 +626,10 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
     
     serializer.convertedEntities[this] = data;
     
-    _scan._proxies.forEach(
-      (_DormProxyPropertyInfo entry) => _writeExternalProxy(entry, data, serializer)
-    );
+    final int len = _scan._proxies.length;
+    _DormProxyPropertyInfo entry;
+    
+    for (int i=0; i<len; _writeExternalProxy(_scan._proxies[i++], data, serializer));
   }
   
   void _writeExternalProxy(_DormProxyPropertyInfo entry, Map<String, dynamic> data, Serializer serializer) {

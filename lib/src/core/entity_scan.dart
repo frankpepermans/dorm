@@ -72,10 +72,13 @@ class EntityScan {
   //---------------------------------
   
   void buildKey() {
+    final int len = _identityProxies.length;
     EntityKeyChain nextKey = _root._rootKeyChain;
+    _DormProxyPropertyInfo entry;
     
-    _identityProxies.forEach(
-      (_DormProxyPropertyInfo entry) => nextKey = nextKey._setKeyValue(entry.info.propertySymbol, entry.proxy._value)   
+    for (int i=0; i<len; 
+        entry = _identityProxies[i++], 
+        nextKey = nextKey._setKeyValue(entry.info.propertySymbol, entry.proxy._value)
     );
     
     if (_keyChain != nextKey) {
@@ -95,21 +98,22 @@ class EntityScan {
   
   factory EntityScan.fromRootScan(EntityRootScan root, Entity forEntity) {
     final EntityScan newScan = new EntityScan(root, forEntity).._initialize();
+    final int len = root._rootProxies.length;
+    _DormPropertyInfo entry;
+    _DormProxyPropertyInfo clonedEntry;
     
-    root._rootProxies.forEach(
-       (_DormPropertyInfo entry) {
-         final _DormProxyPropertyInfo clonedEntry = new _DormProxyPropertyInfo.from(entry);
-         
-         newScan._proxies.add(clonedEntry);
-         newScan._proxyMap[clonedEntry.info.property] = clonedEntry;
-         
-         if (clonedEntry.info.metadataCache.isId) {
-           newScan._identityProxies.add(clonedEntry);
-           
-           //if (clonedEntry.info.metadataCache.isMutable) clonedEntry._changeHandler = newScan._entity_identityChangeHandler;
-         }
-       }
-    );
+    for (int i=0; i<len; i++) {
+      clonedEntry = new _DormProxyPropertyInfo.from(root._rootProxies.elementAt(i));
+      
+      newScan._proxies.add(clonedEntry);
+      newScan._proxyMap[clonedEntry.info.property] = clonedEntry;
+      
+      if (clonedEntry.info.metadataCache.isId) {
+        newScan._identityProxies.add(clonedEntry);
+        
+        //if (clonedEntry.info.metadataCache.isMutable) clonedEntry._changeHandler = newScan._entity_identityChangeHandler;
+      }
+    }
     
     return newScan;
   }

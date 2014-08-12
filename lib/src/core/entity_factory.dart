@@ -50,19 +50,18 @@ class EntityFactory<T extends Entity> {
   
   ObservableList<T> spawn(Iterable<Map<String, dynamic>> rawData, Serializer serializer, OnConflictFunction onConflict, {DormProxy proxy}) {
     final ObservableList<T> results = new ObservableList<T>();
+    final int len = rawData.length;
     
-    rawData.forEach(
-        (Map<String, dynamic> entry) => results.add(spawnSingle(entry, serializer, onConflict, proxy: proxy))
-    );
+    for (int i=0; i<len; results.add(spawnSingle(rawData.elementAt(i++), serializer, onConflict, proxy: proxy)));
     
     return results;
   }
   
   T spawnSingle(Map<String, dynamic> rawData, Serializer serializer, OnConflictFunction onConflict, {DormProxy proxy}) {
     final T entity = _assembler._assemble(rawData, proxy, serializer, onConflict);
-    int i = _postProcessors.length;
+    final int len = _postProcessors.length;
     
-    while (i > 0) _postProcessors.elementAt(--i).handler(entity);
+    for (int i=0; i<len; _postProcessors.elementAt(i++).handler(entity));
     
     return entity;
   }
