@@ -227,7 +227,7 @@ class EntityAssembler {
     Iterable<_DormProxyPropertyInfo> entryProxies, spawneeProxies;
     _DormProxyPropertyInfo entry, entryMatch;
     Entity entityCast;
-    int i, j;
+    int i;
     
     if (onConflict == null) throw new DormError('Conflict was detected, but no onConflict method is available');
     

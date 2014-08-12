@@ -356,24 +356,25 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
     if (asNewDefaultValue) setCurrentStatusIsDefaultStatus();
   }
   
-  HashSet<Symbol> _propertyList;
-  bool _hasPropertyList = false;
+  static final Map<String, HashSet<Symbol>> _propertyList = <String, HashSet<Symbol>>{};
   
   /**
    * Returns a [List] containing [Symbol]s of all properties belonging to this [Entity].
    */
   HashSet<Symbol> getPropertyList() {
-    if (_hasPropertyList) return _propertyList;
+    HashSet<Symbol> properties = _propertyList[refClassName];
     
-    _propertyList = new HashSet<Symbol>.identity();
+    if (properties != null) return properties;
+    
+    properties = new HashSet<Symbol>.identity();
     
     _scan._proxies.forEach(
-      (_DormProxyPropertyInfo entry) => _propertyList.add(entry.info.propertySymbol)
+      (_DormProxyPropertyInfo entry) => properties.add(entry.info.propertySymbol)
     );
     
-    _hasPropertyList = true;
+    _propertyList[refClassName] = properties;
     
-    return _propertyList;
+    return properties;
   }
   
   /**
