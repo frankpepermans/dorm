@@ -310,12 +310,12 @@ class EntityAssembler {
         
         j = entityList.length;
         
-        bool hasPointers = false, containsEntities;
+        bool hasPointers = false, containsEntities = false;
         
         while (j > 0) {
           listEntry = entityList[--j];
           
-          containsEntities = (listEntry is Entity);
+          if (!containsEntities) containsEntities = (listEntry is Entity);
           
           if (
             containsEntities &&
