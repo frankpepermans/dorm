@@ -291,7 +291,6 @@ class EntityAssembler {
     Entity entity;
     dynamic listEntry;
     bool collectionEntryHasPointers;
-    List entityList;
     int i = _pendingProxies.length, j;
     
     while (i > 0) {
@@ -305,27 +304,32 @@ class EntityAssembler {
           
           _pendingProxies.remove(proxy);
         }
-      } else if (proxy._value is Iterable) {
-        entityList = proxy._value as List;
+      } else if (proxy._value is List) {
+        final int len = proxy._value.length;
         
-        j = entityList.length;
+        j = len;
         
         bool hasPointers = false, containsEntities = false;
         
         while (j > 0) {
-          listEntry = entityList[--j];
+          listEntry = proxy._value[--j];
           
           if (!containsEntities) containsEntities = (listEntry is Entity);
           
           if (
             containsEntities &&
             EntityKeyChain.areSameKeySignature(listEntry._scan, actualEntity._scan)
-          ) entityList[j] = actualEntity;
+          ) proxy._value[j] = actualEntity;
           
-          if (containsEntities && !hasPointers) hasPointers = (entityList[j] as Entity)._isPointer;
+          if (containsEntities && !hasPointers) hasPointers = listEntry._isPointer;
         }
         
-        if (!hasPointers) _pendingProxies.remove(proxy);
+        if (
+            !hasPointers && 
+            (
+                (proxy._resultLen == -1) || (proxy._resultLen == len)
+            )
+        ) _pendingProxies.remove(proxy);
       }
     }
   }

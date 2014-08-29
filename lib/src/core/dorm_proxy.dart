@@ -9,7 +9,7 @@ class DormProxy<T> {
   //-----------------------------------
   
   T _insertValue, _defaultValue, _value;
-  
+  int _resultLen = -1;
   bool _isLazyLoadingTriggered = false;
   
   Function _changeHandler, _lazyHandler;

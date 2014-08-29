@@ -52,6 +52,8 @@ class EntityFactory<T extends Entity> {
     final ObservableList<T> results = new ObservableList<T>();
     final int len = rawData.length;
     
+    if (proxy != null) proxy._resultLen = len;
+    
     for (int i=0; i<len; results.add(spawnSingle(rawData.elementAt(i++), serializer, onConflict, proxy: proxy)));
     
     return results;
