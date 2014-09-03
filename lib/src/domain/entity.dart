@@ -260,25 +260,12 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
   /**
    * Returns the String representation of a property using the property symbol
    */
-  String getPropertyByField(Symbol propertyField) {
-    final _DormProxyPropertyInfo matchingInfo = _scan._proxies.firstWhere(
-      (_DormProxyPropertyInfo proxyInfo) => (proxyInfo.info.propertySymbol == propertyField)    
-    );
-    
-    return (matchingInfo != null) ? matchingInfo.info.property : null;
-  }
+  String getPropertyByField(Symbol propertyField) => _scan._root._symbolToProperty[propertyField];
   
   /**
    * Returns the Symbol representation of a property using the property name as String
    */
-  Symbol getFieldByProperty(String property) {
-    final _DormProxyPropertyInfo matchingInfo = _scan._proxies.firstWhere(
-      (_DormProxyPropertyInfo proxyInfo) => (proxyInfo.info.property == property),
-      orElse: () => null
-    );
-    
-    return (matchingInfo != null) ? matchingInfo.info.propertySymbol : null;
-  }
+  Symbol getFieldByProperty(String property) => _scan._root._propertyToSymbol[property];
   
   /**
    * Returns generic annotation attached to a property field, if any exists

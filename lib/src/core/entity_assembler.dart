@@ -90,6 +90,9 @@ class EntityAssembler {
       
       I = scan._proxyMap[proxy._property];
       
+      scan._root._propertyToSymbol[proxy._property] = proxy._propertySymbol;
+      scan._root._symbolToProperty[proxy._propertySymbol] = proxy._property;
+      
       if (I != null) proxy._updateWithMetadata(
         I..proxy = proxy, 
         scan

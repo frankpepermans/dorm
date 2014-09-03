@@ -2,15 +2,15 @@ part of dorm;
 
 class EntityRootScan {
   
+  final String refClassName;
   final EntityKeyChain _rootKeyChain = new EntityKeyChain();
   final EntityCtor _entityCtor;
+  final Map<String, Symbol> _propertyToSymbol = <String, Symbol>{};
+  final Map<Symbol, String> _symbolToProperty = <Symbol, String>{};
+  final List<_DormPropertyInfo> _rootProxies = <_DormPropertyInfo>[];
   MetadataCache _metadataCache;
   Entity _unusedInstance;
-  
-  final String refClassName;
   bool isMutableEntity = true;
-  
-  final List<_DormPropertyInfo> _rootProxies = <_DormPropertyInfo>[];
   
   EntityRootScan(this.refClassName, this._entityCtor);
   
