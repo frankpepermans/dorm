@@ -222,6 +222,8 @@ class EntityAssembler {
       else if (owningProxy is Entity) _setupSingleListener(owningProxy);
     } else {
       spawnee._scan._keyChain.entityScans.add(spawnee._scan);
+      
+      _streamController.add(spawnee);
     }
     
     return spawnee;

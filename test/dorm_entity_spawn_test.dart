@@ -25,6 +25,8 @@ void setup() {
 
 String generateJSONData(String name, DateTime date, String type) => '[{"id":${nextId++},"name":"$name","date":${date.millisecondsSinceEpoch},"?t":"entities.$type"}]';
 
+String generateJSONPointerData(String name, DateTime date, String type) => '[{"id":${nextId},"name":"$name","date":${date.millisecondsSinceEpoch},"?t":"entities.$type"}, {"?p":true, "?t":"entities.$type", "id":${nextId++}}]';
+
 void run() {
   DateTime now = new DateTime.now().toUtc();
   
@@ -134,6 +136,15 @@ void run() {
   
     expect(entityClone.name, 'Test F');
     expect(entityClone.date.millisecondsSinceEpoch, entity.date.millisecondsSinceEpoch);
+  });
+  
+  test('json pointers', ()  {
+    String rawDataE = generateJSONPointerData('Test G', now, 'TestEntity');
+    EntityFactory<TestEntity> factory = new EntityFactory();
+    List<TestEntity> entities = factory.spawn(serializer.incoming(rawDataE), serializer, handleConflictAcceptServer);
+    // list entry 0 is the encoded entity, entry 1 is a pointer to 0
+    // upon decoding, it should produce the same exact entity instance in the list
+    expect(entities[0] == entities[1], true);
   });
 }
 
