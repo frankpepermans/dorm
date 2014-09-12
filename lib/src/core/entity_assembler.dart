@@ -26,8 +26,9 @@ class EntityAssembler {
   //---------------------------------
   
   final Map<String, EntityRootScan> _entityScans = <String, EntityRootScan>{};
+  final StreamController<Entity> _streamController = new StreamController<Entity>();
   
-  List<DormProxy> _pendingProxies = <DormProxy>[];
+  Stream entityStream;
   
   //---------------------------------
   //
@@ -41,7 +42,9 @@ class EntityAssembler {
   //
   //---------------------------------
   
-  EntityAssembler._internal();
+  EntityAssembler._internal() {
+    entityStream = _streamController.stream.asBroadcastStream();
+  }
   
   //---------------------------------
   //
@@ -215,11 +218,10 @@ class EntityAssembler {
     }
     
     if (spawnee._isPointer) {
-      if (owningProxy != null) _pendingProxies.add(owningProxy);
+      if (owningProxy is Iterable) _setupListListener(owningProxy);
+      else if (owningProxy is Entity) _setupSingleListener(owningProxy);
     } else {
       spawnee._scan._keyChain.entityScans.add(spawnee._scan);
-      
-      _updateCollectionsWith(spawnee);
     }
     
     return spawnee;
@@ -258,8 +260,8 @@ class EntityAssembler {
           if (entry.proxy._value is Entity) {
             entityCast = entry.proxy._value as Entity;
             
-            if (entityCast._isPointer) _pendingProxies.add(entry.proxy);
-          } else if (entry.proxy._value is Iterable) _pendingProxies.add(entry.proxy);
+            if (entityCast._isPointer) _setupSingleListener(entry.proxy);
+          } else if (entry.proxy._value is Iterable) _setupListListener(entry.proxy);
         }
       }
     } else if (conflictManager == ConflictManager.ACCEPT_SERVER_DIRTY) {
@@ -281,59 +283,62 @@ class EntityAssembler {
           if (entry.proxy._value is Entity) {
             entityCast = entry.proxy._value as Entity;
             
-            if (entityCast._isPointer) _pendingProxies.add(entry.proxy);
-          } else if (entry.proxy._value is Iterable) _pendingProxies.add(entry.proxy);
+            if (entityCast._isPointer) _setupSingleListener(entry.proxy);
+          } else if (entry.proxy._value is Iterable) _setupListListener(entry.proxy);
         }
       }
     }
   }
   
-  void _updateCollectionsWith(Entity actualEntity) {
-    List<dynamic> collectionEntry;
-    DormProxy proxy;
-    Entity entity;
-    dynamic listEntry;
-    bool collectionEntryHasPointers;
-    int i = _pendingProxies.length, j;
+  void _setupSingleListener(DormProxy p) {
+    final Entity E = p._value as Entity;
+    StreamSubscription s;
     
-    while (i > 0) {
-      proxy = _pendingProxies[--i];
-      
-      if (proxy._value is Entity) {
-        entity = proxy._value as Entity;
-        
-        if (EntityKeyChain.areSameKeySignature(entity._scan, actualEntity._scan)) {
-          proxy.setInitialValue(actualEntity);
+    s = entityStream.listen(
+      (Entity e) {
+        if (EntityKeyChain.areSameKeySignature(E._scan, e._scan)) {
+          p.setInitialValue(e);
           
-          _pendingProxies.remove(proxy);
+          s.cancel();
         }
-      } else if (proxy._value is List) {
-        final int len = proxy._value.length;
+      }    
+    );
+  }
+  
+  void _setupListListener(DormProxy p) {
+    final List L = p._value as List;
+    int i;
+    dynamic E;
+    StreamSubscription s;
+    
+    s = entityStream.listen(
+      (Entity e) {
+        final int len = L.length;
         
-        j = len;
+        i = len;
         
         bool hasPointers = false, containsEntities = false;
         
-        while (j > 0) {
-          listEntry = proxy._value[--j];
-          
-          if (!containsEntities) containsEntities = (listEntry is Entity);
+        while (i > 0) {
+          E = L[--i];
+                
+          if (!containsEntities) containsEntities = (E is Entity);
           
           if (
             containsEntities &&
-            EntityKeyChain.areSameKeySignature(listEntry._scan, actualEntity._scan)
-          ) proxy._value[j] = actualEntity;
+            EntityKeyChain.areSameKeySignature(E._scan, e._scan)
+          ) p._value[i] = e;
           
-          if (containsEntities && !hasPointers) hasPointers = listEntry._isPointer;
+          if (containsEntities && !hasPointers) hasPointers = E._isPointer;
         }
-        
+              
         if (
             !hasPointers && 
             (
-                (proxy._resultLen == -1) || (proxy._resultLen == len)
+                (p._resultLen == -1) || (p._resultLen == len)
             )
-        ) _pendingProxies.remove(proxy);
-      }
-    }
+        ) s.cancel();
+      }    
+    );
   }
 }
