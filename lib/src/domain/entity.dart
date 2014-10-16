@@ -608,6 +608,8 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
     return 0;
   }
   
+  bool identical(Entity E) => (E._scan == _scan);
+  
   void _writeExternalImpl(Map<String, dynamic> data, Serializer serializer) {
     data[SerializationType.ENTITY_TYPE] = _scan._root.refClassName;
     data[SerializationType.UID] = _uid;
