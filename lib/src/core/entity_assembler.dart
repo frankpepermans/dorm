@@ -239,6 +239,8 @@ class EntityAssembler {
         existingEntity
     );
     
+    if (conflictManager == ConflictManager.IGNORE) return;
+    
     if (!spawnee.isMutable || (conflictManager == ConflictManager.ACCEPT_SERVER)) {
       entryProxies = existingEntity._scan._proxies;
       
