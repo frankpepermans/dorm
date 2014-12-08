@@ -243,11 +243,11 @@ class DormManager extends ChangeNotifier {
     deleteQueueRecursive.addAll(_deleteQueue);
     
     _queue.forEach(
-      (Entity entity) => _scanRecursively(entity, queueRecursive, ignoreMutable, ignoreDirty)
+      (Entity entity) => _scanRecursively(entity, queueRecursive, ignoreMutable, ignoreDirty, false)
     );
     
     _deleteQueue.forEach(
-        (Entity entity) => _scanRecursively(entity, deleteQueueRecursive, ignoreMutable, ignoreDirty)
+        (Entity entity) => _scanRecursively(entity, deleteQueueRecursive, ignoreMutable, ignoreDirty, true)
     );
     
     _queue = queueRecursive;
@@ -278,7 +278,17 @@ class DormManager extends ChangeNotifier {
     return entity.isDirty(ignoresUnsavedStatus: ignoresUnsavedStatus, ignoredProperties: _ignoredProperties);
   }
   
-  void _scanRecursively(Entity entity, List<Entity> list, bool ignoreMutable, bool ignoreDirty) {
+  bool _isProtected(Entity masterEntity, Symbol field) {
+     final Map<String, dynamic> genericAnnotations = masterEntity.getGenericAnnotations(field);
+     final bool unprotected = (
+         (genericAnnotations['protected'] == null) ||
+         (genericAnnotations['protected'] == false)
+     );
+     
+     return !unprotected;
+  }
+  
+  void _scanRecursively(Entity entity, List<Entity> list, bool ignoreMutable, bool ignoreDirty, bool isDelete) {
     entity._scan._proxies.forEach(
       (_DormProxyPropertyInfo entry) {
         if (entry.proxy.value is Entity) {
@@ -287,11 +297,12 @@ class DormManager extends ChangeNotifier {
           if (
               (ignoreMutable || tmpEntity.isMutable) &&
               !list.contains(tmpEntity) &&
-              (ignoreDirty || tmpEntity.isDirty())
+              (ignoreDirty || tmpEntity.isDirty()) &&
+              (!isDelete || !_isProtected(entity, entry.info.propertySymbol))
           ) {
             list.add(tmpEntity);
             
-            _scanRecursively(tmpEntity, list, ignoreMutable, ignoreDirty);
+            _scanRecursively(tmpEntity, list, ignoreMutable, ignoreDirty, isDelete);
           }
         } else if (entry.proxy.value is Iterable) {
           Iterable<Entity> entityList = entry.proxy.value;
@@ -301,11 +312,12 @@ class DormManager extends ChangeNotifier {
               if (
                   (ignoreMutable || listEntity.isMutable) &&
                   !list.contains(listEntity) &&
-                  (ignoreDirty || listEntity.isDirty())
+                  (ignoreDirty || listEntity.isDirty()) &&
+                  (!isDelete || !_isProtected(entity, entry.info.propertySymbol))
               ) {
                 list.add(listEntity);
                 
-                _scanRecursively(listEntity, list, ignoreMutable, ignoreDirty);
+                _scanRecursively(listEntity, list, ignoreMutable, ignoreDirty, isDelete);
               }
             }
           );
