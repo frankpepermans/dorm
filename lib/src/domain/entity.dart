@@ -332,12 +332,13 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
          }
       );
     }
-    else _scan._identityProxies.forEach(
-        (_DormProxyPropertyInfo entry) => entry.proxy._value = notifyPropertyChange(
-            entry.proxy._propertySymbol, 
-            entry.proxy._value,
-            entry.proxy._insertValue
-        )
+    
+    _scan._identityProxies.forEach(
+      (_DormProxyPropertyInfo entry) => entry.proxy._value = notifyPropertyChange(
+          entry.proxy._propertySymbol, 
+          entry.proxy._value,
+          entry.proxy._insertValue
+      )
     );
     
     if (asNewDefaultValue) setCurrentStatusIsDefaultStatus();
