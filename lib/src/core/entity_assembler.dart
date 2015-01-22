@@ -130,6 +130,10 @@ class EntityAssembler {
     return set;
   }
   
+  void clearAll() => _entityScans.forEach(
+    (_, EntityRootScan ERS) => ERS.clearKey()
+  );
+  
   //---------------------------------
   //
   // Library protected methods

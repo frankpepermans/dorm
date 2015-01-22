@@ -43,6 +43,8 @@ class EntityRootScan {
     
     _rootProxies.add(entry);
   }
+  
+  void clearKey() => _rootKeyChain.entityScans.clear();
 }
 
 class EntityScan {
