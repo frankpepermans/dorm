@@ -24,13 +24,13 @@ class SerializerJs<T extends EntityJs, U extends JsObject> extends SerializerBas
   //
   //-----------------------------------
   
-  Iterable<Map<String, dynamic>> incoming(U data) {
+  Iterable<T> incoming(U data) {
     final List<U> list = data['payload'];
-    final Map<U, Map<String, dynamic>> convertedList = <U, Map<String, dynamic>>{};
-    final List<Map<String, dynamic>> resultList = <Map<String, dynamic>>[];
+    final Map<U, T> convertedList = <U, T>{};
+    final List<T> resultList = <T>[];
     
     list.forEach(
-      (U P) => resultList.add(_toMap(P, convertedList))
+      (U P) => resultList.add(_toEntityJs(P, convertedList))
     );
     
     return resultList;
@@ -52,7 +52,7 @@ class SerializerJs<T extends EntityJs, U extends JsObject> extends SerializerBas
     return list;
   }
   
-  dynamic convertIn(Type forType, U inValue) {
+  dynamic convertIn(Type forType, dynamic inValue) {
     final _InternalConvertor convertor = _convertors[forType];
     
     return (convertor == null) ? inValue : convertor.incoming(inValue);
@@ -95,34 +95,60 @@ class SerializerJs<T extends EntityJs, U extends JsObject> extends SerializerBas
   //
   //-----------------------------------
   
-  Map<String, dynamic> _toMap(U entityJs, Map<U, Map<String, dynamic>> convertedList) {
+  T _toEntityJs(U entityJs, Map<U, T> convertedList) {
+    if (entityJs == null) return null;
+    
+    T entity = convertedList[entityJs];
+    
+    if (entity != null) return entity;
+    
     final String refClassName = entityJs['refClassName'];
     final EntityRootScan scan = Entity.ASSEMBLER._entityScans[refClassName];
-    Map<String, dynamic> convertedEntry = convertedList[entityJs];
     dynamic entryJs;
     
-    if (convertedEntry != null) return convertedEntry;
+    final List<_DormPropertyInfo> identityProxies = scan._rootProxies.where(
+      (_DormPropertyInfo I) => I.metadataCache.isId    
+    ).toList();
+    final int len = identityProxies.length;
+    EntityKeyChain nextKey = scan._rootKeyChain;
+    _DormPropertyInfo entry;
+    dynamic entryValue;
     
-    convertedEntry = <String, dynamic>{};
+    for (int i=0; i<len; i++) {
+      entry = identityProxies[i];
+      entryValue = entityJs[entry.property];
+      
+      nextKey = nextKey._setKeyValue(entry.propertySymbol, entryValue);
+    }
     
-    scan._rootProxies.forEach(
-      (_DormPropertyInfo I) {
-        entryJs = entityJs[I.property];
+    entity = nextKey.entityScans.first.entity;
+    
+    entity._scan._proxies.forEach(
+      (_DormProxyPropertyInfo I) {
+        entryJs = entityJs[I.info.property];
         
-        if (entryJs is U) convertedEntry[I.property] = _toMap(entryJs, convertedList);
-        else if (entryJs is Iterable) {
-          List<Map<String, dynamic>> list = <Map<String, dynamic>>[];
+        if (entryJs is JsArray) {
+          List<T> list = <T>[];
           
           entryJs.forEach(
-            (U listEntryJs) => list.add(_toMap(listEntryJs, convertedList))  
+            (U listEntryJs) => list.add(_toEntityJs(listEntryJs, convertedList))  
           );
           
-          convertedEntry[I.property] = list;
+          entity[I.info.propertySymbol] = convertIn(I.info.type, list);
         }
-        else convertedEntry[I.property] = entityJs[I.property];
+        else if (entryJs is JsObject) entity[I.info.propertySymbol] = _toEntityJs(entryJs, convertedList);
+        else {
+          try {
+            entity[I.info.propertySymbol] = convertIn(I.info.type, entityJs[I.info.property]);
+          } catch (error) {
+            throw new ArgumentError('Error setting property "${I.info.property}" to value "${entityJs[I.info.property]}", expecting type ${I.info.type} instead.'); 
+          }
+        }
       }
     );
     
-    return convertedEntry;
+    convertedList[entityJs] = entity;
+    
+    return entity;
   }
 }

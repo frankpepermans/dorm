@@ -36,7 +36,7 @@ abstract class EntityJs extends Entity {
     JsObject pointerObj, dataList;
     List<dynamic> subList;
     EntityJs S;
-          
+    
     if (entry.proxy._value is EntityJs) {
       S = entry.proxy._value;
       

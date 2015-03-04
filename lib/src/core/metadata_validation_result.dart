@@ -17,4 +17,6 @@ class MetadataValidationResult {
   
   const MetadataValidationResult(this.entity, this.property, this.propertyField, this.reasonFailed);
   
+  String toString() => '$entity $property $reasonFailed';
+  
 }
