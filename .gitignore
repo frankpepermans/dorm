@@ -31,3 +31,4 @@ test/packages/
 
 # Exclude pubspec when developing library packages
 # pubspec.lock
+.pub/
