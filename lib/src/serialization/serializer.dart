@@ -1,6 +1,6 @@
 part of dorm;
 
-abstract class Serializer<T> {
+abstract class Serializer<T extends Entity, U> {
   
   //-----------------------------------
   //
@@ -11,9 +11,9 @@ abstract class Serializer<T> {
   Iterable incoming(T data);
   T outgoing(dynamic data);
   
-  Map<Entity, Map<String, dynamic>> get convertedEntities;
+  Map<T, U> get convertedEntities;
   
-  void addRule(Type forType, dynamic incoming(dynamic value), dynamic outgoing(dynamic value));
+  Serializer addRule(Type forType, dynamic incoming(dynamic value), dynamic outgoing(dynamic value));
   _InternalConvertor removeRule(Type forType);
   
   dynamic convertIn(Type forType, dynamic inValue);
@@ -21,7 +21,7 @@ abstract class Serializer<T> {
   
 }
 
-abstract class SerializerMixin<T> implements Serializer {
+abstract class SerializerMixin<T extends Entity, U> implements Serializer {
   
   //-----------------------------------
   //
@@ -31,7 +31,7 @@ abstract class SerializerMixin<T> implements Serializer {
   
   final Map<Type, _InternalConvertor> _convertors = <Type, _InternalConvertor>{};
   
-  Map<Entity, Map<String, dynamic>> convertedEntities;
+  Map<T, U> convertedEntities;
   
   //-----------------------------------
   //
@@ -42,8 +42,10 @@ abstract class SerializerMixin<T> implements Serializer {
   Iterable incoming(T data);
   T outgoing(dynamic data);
   
-  void addRule(Type forType, dynamic incoming(dynamic value), dynamic outgoing(dynamic value)) {
+  Serializer addRule(Type forType, dynamic incoming(dynamic value), dynamic outgoing(dynamic value)) {
     _convertors[forType] = new _InternalConvertor(forType, incoming, outgoing);
+    
+    return this;
   } 
   
   _InternalConvertor removeRule(Type forType) => _convertors.remove(forType);
