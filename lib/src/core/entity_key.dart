@@ -11,7 +11,7 @@ class EntityKeyChain {
   static final EntityKeyChain rootKeyChain = new EntityKeyChain();
   
   static Entity getFirstSibling(EntityScan forScan, {bool allowPointers: true}) {
-    if (forScan._keyChain.entityScans.length == 0) return null;
+    if (forScan._keyChain.entityScans.isEmpty) return null;
     
     EntityScan S;
     int i = forScan._keyChain.entityScans.length;

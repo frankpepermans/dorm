@@ -154,7 +154,7 @@ class EntityAssembler {
         if (handler == null) throw new DormError('Missing a lazy handler for ${lazyProxy._property} on entity $entity');
         else handler.handler(entity, lazyProxy._propertySymbol).then(
           (List<dynamic> resultSet) {
-            if (resultSet != null && resultSet.length > 0) list.addAll(resultSet);
+            if (resultSet != null && resultSet.isNotEmpty) list.addAll(resultSet);
             
             list.notifyPropertyChange(IS_LAZILY_LOADED, null, list);
           }
