@@ -1,6 +1,6 @@
 part of dorm;
 
-class SerializerJson extends SerializerBase {
+class SerializerJson<T extends Entity, U extends Map<String, dynamic>> extends SerializerBase {
   
   //-----------------------------------
   //
@@ -24,12 +24,12 @@ class SerializerJson extends SerializerBase {
   //
   //-----------------------------------
   
-  List<Map<String, dynamic>> incoming(String data) => JSON.decode(data);
+  Iterable<Map<String, dynamic>> incoming(String data) => JSON.decode(data);
   
   String outgoing(dynamic data) {
     Entity._serializerWorkaround = this;
     
-    convertedEntities = new HashMap<Entity, Map<String, dynamic>>.identity();
+    convertedEntities = new HashMap<T, U>.identity();
     
     //if (data is Map) _convertMap(data);
     //else if (data is Iterable) _convertList(data);
@@ -54,19 +54,19 @@ class SerializerJson extends SerializerBase {
     return (convertor == null) ? outValue : convertor.outgoing(outValue);
   }
   
-  void _convertMap(Map data, {Map<String, Map<String, dynamic>> convertedEntities: null}) {
-    if (convertedEntities == null) convertedEntities = <String, Map<String, dynamic>>{};
+  void _convertMap(Map data, {Map<String, U> convertedEntities: null}) {
+    if (convertedEntities == null) convertedEntities = <String, U>{};
     
     data.forEach(
       (K, V) {
         if (V is Map) _convertMap(V, convertedEntities: convertedEntities);
-        else if (V is Entity) data[K] = V.toJson(convertedEntities: convertedEntities);
+        else if (V is T) data[K] = V.toJson(convertedEntities: convertedEntities);
       }
     );
   }
   
-  void _convertList(List data, {Map<String, Map<String, dynamic>> convertedEntities: null}) {
-    if (convertedEntities == null) convertedEntities = <String, Map<String, dynamic>>{};
+  void _convertList(List data, {Map<String, U> convertedEntities: null}) {
+    if (convertedEntities == null) convertedEntities = <String, U>{};
     
     final int len = data.length;
     dynamic entry;
@@ -75,7 +75,7 @@ class SerializerJson extends SerializerBase {
     for (i=0; i<len; i++) {
       entry = data[i];
       
-      if (entry is Entity) data[i] = entry.toJson(convertedEntities: convertedEntities);
+      if (entry is T) data[i] = entry.toJson(convertedEntities: convertedEntities);
     }
   }
 }

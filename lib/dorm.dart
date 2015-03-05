@@ -106,6 +106,7 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
 import 'dart:core';
+import 'dart:js';
 
 import 'package:observe/observe.dart';
 
@@ -121,6 +122,7 @@ part 'src/core/metadata_cache.dart';
 part 'src/core/metadata_validation_result.dart';
 
 part 'src/domain/entity.dart';
+part 'src/domain/entity_js.dart';
 part 'src/domain/meta.dart';
 
 part 'src/serialization/entity_codec.dart';
@@ -128,6 +130,7 @@ part 'src/serialization/externalizable.dart';
 part 'src/serialization/serialization_type.dart';
 part 'src/serialization/serializer.dart';
 part 'src/serialization/serializer_json.dart';
+part 'src/serialization/serializer_js.dart';
 
 bool evictEntity(Entity entity) => entity._scan._evictEntity(entity);
 
