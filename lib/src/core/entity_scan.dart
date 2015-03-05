@@ -31,6 +31,8 @@ class EntityRootScan {
     final _DormPropertyInfo entry = new _DormPropertyInfo(N, S, T, new _PropertyMetadataCache(N));
     bool isIdentity = false;
     
+    entry.metadataCache.expectedType = entry.type;
+    
     _metadataCache = new MetadataCache();
     
     allMeta.forEach(

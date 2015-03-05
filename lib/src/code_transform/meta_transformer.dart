@@ -18,7 +18,7 @@ class MetaTransformer extends Transformer {
         final RegExp classNameExp = new RegExp(r"class ([^]+) extends ([^{]+)");
         final List<_PropertyDefinition> definitions = _extractAllMetatags(codeBody);
         
-        if (definitions.length > 0) {
+        if (definitions.isNotEmpty) {
           final List<String> refMeta = _scanMeta('Ref', codeBody);
           
           if (refMeta != null) {

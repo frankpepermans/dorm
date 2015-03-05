@@ -47,6 +47,7 @@ class _PropertyMetadataCache {
   
   final String property;
   
+  Type expectedType;
   bool isId = false;
   bool isTransient = false;
   bool isNullable = true;
@@ -64,6 +65,7 @@ class _PropertyMetadataCache {
   
   MetadataExternalized _getMetadataExternal() {
     return new MetadataExternalized(
+        expectedType,
         isId, 
         isTransient, 
         isNullable, 
@@ -80,6 +82,7 @@ class _PropertyMetadataCache {
 
 class MetadataExternalized {
   
+  final Type expectedType;
   final bool isId;
   final bool isTransient;
   final bool isNullable;
@@ -90,6 +93,6 @@ class MetadataExternalized {
   final String transformFrom, transformTo;
   final Map<String, dynamic> genericAnnotations;
   
-  const MetadataExternalized(this.isId, this.isTransient, this.isNullable, this.isLabelField, this.isMutable, this.isLazy, this.isSilent, this.transformFrom, this.transformTo, this.genericAnnotations);
+  const MetadataExternalized(this.expectedType, this.isId, this.isTransient, this.isNullable, this.isLabelField, this.isMutable, this.isLazy, this.isSilent, this.transformFrom, this.transformTo, this.genericAnnotations);
   
 }

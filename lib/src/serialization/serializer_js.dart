@@ -89,19 +89,7 @@ class SerializerJs<T extends EntityJs, U extends JsObject> extends SerializerBas
     }
   }
   
-  //-----------------------------------
-  //
-  // Private methods
-  //
-  //-----------------------------------
-  
-  T _toEntityJs(U entityJs, Map<U, T> convertedList) {
-    if (entityJs == null) return null;
-    
-    T entity = convertedList[entityJs];
-    
-    if (entity != null) return entity;
-    
+  EntityJs fetchEntity(U entityJs) {
     final String refClassName = entityJs['refClassName'];
     final EntityRootScan scan = Entity.ASSEMBLER._entityScans[refClassName];
     dynamic entryJs;
@@ -121,11 +109,34 @@ class SerializerJs<T extends EntityJs, U extends JsObject> extends SerializerBas
       nextKey = nextKey._setKeyValue(entry.propertySymbol, entryValue);
     }
     
-    entity = nextKey.entityScans.first.entity;
+    return (nextKey.entityScans.isNotEmpty) ? nextKey.entityScans.first.entity : newEntity(entityJs);
+  }
+  
+  EntityJs newEntity(U entityJs) {
+    final String refClassName = entityJs['refClassName'];
+    final EntityRootScan scan = Entity.ASSEMBLER._entityScans[refClassName];
+    
+    return scan._entityCtor();
+  }
+  
+  //-----------------------------------
+  //
+  // Private methods
+  //
+  //-----------------------------------
+  
+  T _toEntityJs(U entityJs, Map<U, T> convertedList) {
+    if (entityJs == null) return null;
+    
+    T entity = convertedList[entityJs];
+    
+    if (entity != null) return entity;
+    
+    entity = fetchEntity(entityJs);
     
     entity._scan._proxies.forEach(
       (_DormProxyPropertyInfo I) {
-        entryJs = entityJs[I.info.property];
+      dynamic entryJs = entityJs[I.info.property];
         
         if (entryJs is JsArray) {
           List<T> list = <T>[];
