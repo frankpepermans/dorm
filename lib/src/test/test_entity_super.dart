@@ -19,7 +19,7 @@ class TestEntitySuperClass extends Entity {
   // id
   //---------------------------------
 
-  @Property(ID_SYMBOL, 'id', int)
+  @Property(ID_SYMBOL, 'id', int, 'int')
   @Id(0)
   @NotNullable()
   @DefaultValue(0)

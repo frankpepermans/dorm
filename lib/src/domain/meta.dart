@@ -23,8 +23,9 @@ class Property {
   final Symbol propertySymbol;
   final String property;
   final Type type;
+  final String expectedTypeAsString;
   
-  const Property(this.propertySymbol, this.property, this.type);
+  const Property(this.propertySymbol, this.property, this.type, this.expectedTypeAsString);
   
   String toString() => 'property $property';
   

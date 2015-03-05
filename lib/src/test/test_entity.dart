@@ -19,7 +19,7 @@ class TestEntity extends TestEntitySuperClass {
   // name
   //---------------------------------
 
-  @Property(NAME_SYMBOL, 'name', String)
+  @Property(NAME_SYMBOL, 'name', String, 'String')
   @LabelField()
   static const String NAME = 'name';
   static const Symbol NAME_SYMBOL = const Symbol('orm_domain.TestEntity.name');
@@ -30,7 +30,7 @@ class TestEntity extends TestEntitySuperClass {
   // date
   //---------------------------------
 
-  @Property(DATE_SYMBOL, 'date', DateTime)
+  @Property(DATE_SYMBOL, 'date', DateTime, 'DateTime')
   static const String DATE = 'date';
   static const Symbol DATE_SYMBOL = const Symbol('orm_domain.TestEntity.date');
 
@@ -40,7 +40,7 @@ class TestEntity extends TestEntitySuperClass {
   // cyclicReference
   //---------------------------------
 
-  @Property(CYCLIC_REFERENCE_SYMBOL, 'cyclicReference', TestEntity)
+  @Property(CYCLIC_REFERENCE_SYMBOL, 'cyclicReference', TestEntity, 'TestEntity')
   static const String CYCLIC_REFERENCE = 'cyclicReference';
   static const Symbol CYCLIC_REFERENCE_SYMBOL = const Symbol('orm_domain.TestEntity.cyclicReference');
 

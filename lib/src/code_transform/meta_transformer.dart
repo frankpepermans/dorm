@@ -98,9 +98,9 @@ class MetaTransformer extends Transformer {
     final String G = M.group(1);
     final List<String> args = G.split(',');
     
-    if (args.length != 3) return null;
+    if (args.length != 4) return null;
     
-    return new _PropertyDefinition(args[0], args[1], args[2]);
+    return new _PropertyDefinition(args[0], args[1], args[2], args[3]);
   }
   
   List<String> _scanMeta(String metaName, String codeBody) {
@@ -123,10 +123,10 @@ class MetaTransformer extends Transformer {
 
 class _PropertyDefinition {
   
-  final String symbolStr, nameStr, typeStr;
+  final String symbolStr, nameStr, typeStr, typeStaticStr;
   final Map<String, List<String>> _tags = <String, List<String>>{};
   
-  _PropertyDefinition(this.symbolStr, this.nameStr, this.typeStr);
+  _PropertyDefinition(this.symbolStr, this.nameStr, this.typeStr, this.typeStaticStr);
   
   void addMeta(String tag, List<String> values) {
     if (values != null) _tags[tag] = values;
@@ -139,6 +139,6 @@ class _PropertyDefinition {
       (String T, List<String> V) => decls.add('const ${T}(${V.join(', ')})')
     );
     
-    return "..add(const {'symbol':${className}.${symbolStr},'name':${nameStr},'type':${typeStr},'metatags':const [${decls.join(', ')}]})";
+    return "..add(const {'symbol':${className}.${symbolStr},'name':${nameStr},'type':${typeStr},'typeStaticStr':${typeStaticStr},'metatags':const [${decls.join(', ')}]})";
   }
 }

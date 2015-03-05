@@ -47,7 +47,7 @@ class _PropertyMetadataCache {
   
   final String property;
   
-  Type expectedType;
+  String expectedType;
   bool isId = false;
   bool isTransient = false;
   bool isNullable = true;
@@ -82,7 +82,7 @@ class _PropertyMetadataCache {
 
 class MetadataExternalized {
   
-  final Type expectedType;
+  final String expectedType;
   final bool isId;
   final bool isTransient;
   final bool isNullable;

@@ -28,10 +28,11 @@ class EntityRootScan {
     final List allMeta = M['metatags'] as List;
     final String N = M['name'] as String;
     final Type T = M['type'] as Type;
-    final _DormPropertyInfo entry = new _DormPropertyInfo(N, S, T, new _PropertyMetadataCache(N));
+    final String typeStr = M['typeStaticStr'] as String;
+    final _DormPropertyInfo entry = new _DormPropertyInfo(N, S, T, typeStr, new _PropertyMetadataCache(N));
     bool isIdentity = false;
     
-    entry.metadataCache.expectedType = entry.type;
+    entry.metadataCache.expectedType = entry.typeStatic;
     
     _metadataCache = new MetadataCache();
     
@@ -163,12 +164,12 @@ class EntityScan {
 
 class _DormPropertyInfo<T extends _DormPropertyInfo> extends Comparable {
   
-  final String property;
+  final String property, typeStatic;
   final Symbol propertySymbol;
   final Type type;
   final _PropertyMetadataCache metadataCache;
   
-  _DormPropertyInfo(this.property, this.propertySymbol, this.type, this.metadataCache);
+  _DormPropertyInfo(this.property, this.propertySymbol, this.type, this.typeStatic, this.metadataCache);
   
   @override
   int compareTo(T other) => (other == null) ? 1 : property.compareTo(other.property);
