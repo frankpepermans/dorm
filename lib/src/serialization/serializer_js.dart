@@ -134,6 +134,8 @@ class SerializerJs<T extends EntityJs, U extends JsObject> extends SerializerBas
     
     entity = fetchEntity(entityJs);
     
+    convertedList[entityJs] = entity;
+    
     entity._scan._proxies.forEach(
       (_DormProxyPropertyInfo I) {
       dynamic entryJs = entityJs[I.info.property];
@@ -157,8 +159,6 @@ class SerializerJs<T extends EntityJs, U extends JsObject> extends SerializerBas
         }
       }
     );
-    
-    convertedList[entityJs] = entity;
     
     return entity;
   }

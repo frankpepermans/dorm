@@ -35,6 +35,7 @@ abstract class EntityJs extends Entity {
   void _writeExternalJsProxy(_DormProxyPropertyInfo entry, JsObject data, Serializer serializer) {
     JsObject pointerObj, dataList;
     List<dynamic> subList;
+    List<JsObject> tempList;
     EntityJs S;
     
     if (entry.proxy._value is EntityJs) {
@@ -46,20 +47,20 @@ abstract class EntityJs extends Entity {
       else data[entry.info.property] = S.toJsObject();
     } else if (entry.proxy._value is List) {
       subList = serializer.convertOut(entry.info.type, entry.proxy._value);
-      dataList = new JsObject(context['Array']);
+      tempList = <JsObject>[];
       
       subList.forEach(
           (dynamic listEntry) {
             if (listEntry is EntityJs) {
               pointerObj = serializer.convertedEntities[listEntry];
               
-              if (pointerObj != null) dataList.callMethod('push', <JsObject>[pointerObj]);
-              else dataList.callMethod('push', <JsObject>[listEntry.toJsObject()]);
-            } else dataList.callMethod('push', <JsObject>[serializer.convertOut(entry.info.type, entry.proxy._value)]);
+              if (pointerObj != null) tempList.add(pointerObj);
+              else tempList.add(listEntry.toJsObject());
+            } else tempList.add(serializer.convertOut(entry.info.type, entry.proxy._value));
           }
         );
         
-        data[entry.info.property] = dataList;
+        data[entry.info.property] = new JsObject(context['Array'], tempList);
       } else data[entry.info.property] = serializer.convertOut(entry.info.type, entry.proxy._value);
    }
   
