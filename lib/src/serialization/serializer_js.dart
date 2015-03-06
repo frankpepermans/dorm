@@ -151,11 +151,12 @@ class SerializerJs<T extends EntityJs, U extends JsObject> extends SerializerBas
         }
         else if (entryJs is JsObject) entity[I.info.propertySymbol] = _toEntityJs(entryJs, convertedList);
         else {
-          try {
-            entity[I.info.propertySymbol] = convertIn(I.info.type, entityJs[I.info.property]);
-          } catch (error) {
+          final dynamic value = entityJs[I.info.property];
+          
+          if (value != null && value.runtimeType != I.info.type)
             throw new ArgumentError('Error setting property "${I.info.property}" to value "${entityJs[I.info.property]}", expecting type ${I.info.type} instead.'); 
-          }
+          
+          entity[I.info.propertySymbol] = convertIn(I.info.type, entityJs[I.info.property]);
         }
       }
     );
