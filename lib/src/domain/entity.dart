@@ -453,6 +453,33 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
     return (isNew || hasDirtyProperty);
   }
   
+  Map<String, dynamic> getDirtyStates({bool ignoresUnsavedStatus: false, Iterable<String> ignoredProperties}) {
+    final Map<String, dynamic> DS = <String, dynamic>{};
+    
+    if (!isMutable) return DS;
+    
+    final bool isNew = ignoresUnsavedStatus ? false : isUnsaved();
+    
+    if (!isNew) {
+      _scan._proxies.where(
+          (_DormProxyPropertyInfo entry) => (
+              !entry.proxy.isSilent &&
+              !entry.proxy.isTransient &&
+              (entry.proxy._value != entry.proxy._defaultValue) &&
+              ((ignoredProperties == null) || !ignoredProperties.contains(entry.info.property)) &&
+              (
+                !(entry.proxy._value is Iterable) &&
+                !(entry.proxy._defaultValue is Iterable)  
+              )
+          )
+      ).forEach(
+        (_DormProxyPropertyInfo entry) => DS[entry.info.property] = entry.proxy.value
+      );
+    }
+    
+    return DS;
+  }
+  
   /**
    * Converts raw [Map] data into an [Entity], including the full cyclic chain.
    * 

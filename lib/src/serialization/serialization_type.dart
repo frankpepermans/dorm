@@ -12,5 +12,6 @@ abstract class SerializationType {
   static const String POINTER = '?p';
   static const String UID = '?=';
   static const String DETACHED = '?d';
+  static const String INTEROP_UID = '__uuid__';
   
 }
