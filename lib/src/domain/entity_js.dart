@@ -36,9 +36,7 @@ abstract class EntityJs extends Entity {
   }
   
   JsObject _writeExternalJsImpl(JsObject data) {
-    data[SerializationType.INTEROP_UID] = _uid;
-    
-    final List<dynamic> L = <JsObject>[];
+    final List<dynamic> L = <dynamic>[_uid];
     final int len = _scan._proxies.length;
     
     for (int i=0; i<len; L.add(_writeExternalJsProxy(_scan._proxies[i++], data)));
