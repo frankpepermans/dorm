@@ -37,19 +37,19 @@ class SerializerJs<T extends EntityJs, U extends JsObject> extends SerializerBas
   }
   
   U outgoing(dynamic data) {
-    final JsObject list = new JsObject(context['Array']);
+    final List<U> L = <U>[];
     
     Entity._serializerWorkaround = this;
     
     convertedEntities = new HashMap<T, U>.identity();
     
     if (data is List) data.forEach(
-      (T entity) => list.callMethod('push', <U>[entity.toJsObject()])
+      (T entity) => L.add(entity.toJsObject())
     );
-    else if (data is T) list.callMethod('push', <U>[data.toJsObject()]);
-    else if (data is U) list.callMethod('push', <U>[data]);
+    else if (data is T) L.add(data.toJsObject());
+    else if (data is U) L.add(data);
     
-    return list;
+    return new JsObject(context['Array'], L);
   }
   
   dynamic convertIn(Type forType, dynamic inValue) {

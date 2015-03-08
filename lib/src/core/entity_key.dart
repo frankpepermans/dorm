@@ -64,7 +64,7 @@ class EntityKeyChain {
   
   void operator []= (Symbol key, dynamic value) => _setKeyValueNoReturn(key, value);
   
-  EntityKeyChain operator [] (List otherKey) => _map[otherKey[0]][otherKey[1]];
+  EntityKeyChain operator [] (List<dynamic> otherKey) => _map[otherKey[0]][otherKey[1]];
   
   //---------------------------------
   //
