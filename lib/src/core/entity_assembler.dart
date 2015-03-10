@@ -84,6 +84,7 @@ class EntityAssembler {
     DormProxy proxy;
     _DormProxyPropertyInfo I;
     int i = proxies.length;
+    bool hasUnknownMapping = false;
     
     while (i > 0) {
       proxy = proxies[--i];
@@ -91,6 +92,8 @@ class EntityAssembler {
       I = scan._proxyMap[proxy._property];
       
       if (!scan._root._masMapping) {
+        if (!hasUnknownMapping) hasUnknownMapping = (scan._root._propertyToSymbol[proxy._property] == null);
+        
         scan._root._propertyToSymbol[proxy._property] = proxy._propertySymbol;
         scan._root._symbolToProperty[proxy._propertySymbol] = proxy._property;
       }
@@ -103,7 +106,7 @@ class EntityAssembler {
       if (proxy.isLazy) _initLazyLoading(entity, proxy);
     }
     
-    scan._root._masMapping = true;
+    scan._root._masMapping = !hasUnknownMapping;
   }
   
   HashSet<Symbol> getPropertyFieldsForType(String refClassName) {
