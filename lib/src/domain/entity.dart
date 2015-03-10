@@ -293,12 +293,15 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
    *  - print(entity.isUnsaved()); // false
    */
   bool isUnsaved() {
-    final _DormProxyPropertyInfo nonInsertIdentityProxy = _scan._identityProxies.firstWhere(
-        (_DormProxyPropertyInfo entry) => (entry.proxy._value != entry.proxy._insertValue),
-        orElse: () => null
-    );
+    final int len = _scan._identityProxies.length;
     
-    return (nonInsertIdentityProxy == null);
+    for (int i=0; i<len; i++) {
+      _DormProxyPropertyInfo entry = _scan._identityProxies[i];
+      
+      if (entry.proxy._value != entry.proxy._insertValue) return false;
+    }
+    
+    return true;
   }
   
   /**

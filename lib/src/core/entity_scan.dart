@@ -11,6 +11,7 @@ class EntityRootScan {
   MetadataCache _metadataCache;
   Entity _unusedInstance;
   bool isMutableEntity = true;
+  bool _masMapping = false;
   
   EntityRootScan(this.refClassName, this._entityCtor);
   
