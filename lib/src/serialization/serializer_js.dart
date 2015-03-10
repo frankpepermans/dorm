@@ -64,35 +64,9 @@ class SerializerJs<T extends EntityJs, U extends JsObject> extends SerializerBas
     return (convertor == null) ? outValue : convertor.outgoing(outValue);
   }
   
-  void _convertMap(Map data, {Map<String, U> convertedEntities: null}) {
-    if (convertedEntities == null) convertedEntities = <String, U>{};
-    
-    data.forEach(
-      (K, V) {
-        if (V is Map) _convertMap(V, convertedEntities: convertedEntities);
-        else if (V is T) data[K] = V.toJson(convertedEntities: convertedEntities);
-      }
-    );
-  }
-  
-  void _convertList(List data, {Map<String, U> convertedEntities: null}) {
-    if (convertedEntities == null) convertedEntities = <String, U>{};
-    
-    final int len = data.length;
-    dynamic entry;
-    int i;
-    
-    for (i=0; i<len; i++) {
-      entry = data[i];
-      
-      if (entry is T) data[i] = entry.toJson(convertedEntities: convertedEntities);
-    }
-  }
-  
   EntityJs fetchEntity(U entityJs) {
     final String refClassName = entityJs['refClassName'];
     final EntityRootScan scan = Entity.ASSEMBLER._entityScans[refClassName];
-    dynamic entryJs;
     
     final List<_DormPropertyInfo> identityProxies = scan._rootProxies.where(
       (_DormPropertyInfo I) => I.metadataCache.isId    

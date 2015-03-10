@@ -10,7 +10,6 @@ class DormManager extends ChangeNotifier {
   //
   //-----------------------------------
   
-  List<Entity> _observeList = <Entity>[];
   List<Entity> _queue = <Entity>[];
   List<Entity> _deleteQueue = <Entity>[];
   List<String> _ignoredProperties = <String>[];
@@ -113,7 +112,7 @@ class DormManager extends ChangeNotifier {
       
       _updateIsCommitRequired();
       
-      final Timer timeout = new Timer(
+      new Timer(
           const Duration(milliseconds: 50),
           () {
             _isCommitStatusInvalidated = false;

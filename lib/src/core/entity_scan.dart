@@ -105,7 +105,6 @@ class EntityScan {
   factory EntityScan.fromRootScan(EntityRootScan root, Entity forEntity) {
     final EntityScan newScan = new EntityScan(root, forEntity).._initialize();
     final int len = root._rootProxies.length;
-    _DormPropertyInfo entry;
     _DormProxyPropertyInfo clonedEntry;
     
     for (int i=0; i<len; i++) {
@@ -136,13 +135,13 @@ class EntityScan {
     return false;
   }
   
-  void _entity_identityChangeHandler() {
+  /*void _entity_identityChangeHandler() {
     if (!entity.isUnsaved()) {
       buildKey();
       
       if (!_keyChain.entityScans.contains(this)) _keyChain.entityScans.add(this);
     }
-  }
+  }*/
   
   void _initialize() {
     if (_identityProxies == null) {
