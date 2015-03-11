@@ -476,7 +476,7 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
               )
           )
       ).forEach(
-        (_DormProxyPropertyInfo entry) => DS[entry.info.property] = entry.proxy.value
+        (_DormProxyPropertyInfo entry) => DS[entry.info.property] = Entity._serializerWorkaround.outgoing(entry.proxy.value)
       );
     }
     
