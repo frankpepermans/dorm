@@ -14,7 +14,6 @@ class MetaTransformer extends Transformer {
   Future<dynamic> apply(Transform transform) {
     return transform.primaryInput.readAsString().then(
       (String codeBody) {
-        final RegExp partOfExp = new RegExp(r"[^;]+;");
         final RegExp classNameExp = new RegExp(r"class ([^]+) extends ([^{]+)");
         final List<_PropertyDefinition> definitions = _extractAllMetatags(codeBody);
         
@@ -24,8 +23,6 @@ class MetaTransformer extends Transformer {
           if (refMeta != null) {
             final List<String> metadef = <String>[];
             final List<String> proxydef = <String>[];
-            final Match partOfMatch = partOfExp.firstMatch(codeBody);
-            final String partOf = partOfMatch.group(0);
             final Match declMatch = classNameExp.firstMatch(codeBody);
             final String className = declMatch.group(1);
             final String superClassName = declMatch.group(2);
@@ -42,7 +39,10 @@ class MetaTransformer extends Transformer {
                 final String T = D.typeStr.trim(), N = D.nameStr.replaceAll("'", '').trim(), S = D.symbolStr.trim(), UN = S.substring(0, S.length - 7);
                 final String R = '${T}[^\\s]*\\s${N};';
                 
-                codeBody = codeBody.replaceFirst(new RegExp(R), 'final DormProxy<${T}> _${N} = new DormProxy<${T}>(${UN}, ${S}); $T get $N => _${N}.value; set ${N}($T value) => _${N}.value = notifyPropertyChange(${D.symbolStr}, _${N}.value, value);');
+                if (D._tags['Lazy'] != null)  
+                  codeBody = codeBody.replaceFirst(new RegExp(R), 'final DormProxy<${T}> _${N} = new DormProxy<${T}>(${UN}, ${S}); Future<$T> get $N => _${N}.lazyValue; set ${N}($T value) => _${N}.value = notifyPropertyChange(${D.symbolStr}, _${N}.value, value);');
+                else
+                  codeBody = codeBody.replaceFirst(new RegExp(R), 'final DormProxy<${T}> _${N} = new DormProxy<${T}>(${UN}, ${S}); $T get $N => _${N}.value; set ${N}($T value) => _${N}.value = notifyPropertyChange(${D.symbolStr}, _${N}.value, value);');
               }
             );
             
@@ -70,7 +70,7 @@ class MetaTransformer extends Transformer {
       (Match M) {
         final String allMeta = M.group(0);
         
-        if (allMeta.length > 0) {
+        if (allMeta.isNotEmpty) {
           final _PropertyDefinition D = _scanProperty(allMeta);
           
           if (D != null) {
@@ -111,7 +111,6 @@ class MetaTransformer extends Transformer {
     
     final List<String> values = <String>[];
     final String G = M.group(1);
-    int index = 0;
     
     G.split(',').forEach(
       (String V) => values.add(V.trim())

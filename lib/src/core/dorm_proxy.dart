@@ -10,9 +10,10 @@ class DormProxy<T> {
   
   T _insertValue, _defaultValue, _value;
   int _resultLen = -1;
-  bool _isLazyLoadingTriggered = false;
+  bool _isLazyLoadingRequired = false, _isLazyLoadingCompleted = false;
+  Future<T> _lazyFuture;
   
-  Function _changeHandler, _lazyHandler;
+  Function _changeHandler;
   
   //-----------------------------------
   //
@@ -24,23 +25,39 @@ class DormProxy<T> {
   // value
   //-----------------------------------
   
-  T get value {
-    if (isLazy) {
-      if (_isLazyLoadingTriggered) {
-        (_value as ObservableList).notifyPropertyChange(IS_LAZILY_LOADED, null, _value);
-      } else {
-        _isLazyLoadingTriggered = true;
+  T get value => _value;
+  
+  Future<T> get lazyValue {
+    if (_isLazyLoadingRequired) {
+      _isLazyLoadingRequired = false;
+      
+      final EntityLazyHandler LH = Entity.FACTORY._lazyHandlers.firstWhere(
+        (EntityLazyHandler lazyHandler) => (lazyHandler.propertySymbol == _propertySymbol),
+        orElse: () => null
+      );
+      
+      _lazyFuture = LH.handler(_propertySymbol).then(
+        (T V) {
+          _value = V;
           
-        if (_lazyHandler != null) _lazyHandler(this);
-      }
+          _isLazyLoadingCompleted = true;
+        },
+        onError: () => throw new DormError('could not fetch lazy value for $_propertySymbol')
+      );
+      
+      return _lazyFuture;
     }
     
-    return _value;
+    if (!_isLazyLoadingCompleted) return _lazyFuture;
+    
+    return new Future<T>.value(_value);
   }
   
   set value(T newValue) {
     if (_isValueUpdateRequired(_value, newValue)) {
       _value = newValue;
+      
+      if (newValue != null) _isLazyLoadingRequired = false;
       
       if (_changeHandler != null) _changeHandler();
     }

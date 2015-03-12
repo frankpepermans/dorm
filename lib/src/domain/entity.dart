@@ -506,7 +506,7 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
       final dynamic entryValue = data[E.info.property];
        
       proxy._fromRaw(
-         (proxy.isLazy) ? serializer.convertIn(E.info.type, new ObservableList()) :
+         (proxy.isLazy) ? null :
          (entryValue is Map) ? serializer.convertIn(Entity, FACTORY.spawnSingle(entryValue, serializer, onConflict, proxy:proxy)) :
          (entryValue is Iterable) ? serializer.convertIn(E.info.type, FACTORY.spawn(entryValue, serializer, onConflict, proxy:proxy)) :
          (entryValue != null) ? serializer.convertIn(E.info.type, entryValue) : null
