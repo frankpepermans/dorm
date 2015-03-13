@@ -40,7 +40,7 @@ class MetaTransformer extends Transformer {
                 final String R = '${T}[^\\s]*\\s${N};';
                 
                 if (D._tags['Lazy'] != null)  
-                  codeBody = codeBody.replaceFirst(new RegExp(R), 'final DormProxy<${T}> _${N} = new DormProxy<${T}>(${UN}, ${S}); Future<$T> get $N => _${N}.lazyValue; set ${N}($T value) => _${N}.value = notifyPropertyChange(${D.symbolStr}, _${N}.value, value);');
+                  codeBody = codeBody.replaceFirst(new RegExp(R), 'final DormProxy<${T}> _${N} = new DormProxy<${T}>(${UN}, ${S}); $T get $N => _${N}.getLazyValue(this); set ${N}($T value) => _${N}.value = notifyPropertyChange(${D.symbolStr}, _${N}.value, value);');
                 else
                   codeBody = codeBody.replaceFirst(new RegExp(R), 'final DormProxy<${T}> _${N} = new DormProxy<${T}>(${UN}, ${S}); $T get $N => _${N}.value; set ${N}($T value) => _${N}.value = notifyPropertyChange(${D.symbolStr}, _${N}.value, value);');
               }
@@ -48,11 +48,12 @@ class MetaTransformer extends Transformer {
             
             final String scanLine = "Entity.ASSEMBLER.scan(R, C, <Map<String, dynamic>>[]\r${metadef.join('\r')}, ${isImmutable ? 'false' : 'true'});";
             final String proxyLine = 'Entity.ASSEMBLER.registerProxies(this, <DormProxy>[${proxydef.join(',')}]);';
+            final String newBody = codeBody.replaceFirst('${className}() : super();', 'static void DO_SCAN([String R, Function C]) { if (R == null) R = ${ref}; if (C == null) C = () => new ${className}(); ${superClassName}.DO_SCAN(R, C); ${scanLine} }\r\r${className}() : super() { $proxyLine }');
             
             transform.addOutput(
               new Asset.fromString(
                   transform.primaryInput.id, 
-                  codeBody.replaceFirst('${className}() : super();', 'static void DO_SCAN([String R, Function C]) { if (R == null) R = ${ref}; if (C == null) C = () => new ${className}(); ${superClassName}.DO_SCAN(R, C); ${scanLine} }\r\r${className}() : super() { $proxyLine }')
+                  newBody
               )
             );
           }

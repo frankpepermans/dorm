@@ -26,11 +26,10 @@ class SerializerJs<T extends EntityJs, U extends JsObject> extends SerializerBas
   
   Iterable<T> incoming(U data) {
     final List<U> list = data['payload'];
-    final Map<U, T> convertedList = <U, T>{};
     final List<T> resultList = <T>[];
     
     list.forEach(
-      (U P) => resultList.add(_toEntityJs(P, convertedList))
+      (U P) => resultList.add(_toEntityJs(P))
     );
     
     return resultList;
@@ -99,16 +98,30 @@ class SerializerJs<T extends EntityJs, U extends JsObject> extends SerializerBas
   //
   //-----------------------------------
   
-  T _toEntityJs(U entityJs, Map<U, T> convertedList) {
+  EntityJs _internalFetch(EntityRootScan entityScan, U entityJs) {
+      final int len = entityScan._rootProxies.length;
+      EntityKeyChain nextKey = entityScan._rootKeyChain;
+      _DormPropertyInfo entry;
+      
+      for (int i=0; i<len; i++) {
+        entry = entityScan._rootProxies[i++];
+        
+        if (entry.metadataCache.isId) nextKey = nextKey._setKeyValue(entry.propertySymbol, entityJs[entry.property]);
+      }
+      
+      return (nextKey.entityScans.isNotEmpty) ? nextKey.entityScans.first.entity : null;
+    }
+  
+  T _toEntityJs(U entityJs) {
     if (entityJs == null) return null;
     
-    T entity = convertedList[entityJs];
+    EntityRootScan entityScan = Entity.ASSEMBLER._entityScans[entityJs['refClassName']];
+    
+    T entity = _internalFetch(entityScan, entityJs);
     
     if (entity != null) return entity;
     
     entity = fetchEntity(entityJs);
-    
-    convertedList[entityJs] = entity;
     
     entity._scan._proxies.forEach(
       (_DormProxyPropertyInfo I) {
@@ -118,16 +131,16 @@ class SerializerJs<T extends EntityJs, U extends JsObject> extends SerializerBas
           List<T> list = <T>[];
           
           entryJs.forEach(
-            (U listEntryJs) => list.add(_toEntityJs(listEntryJs, convertedList))  
+            (U listEntryJs) => list.add(_toEntityJs(listEntryJs))  
           );
           
           entity[I.info.propertySymbol] = convertIn(I.info.type, list);
         }
-        else if (entryJs is JsObject) entity[I.info.propertySymbol] = _toEntityJs(entryJs, convertedList);
+        else if (entryJs is JsObject) entity[I.info.propertySymbol] = _toEntityJs(entryJs);
         else {
           final dynamic value = entityJs[I.info.property];
           
-          if (value != null && value.runtimeType != I.info.type)
+          if (value != null && value.runtimeType != I.info.type && !I.info.metadataCache.isLazy)
             throw new ArgumentError('Error setting property "${I.info.property}" to value "${entityJs[I.info.property]}", expecting type ${I.info.type} instead.'); 
           
           entity[I.info.propertySymbol] = convertIn(I.info.type, entityJs[I.info.property]);

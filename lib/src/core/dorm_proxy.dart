@@ -27,7 +27,7 @@ class DormProxy<T> {
   
   T get value => _value;
   
-  Future<T> get lazyValue {
+  Future<T> getLazyValue(Entity forEntity) {
     if (_isLazyLoadingRequired) {
       _isLazyLoadingRequired = false;
       
@@ -36,9 +36,9 @@ class DormProxy<T> {
         orElse: () => null
       );
       
-      _lazyFuture = LH.handler(_propertySymbol).then(
+      _lazyFuture = LH.handler(forEntity, _propertySymbol).then(
         (T V) {
-          _value = V;
+          _value = Entity._serializerWorkaround.convertIn(T, V);
           
           _isLazyLoadingCompleted = true;
         },

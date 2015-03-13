@@ -52,7 +52,7 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
       orElse: () => null
     );
     
-    return (result != null) ? result.proxy._value : null;
+    return (result != null) ? (result.proxy.isLazy) ?  result.proxy.getLazyValue(this) : result.proxy._value : null;
   }
   
   void operator []=(Symbol propertyField, dynamic propertyValue) {
