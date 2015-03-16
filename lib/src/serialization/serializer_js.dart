@@ -63,33 +63,41 @@ class SerializerJs<T extends EntityJs, U extends JsObject> extends SerializerBas
     return (convertor == null) ? outValue : convertor.outgoing(outValue);
   }
   
-  EntityJs fetchEntity(U entityJs) {
-    final String refClassName = entityJs['refClassName'];
+  EntityJs newEntity(String refClassName) {
     final EntityRootScan scan = Entity.ASSEMBLER._entityScans[refClassName];
+    final EntityJs spawnee = scan._entityCtor();
     
-    final List<_DormPropertyInfo> identityProxies = scan._rootProxies.where(
-      (_DormPropertyInfo I) => I.metadataCache.isId    
-    ).toList();
-    final int len = identityProxies.length;
-    EntityKeyChain nextKey = scan._rootKeyChain;
-    _DormPropertyInfo entry;
-    dynamic entryValue;
+    spawnee.setUnsaved(recursively: true);
     
-    for (int i=0; i<len; i++) {
-      entry = identityProxies[i];
-      entryValue = entityJs[entry.property];
-      
-      nextKey = nextKey._setKeyValue(entry.propertySymbol, entryValue);
-    }
+    spawnee._scan.buildKey();
     
-    return (nextKey.entityScans.isNotEmpty) ? nextKey.entityScans.first.entity : newEntity(entityJs);
+    return spawnee;
   }
   
-  EntityJs newEntity(U entityJs) {
+  EntityJs fetchEntity(U entityJs) {
     final String refClassName = entityJs['refClassName'];
-    final EntityRootScan scan = Entity.ASSEMBLER._entityScans[refClassName];
+    final EntityRootScan entityScan = Entity.ASSEMBLER._entityScans[refClassName];
+    final int len = entityScan._rootProxies.length;
+    EntityKeyChain nextKey = entityScan._rootKeyChain;
+    _DormPropertyInfo entry;
     
-    return scan._entityCtor();
+    for (int i=0; i<len; i++) {
+      entry = entityScan._rootProxies[i++];
+      
+      if (entry.metadataCache.isId) nextKey = nextKey._setKeyValue(entry.propertySymbol, entityJs[entry.property]);
+    }
+    
+    if (nextKey.entityScans.isNotEmpty) {
+      final int jsUid = entityJs[SerializationType.UID];
+      final EntityScan scan = nextKey.entityScans.firstWhere(
+        (EntityScan ES) => ES.entity.uid == jsUid,
+        orElse: () => null
+      );
+      
+      if (scan != null) return scan.entity;
+    }
+    
+    return newEntity(refClassName);
   }
   
   //-----------------------------------
@@ -98,30 +106,10 @@ class SerializerJs<T extends EntityJs, U extends JsObject> extends SerializerBas
   //
   //-----------------------------------
   
-  EntityJs _internalFetch(EntityRootScan entityScan, U entityJs) {
-      final int len = entityScan._rootProxies.length;
-      EntityKeyChain nextKey = entityScan._rootKeyChain;
-      _DormPropertyInfo entry;
-      
-      for (int i=0; i<len; i++) {
-        entry = entityScan._rootProxies[i++];
-        
-        if (entry.metadataCache.isId) nextKey = nextKey._setKeyValue(entry.propertySymbol, entityJs[entry.property]);
-      }
-      
-      return (nextKey.entityScans.isNotEmpty) ? nextKey.entityScans.first.entity : null;
-    }
-  
   T _toEntityJs(U entityJs) {
     if (entityJs == null) return null;
     
-    EntityRootScan entityScan = Entity.ASSEMBLER._entityScans[entityJs['refClassName']];
-    
-    T entity = _internalFetch(entityScan, entityJs);
-    
-    if (entity != null) return entity;
-    
-    entity = fetchEntity(entityJs);
+    final T entity = fetchEntity(entityJs);
     
     entity._scan._proxies.forEach(
       (_DormProxyPropertyInfo I) {
