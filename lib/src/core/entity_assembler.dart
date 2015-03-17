@@ -230,9 +230,9 @@ class EntityAssembler {
     if (conflictManager == ConflictManager.IGNORE) return;
     
     if (!spawnee.isMutable || (conflictManager == ConflictManager.ACCEPT_SERVER)) {
-      final int len=entryProxies.length;
-      
       entryProxies = existingEntity._scan._proxies;
+      
+      final int len=entryProxies.length;
       
       for (int i=0; i<len; i++) {
         entry = entryProxies.elementAt(i);

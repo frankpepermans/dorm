@@ -25,6 +25,7 @@ void delegate(String jsContext, String jsMethod, String dartMethod) {
     case 'createNewEntity':   context[jsContext][jsMethod] = createNewEntity;   break;
     case 'setLazyHandler':    context[jsContext][jsMethod] = setLazyHandler;    break;
     case 'fetchLazyProperty': context[jsContext][jsMethod] = fetchLazyProperty; break;
+    case 'revert':            context[jsContext][jsMethod] = revert;            break;
   }
   
   print('[Info] Dart "$dartMethod" => JavaScript "$jsContext.$jsMethod"');
@@ -58,6 +59,14 @@ void deserialize(JsObject pTag, JsFunction callback, bool favourClient) {
   final JsObject dataOut = serializerJs.outgoing(dataLocal);
   
   callback.apply(<JsObject>[dataOut]);
+}
+
+JsObject revert(JsObject pTag) {
+  final EntityJs entity = serializerJs.fetchEntity(pTag);
+  
+  entity.revertChanges();
+  
+  return serializerJs.outgoing(<EntityJs>[entity]);
 }
 
 String inspect(JsObject pTag) {

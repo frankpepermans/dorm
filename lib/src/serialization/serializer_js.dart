@@ -76,6 +76,9 @@ class SerializerJs<T extends EntityJs, U extends JsObject> extends SerializerBas
   
   EntityJs fetchEntity(U entityJs) {
     final String refClassName = entityJs['refClassName'];
+    
+    if (refClassName == null) throw new ArgumentError('no refClassName name found where it was expected');
+    
     final EntityRootScan entityScan = Entity.ASSEMBLER._entityScans[refClassName];
     final int len = entityScan._rootProxies.length;
     EntityKeyChain nextKey = entityScan._rootKeyChain;
@@ -88,7 +91,7 @@ class SerializerJs<T extends EntityJs, U extends JsObject> extends SerializerBas
     }
     
     if (nextKey.entityScans.isNotEmpty) {
-      final int jsUid = entityJs[SerializationType.UID];
+      final int jsUid = entityJs['__uuid__'];
       final EntityScan scan = nextKey.entityScans.firstWhere(
         (EntityScan ES) => ES.entity.uid == jsUid,
         orElse: () => null
