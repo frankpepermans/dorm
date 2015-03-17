@@ -76,8 +76,18 @@ abstract class EntityJs extends Entity {
           else tempList.add(listEntry.toJsObject());
         } else tempList.add(Entity._serializerWorkaround.convertOut(entry.info.type, entry.proxy._value));
       }
+      
+      final JsArray arr = data['_$entry.proxy._property'];
+      
+      if (arr == null) {
+        return new JsObject(context['Array'], tempList);
+      } else {
+        arr.length = 0;
         
-      return new JsObject(context['Array'], tempList);
+        arr.callMethod('push', tempList);
+        
+        return arr;
+      }
     } else if (entry.info.metadataCache.isLazy) {
       if (entry.proxy._isLazyLoadingCompleted) return Entity._serializerWorkaround.convertOut(entry.info.type, entry.proxy._value);
       else return null;

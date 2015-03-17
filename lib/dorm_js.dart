@@ -55,8 +55,20 @@ void deserialize(JsObject pTag, JsFunction callback, bool favourClient) {
   final String serializedData = pTag['serializedData'];
   final Iterable<Map<String, dynamic>> dataIn = serializerJson.incoming(serializedData);
   final OnConflictFunction conflictHandler = favourClient ? onConflictAcceptClient : onConflictAcceptServer;
+  
+  Stopwatch s1 = new Stopwatch()..start();
+  
   final List<EntityJs> dataLocal = Entity.FACTORY.spawn(dataIn, serializerJson, conflictHandler);
+  
+  s1.stop();
+  
+  print('dart objectify ${s1.elapsedMilliseconds}ms');
+  
+  s1 = new Stopwatch()..start();
+  
   final JsObject dataOut = serializerJs.outgoing(dataLocal);
+  
+  print('js objectify ${s1.elapsedMilliseconds}ms');
   
   callback.apply(<JsObject>[dataOut]);
 }
