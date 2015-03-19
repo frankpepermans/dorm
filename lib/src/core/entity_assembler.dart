@@ -90,7 +90,7 @@ class EntityAssembler {
       
       I = scan._proxyMap[proxy._property];
       
-      if (!scan._root._masMapping) {
+      if (!scan._root._hasMapping) {
         if (!hasUnknownMapping) hasUnknownMapping = (scan._root._propertyToSymbol[proxy._property] == null);
         
         scan._root._propertyToSymbol[proxy._property] = proxy._propertySymbol;
@@ -105,7 +105,7 @@ class EntityAssembler {
       if (proxy.isLazy) proxy._isLazyLoadingRequired = true;
     }
     
-    scan._root._masMapping = !hasUnknownMapping;
+    scan._root._hasMapping = !hasUnknownMapping;
   }
   
   HashSet<Symbol> getPropertyFieldsForType(String refClassName) {
@@ -154,8 +154,21 @@ class EntityAssembler {
     return null;
   }
   
-  Entity _assemble(Map<String, dynamic> rawData, DormProxy owningProxy, Serializer serializer, OnConflictFunction onConflict) {
-    final String refClassName = rawData[SerializationType.ENTITY_TYPE];
+  String _fetchRefClassName(Map<String, dynamic> rawData, String forType) {
+    String refClassName = rawData[SerializationType.ENTITY_TYPE];
+    
+    if (refClassName == null) {
+      final List<String> S = forType.split('<');
+      
+      if (S.length > 1) refClassName = S.last.split('>').first;
+      else refClassName = forType;
+    }
+    
+    return refClassName;
+  }
+  
+  Entity _assemble(Map<String, dynamic> rawData, DormProxy owningProxy, Serializer serializer, OnConflictFunction onConflict, String forType) {
+    final String refClassName = _fetchRefClassName(rawData, forType);
     final bool isDetached = (rawData[SerializationType.DETACHED] != null);
     EntityRootScan entityScan;
     Entity spawnee, localNonPointerEntity;

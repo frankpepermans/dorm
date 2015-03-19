@@ -87,7 +87,7 @@ class SerializerJs<T extends EntityJs, U extends JsObject> extends SerializerBas
     for (int i=0; i<len; i++) {
       entry = entityScan._rootProxies[i++];
       
-      if (entry.metadataCache.isId) nextKey = nextKey._setKeyValue(entry.propertySymbol, entityJs['_${entry.property}']);
+      if (entry.metadataCache.isId) nextKey = nextKey._setKeyValue(entry.propertySymbol, entityJs[entry.property]);
     }
     
     if (nextKey.entityScans.isNotEmpty) {
@@ -116,7 +116,7 @@ class SerializerJs<T extends EntityJs, U extends JsObject> extends SerializerBas
     
     entity._scan._proxies.forEach(
       (_DormProxyPropertyInfo I) {
-        dynamic entryJs = entityJs['_${I.info.property}'];
+        dynamic entryJs = entityJs[I.info.property];
         
         if (entryJs is JsArray) {
           List<T> list = <T>[];
@@ -129,10 +129,12 @@ class SerializerJs<T extends EntityJs, U extends JsObject> extends SerializerBas
         }
         else if (entryJs is JsObject) entity[I.info.propertySymbol] = _toEntityJs(entryJs);
         else {
-          if (entryJs != null && entryJs.runtimeType != I.info.type && !I.info.metadataCache.isLazy)
-            throw new ArgumentError('Error setting property "${I.info.property}" to value "${entityJs['_${I.info.property}']}", expecting type ${I.info.type} instead.'); 
+          final dynamic inValue = convertIn(I.info.type, entityJs[I.info.property]);
           
-          entity[I.info.propertySymbol] = convertIn(I.info.type, entityJs['_${I.info.property}']);
+          if (entryJs != null && inValue.runtimeType != I.info.type && !I.info.metadataCache.isLazy)
+            throw new ArgumentError('Error setting property "${I.info.property}" to value "${entityJs[I.info.property]}", expecting type ${I.info.type} instead.'); 
+          
+          entity[I.info.propertySymbol] = inValue;
         }
       }
     );

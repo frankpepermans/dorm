@@ -30,6 +30,8 @@ abstract class EntityJs extends Entity {
       _CACHED_CONTEXTS[refClassName] = currentContext;
     }
     
+    if (currentContext == null) throw new DormError('No context was found for $refClassName');
+    
     interopObj = Entity._serializerWorkaround.convertedEntities[this] = new JsObject(currentContext);
     
     return writeExternalJs(interopObj);
@@ -77,7 +79,7 @@ abstract class EntityJs extends Entity {
         } else tempList.add(Entity._serializerWorkaround.convertOut(entry.info.type, entry.proxy._value));
       }
       
-      final JsArray arr = data['_$entry.proxy._property'];
+      final JsArray arr = data[entry.proxy._property];
       
       if (arr == null) {
         return new JsObject(context['Array'], tempList);

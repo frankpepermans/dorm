@@ -53,12 +53,13 @@ void delegate(String jsContext, String jsMethod, String dartMethod) {
  */
 void deserialize(JsObject pTag, JsFunction callback, bool favourClient) {
   final String serializedData = pTag['serializedData'];
+  final String collectionRefClassName = pTag['collectionType'];
   final Iterable<Map<String, dynamic>> dataIn = serializerJson.incoming(serializedData);
   final OnConflictFunction conflictHandler = favourClient ? onConflictAcceptClient : onConflictAcceptServer;
   
   Stopwatch s1 = new Stopwatch()..start();
   
-  final List<EntityJs> dataLocal = Entity.FACTORY.spawn(dataIn, serializerJson, conflictHandler);
+  final List<EntityJs> dataLocal = Entity.FACTORY.spawn(dataIn, serializerJson, conflictHandler, forType: collectionRefClassName);
   
   s1.stop();
   
