@@ -16,13 +16,8 @@ FetchService fetchService;
 CommitService commitService;
 FetchService postCommitFetchService;
 
-ConflictManager handleConflictAcceptClient(Entity serverEntity, Entity clientEntity) {
-  return ConflictManager.ACCEPT_CLIENT;
-}
-
-ConflictManager handleConflictAcceptServer(Entity serverEntity, Entity clientEntity) {
-  return ConflictManager.ACCEPT_SERVER;
-}
+ConflictManager handleConflictAcceptClient(Entity serverEntity, Entity clientEntity) => ConflictManager.AcceptClient;
+ConflictManager handleConflictAcceptServer(Entity serverEntity, Entity clientEntity) => ConflictManager.AcceptServer;
 
 void main() {
   ormInitialize();

@@ -12,8 +12,8 @@ final SerializerJs<EntityJs, JsObject> serializerJs = new SerializerJs<EntityJs,
 final DormManager manager = new DormManager();
 final Map<Entity, StreamSubscription> listeners = <Entity, StreamSubscription>{};
 
-final OnConflictFunction onConflictAcceptClient = (EntityJs serverEntity, Entity clientEntity) => ConflictManager.ACCEPT_CLIENT;
-final OnConflictFunction onConflictAcceptServer = (EntityJs serverEntity, Entity clientEntity) => ConflictManager.ACCEPT_SERVER;
+final OnConflictFunction onConflictAcceptClient = (EntityJs serverEntity, Entity clientEntity) => ConflictManager.AcceptClient;
+final OnConflictFunction onConflictAcceptServer = (EntityJs serverEntity, Entity clientEntity) => ConflictManager.AcceptServer;
 
 void delegate(String jsContext, String jsMethod, String dartMethod) {
   switch (dartMethod) {
@@ -151,7 +151,7 @@ String flush() {
 void setLazyHandler(String symbolDefinition, JsFunction handler) {
   final Symbol sym = new Symbol(symbolDefinition);
   final EntityLazyHandler ELH = new EntityLazyHandler(
-      new Symbol(symbolDefinition),
+      sym,
       (EntityJs E, Symbol S) {
         try {
           final Completer C = new Completer();

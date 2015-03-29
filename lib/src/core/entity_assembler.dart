@@ -173,7 +173,7 @@ class EntityAssembler {
     EntityRootScan entityScan;
     Entity spawnee, localNonPointerEntity;
     
-    if (onConflict == null) onConflict = (Entity serverEntity, Entity clientEntity) => ConflictManager.ACCEPT_CLIENT;
+    if (onConflict == null) onConflict = (Entity serverEntity, Entity clientEntity) => ConflictManager.AcceptClient;
     
     entityScan = _entityScans[refClassName];
     
@@ -240,9 +240,9 @@ class EntityAssembler {
         existingEntity
     );
     
-    if (conflictManager == ConflictManager.IGNORE) return;
+    if (conflictManager == ConflictManager.Ignore) return;
     
-    if (!spawnee.isMutable || (conflictManager == ConflictManager.ACCEPT_SERVER)) {
+    if (!spawnee.isMutable || (conflictManager == ConflictManager.AcceptServer)) {
       entryProxies = existingEntity._scan._proxies;
       
       final int len=entryProxies.length;
@@ -265,7 +265,7 @@ class EntityAssembler {
           } else if (entry.proxy._value is Iterable) _pendingProxies.add(entry.proxy);
         }
       }
-    } else if (conflictManager == ConflictManager.ACCEPT_SERVER_DIRTY) {
+    } else if (conflictManager == ConflictManager.AcceptServerDirty) {
       entryProxies = existingEntity._scan._proxies;
       
       for (int i=0, len=entryProxies.length; i<len; i++) {

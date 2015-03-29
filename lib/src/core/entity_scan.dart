@@ -31,18 +31,13 @@ class EntityRootScan {
     final Type T = M['type'] as Type;
     final String typeStr = M['typeStaticStr'] as String;
     final _DormPropertyInfo entry = new _DormPropertyInfo(N, S, T, typeStr, new _PropertyMetadataCache(N));
-    bool isIdentity = false;
     
     entry.metadataCache.expectedType = entry.typeStatic;
     
     _metadataCache = new MetadataCache();
     
     allMeta.forEach(
-      (Object meta) {
-        _metadataCache.registerTagForProperty(entry, meta);
-        
-        if (meta is Id) isIdentity = true;
-      }
+      (Object meta) => _metadataCache.registerTagForProperty(entry, meta)
     );
     
     _rootProxies.add(entry);
