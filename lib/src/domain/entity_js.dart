@@ -30,6 +30,8 @@ abstract class EntityJs extends Entity {
       _CACHED_CONTEXTS[refClassName] = currentContext;
     }
     
+    if (currentContext == null) throw new DormError('No context was found for $refClassName');
+    
     interopObj = Entity._serializerWorkaround.convertedEntities[this] = new JsObject(currentContext);
     
     return writeExternalJs(interopObj);
@@ -57,33 +59,41 @@ abstract class EntityJs extends Entity {
       
       pointerObj = S.interopObj;
       
-      //if (pointerObj != null) data[entry.info.property] = pointerObj;
       if (pointerObj != null) return pointerObj;
-      else {
-        //data[entry.info.property] = S.toJsObject();
-        return S.toJsObject();
-      }
+      else return S.toJsObject();
     } else if (entry.proxy._value is List) {
       subList = Entity._serializerWorkaround.convertOut(entry.info.type, entry.proxy._value);
       tempList = <JsObject>[];
       
-      subList.forEach(
-          (dynamic listEntry) {
-            if (listEntry is EntityJs) {
-              pointerObj = listEntry.interopObj;
-              
-              if (pointerObj != null) tempList.add(pointerObj);
-              else tempList.add(listEntry.toJsObject());
-            } else tempList.add(Entity._serializerWorkaround.convertOut(entry.info.type, entry.proxy._value));
-          }
-        );
+      final int len = subList.length;
+      dynamic listEntry;
+      
+      for (int i=0; i<len; i++) {
+        listEntry = subList[i];
         
-        //data[entry.info.property] = new JsObject(context['Array'], tempList);
+        if (listEntry is EntityJs) {
+          pointerObj = listEntry.interopObj;
+          
+          if (pointerObj != null) tempList.add(pointerObj);
+          else tempList.add(listEntry.toJsObject());
+        } else tempList.add(Entity._serializerWorkaround.convertOut(entry.info.type, entry.proxy._value));
+      }
+      
+      final JsArray arr = data[entry.proxy._property];
+      
+      if (arr == null) {
         return new JsObject(context['Array'], tempList);
       } else {
-        //data[entry.info.property] = Entity._serializerWorkaround.convertOut(entry.info.type, entry.proxy._value);
-        return Entity._serializerWorkaround.convertOut(entry.info.type, entry.proxy._value);
+        arr.length = 0;
+        
+        arr.callMethod('push', tempList);
+        
+        return arr;
       }
-   }
+    } else if (entry.info.metadataCache.isLazy) {
+      if (entry.proxy._isLazyLoadingCompleted) return Entity._serializerWorkaround.convertOut(entry.info.type, entry.proxy._value);
+      else return null;
+    } else return Entity._serializerWorkaround.convertOut(entry.info.type, entry.proxy._value);
+  }
   
 }

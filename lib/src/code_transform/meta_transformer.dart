@@ -14,48 +14,47 @@ class MetaTransformer extends Transformer {
   Future<dynamic> apply(Transform transform) {
     return transform.primaryInput.readAsString().then(
       (String codeBody) {
-        final RegExp partOfExp = new RegExp(r"[^;]+;");
         final RegExp classNameExp = new RegExp(r"class ([^]+) extends ([^{]+)");
         final List<_PropertyDefinition> definitions = _extractAllMetatags(codeBody);
         
-        if (definitions.isNotEmpty) {
-          final List<String> refMeta = _scanMeta('Ref', codeBody);
+        final List<String> refMeta = _scanMeta('Ref', codeBody);
+                  
+        if (refMeta != null) {
+          final List<String> metadef = <String>[];
+          final List<String> proxydef = <String>[];
+          final Match declMatch = classNameExp.firstMatch(codeBody);
+          final String className = declMatch.group(1);
+          final String superClassName = declMatch.group(2);
+          final String ref = refMeta.first;
+          final String header = codeBody.substring(0, codeBody.indexOf('class $className'));
+          final bool isImmutable = (_scanMeta('Immutable', header) != null);
           
-          if (refMeta != null) {
-            final List<String> metadef = <String>[];
-            final List<String> proxydef = <String>[];
-            final Match partOfMatch = partOfExp.firstMatch(codeBody);
-            final String partOf = partOfMatch.group(0);
-            final Match declMatch = classNameExp.firstMatch(codeBody);
-            final String className = declMatch.group(1);
-            final String superClassName = declMatch.group(2);
-            final String ref = refMeta.first;
-            final String header = codeBody.substring(0, codeBody.indexOf('class $className'));
-            final bool isImmutable = (_scanMeta('Immutable', header) != null);
-            
-            definitions.forEach(
-              (_PropertyDefinition D) {
-                metadef.add(D.toCodeBody(className));
-                
-                proxydef.add('_${D.nameStr.substring(2, D.nameStr.length - 1)}');
-                
-                final String T = D.typeStr.trim(), N = D.nameStr.replaceAll("'", '').trim(), S = D.symbolStr.trim(), UN = S.substring(0, S.length - 7);
-                final String R = '${T}[^\\s]*\\s${N};';
-                
+          if (definitions.isNotEmpty) definitions.forEach(
+            (_PropertyDefinition D) {
+              metadef.add(D.toCodeBody(className));
+              
+              proxydef.add('_${D.nameStr.substring(2, D.nameStr.length - 1)}');
+              
+              final String T = D.typeStr.trim(), N = D.nameStr.replaceAll("'", '').trim(), S = D.symbolStr.trim(), UN = S.substring(0, S.length - 7);
+              final String R = '${T}[^\\s]*\\s${N};';
+              
+              if (D._tags['Lazy'] != null)  
+                codeBody = codeBody.replaceFirst(new RegExp(R), 'final DormProxy<${T}> _${N} = new DormProxy<${T}>(${UN}, ${S}); $T get $N => _${N}.getLazyValue(this); set ${N}($T value) => _${N}.value = notifyPropertyChange(${D.symbolStr}, _${N}.value, value);');
+              else
                 codeBody = codeBody.replaceFirst(new RegExp(R), 'final DormProxy<${T}> _${N} = new DormProxy<${T}>(${UN}, ${S}); $T get $N => _${N}.value; set ${N}($T value) => _${N}.value = notifyPropertyChange(${D.symbolStr}, _${N}.value, value);');
-              }
-            );
-            
-            final String scanLine = "Entity.ASSEMBLER.scan(R, C, <Map<String, dynamic>>[]\r${metadef.join('\r')}, ${isImmutable ? 'false' : 'true'});";
-            final String proxyLine = 'Entity.ASSEMBLER.registerProxies(this, <DormProxy>[${proxydef.join(',')}]);';
-            
-            transform.addOutput(
-              new Asset.fromString(
-                  transform.primaryInput.id, 
-                  codeBody.replaceFirst('${className}() : super();', 'static void DO_SCAN([String R, Function C]) { if (R == null) R = ${ref}; if (C == null) C = () => new ${className}(); ${superClassName}.DO_SCAN(R, C); ${scanLine} }\r\r${className}() : super() { $proxyLine }')
-              )
-            );
-          }
+            }
+          );
+          
+          final String scanLine = "Entity.ASSEMBLER.scan(R, C, <Map<String, dynamic>>[]\r${metadef.join('\r')}, ${isImmutable ? 'false' : 'true'});";
+          final String proxyLine = 'Entity.ASSEMBLER.registerProxies(this, <DormProxy>[${proxydef.join(',')}]);';
+          final String newBody = codeBody.replaceFirst('${className}() : super();', 'static void DO_SCAN([String R, Function C]) { if (R == null) R = ${ref}; if (C == null) C = () => new ${className}(); ${superClassName}.DO_SCAN(R, C); ${scanLine} }\r\r${className}() : super() { $proxyLine }');
+          
+          transform.addOutput(
+            new Asset.fromString(
+                transform.primaryInput.id, 
+                newBody
+            )
+          );
         }
       }
     );
@@ -70,7 +69,7 @@ class MetaTransformer extends Transformer {
       (Match M) {
         final String allMeta = M.group(0);
         
-        if (allMeta.length > 0) {
+        if (allMeta.isNotEmpty) {
           final _PropertyDefinition D = _scanProperty(allMeta);
           
           if (D != null) {
@@ -111,7 +110,6 @@ class MetaTransformer extends Transformer {
     
     final List<String> values = <String>[];
     final String G = M.group(1);
-    int index = 0;
     
     G.split(',').forEach(
       (String V) => values.add(V.trim())

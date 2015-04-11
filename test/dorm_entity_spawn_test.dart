@@ -35,7 +35,7 @@ void run() {
     
     EntityFactory<AnotherTestEntity> factory = new EntityFactory();
     
-    AnotherTestEntity entity = factory.spawn(serializer.incoming(rawDataA), serializer, handleConflictAcceptClient).first;
+    factory.spawn(serializer.incoming(rawDataA), serializer, handleConflictAcceptClient).first;
   });
   
   test('Simple spawn test', () {
@@ -148,5 +148,5 @@ void run() {
   });
 }
 
-ConflictManager handleConflictAcceptClient(Entity serverEntity, Entity clientEntity) => ConflictManager.ACCEPT_CLIENT;
-ConflictManager handleConflictAcceptServer(Entity serverEntity, Entity clientEntity) => ConflictManager.ACCEPT_SERVER;
+ConflictManager handleConflictAcceptClient(Entity serverEntity, Entity clientEntity) => ConflictManager.AcceptClient;
+ConflictManager handleConflictAcceptServer(Entity serverEntity, Entity clientEntity) => ConflictManager.AcceptServer;

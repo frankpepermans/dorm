@@ -109,5 +109,5 @@ class DropdownItemRenderer extends ItemRenderer {
   
   String comboBox_labelHandler(Job job) => job.name;
   
-  ConflictManager handleConflictAcceptClient(Entity serverEntity, Entity clientEntity) => ConflictManager.ACCEPT_CLIENT;
+  ConflictManager handleConflictAcceptClient(Entity serverEntity, Entity clientEntity) => ConflictManager.AcceptClient;
 }

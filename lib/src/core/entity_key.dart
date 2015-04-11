@@ -38,7 +38,7 @@ class EntityKeyChain {
   //
   //---------------------------------
   
-  final HashMap<Symbol, HashMap<dynamic, EntityKeyChain>> _map = new HashMap<Symbol, HashMap<dynamic, EntityKeyChain>>.identity();
+  final HashMap<Symbol, HashMap<dynamic, EntityKeyChain>> _map = new HashMap<Symbol, HashMap<dynamic, EntityKeyChain>>();
   
   //---------------------------------
   //
@@ -46,7 +46,7 @@ class EntityKeyChain {
   //
   //---------------------------------
   
-  final HashSet<EntityScan> entityScans = new HashSet<EntityScan>.identity();
+  final HashSet<EntityScan> entityScans = new HashSet<EntityScan>();
   
   //---------------------------------
   //
@@ -64,7 +64,7 @@ class EntityKeyChain {
   
   void operator []= (Symbol key, dynamic value) => _setKeyValueNoReturn(key, value);
   
-  EntityKeyChain operator [] (List otherKey) => _map[otherKey[0]][otherKey[1]];
+  EntityKeyChain operator [] (List<dynamic> otherKey) => _map[otherKey[0]][otherKey[1]];
   
   //---------------------------------
   //
@@ -81,7 +81,7 @@ class EntityKeyChain {
     if (mainKey == null) {
       returnValue = new EntityKeyChain();
       
-      mainKey = new HashMap<dynamic, EntityKeyChain>.identity();
+      mainKey = new HashMap<dynamic, EntityKeyChain>();
       
       mainKey[value] = returnValue;
       
@@ -103,7 +103,7 @@ class EntityKeyChain {
     HashMap<dynamic, EntityKeyChain> mainKey = _map[key];
     
     if (mainKey == null) {
-      _map[key] = mainKey = new HashMap<dynamic, EntityKeyChain>.identity();
+      _map[key] = mainKey = new HashMap<dynamic, EntityKeyChain>();
       
       mainKey[value] = new EntityKeyChain();
     } else if (mainKey[value] == null) mainKey[value] = new EntityKeyChain();

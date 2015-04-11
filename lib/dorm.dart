@@ -140,7 +140,7 @@ abstract class SerializerBase = Object with SerializerMixin;
 
 typedef ConflictManager OnConflictFunction(Entity serverEntity, Entity clientEntity);
 
-typedef Future<List<dynamic>> LazyLoaderMethod(Entity entity, Symbol symbol);
+typedef Future LazyLoaderMethod(Entity entity, Symbol symbol);
 
 typedef void PostProcessorMethod(Entity entity);
 

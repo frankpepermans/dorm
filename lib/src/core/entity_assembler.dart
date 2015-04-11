@@ -83,23 +83,29 @@ class EntityAssembler {
     final EntityScan scan = entity._scan;
     DormProxy proxy;
     _DormProxyPropertyInfo I;
-    int i = proxies.length;
+    bool hasUnknownMapping = false;
     
-    while (i > 0) {
-      proxy = proxies[--i];
+    for (int i=0, len=proxies.length; i<len; i++) {
+      proxy = proxies[i];
       
       I = scan._proxyMap[proxy._property];
       
-      scan._root._propertyToSymbol[proxy._property] = proxy._propertySymbol;
-      scan._root._symbolToProperty[proxy._propertySymbol] = proxy._property;
+      if (!scan._root._hasMapping) {
+        if (!hasUnknownMapping) hasUnknownMapping = (scan._root._propertyToSymbol[proxy._property] == null);
+        
+        scan._root._propertyToSymbol[proxy._property] = proxy._propertySymbol;
+        scan._root._symbolToProperty[proxy._propertySymbol] = proxy._property;
+      }
       
       if (I != null) proxy._updateWithMetadata(
         I..proxy = proxy, 
         scan
       );
       
-      if (proxy.isLazy) _initLazyLoading(entity, proxy);
+      if (proxy.isLazy) proxy._isLazyLoadingRequired = true;
     }
+    
+    scan._root._hasMapping = !hasUnknownMapping;
   }
   
   HashSet<Symbol> getPropertyFieldsForType(String refClassName) {
@@ -140,29 +146,6 @@ class EntityAssembler {
   //
   //---------------------------------
   
-  void _initLazyLoading(Entity entity, DormProxy proxy) {
-    proxy._lazyHandler = (DormProxy lazyProxy) {
-      final ObservableList list = lazyProxy._value as ObservableList;
-      
-      if (!entity.isUnsaved()) {
-        final EntityFactory factory = new EntityFactory();
-        final EntityLazyHandler handler = factory._lazyHandlers.firstWhere(
-          (EntityLazyHandler lazyHandler) => (lazyHandler.propertySymbol == lazyProxy._propertySymbol),
-          orElse: () => null
-        );
-        
-        if (handler == null) throw new DormError('Missing a lazy handler for ${lazyProxy._property} on entity $entity');
-        else handler.handler(entity, lazyProxy._propertySymbol).then(
-          (List<dynamic> resultSet) {
-            if (resultSet != null && resultSet.isNotEmpty) list.addAll(resultSet);
-            
-            list.notifyPropertyChange(IS_LAZILY_LOADED, null, list);
-          }
-        );
-      } else list.notifyPropertyChange(IS_LAZILY_LOADED, null, list);
-    };
-  }
-  
   EntityScan _createEntityScan(Entity entity) {
     final EntityRootScan scan = _entityScans[entity.refClassName];
     
@@ -171,13 +154,26 @@ class EntityAssembler {
     return null;
   }
   
-  Entity _assemble(Map<String, dynamic> rawData, DormProxy owningProxy, Serializer serializer, OnConflictFunction onConflict) {
-    final String refClassName = rawData[SerializationType.ENTITY_TYPE];
-    final bool isDetached = rawData.containsKey(SerializationType.DETACHED);
+  String _fetchRefClassName(Map<String, dynamic> rawData, String forType) {
+    String refClassName = rawData[SerializationType.ENTITY_TYPE];
+    
+    if (refClassName == null) {
+      final List<String> S = forType.split('<');
+      
+      if (S.length > 1) refClassName = S.last.split('>').first;
+      else refClassName = forType;
+    }
+    
+    return refClassName;
+  }
+  
+  Entity _assemble(Map<String, dynamic> rawData, DormProxy owningProxy, Serializer serializer, OnConflictFunction onConflict, String forType) {
+    final String refClassName = _fetchRefClassName(rawData, forType);
+    final bool isDetached = (rawData[SerializationType.DETACHED] != null);
     EntityRootScan entityScan;
     Entity spawnee, localNonPointerEntity;
     
-    if (onConflict == null) onConflict = (Entity serverEntity, Entity clientEntity) => ConflictManager.ACCEPT_CLIENT;
+    if (onConflict == null) onConflict = (Entity serverEntity, Entity clientEntity) => ConflictManager.AcceptClient;
     
     entityScan = _entityScans[refClassName];
     
@@ -203,16 +199,18 @@ class EntityAssembler {
     
     localNonPointerEntity = EntityKeyChain.getFirstSibling(spawnee._scan, allowPointers: false);
     
+    final bool hasLocal = (localNonPointerEntity != null);
+    
     if (
         !spawnee._isPointer &&
-        (localNonPointerEntity != null)
+        hasLocal
     ) _solveConflictsIfAny(
         spawnee,
         localNonPointerEntity, 
         onConflict
     );
     
-    if (localNonPointerEntity != null) {
+    if (hasLocal) {
       entityScan._unusedInstance = spawnee;
       
       return localNonPointerEntity;
@@ -231,10 +229,9 @@ class EntityAssembler {
   
   void _solveConflictsIfAny(Entity spawnee, Entity existingEntity, OnConflictFunction onConflict) {
     ConflictManager conflictManager;
-    Iterable<_DormProxyPropertyInfo> entryProxies, spawneeProxies;
+    Iterable<_DormProxyPropertyInfo> entryProxies;
     _DormProxyPropertyInfo entry, entryMatch;
     Entity entityCast;
-    int i;
     
     if (onConflict == null) throw new DormError('Conflict was detected, but no onConflict method is available');
     
@@ -243,15 +240,15 @@ class EntityAssembler {
         existingEntity
     );
     
-    if (conflictManager == ConflictManager.IGNORE) return;
+    if (conflictManager == ConflictManager.Ignore) return;
     
-    if (!spawnee.isMutable || (conflictManager == ConflictManager.ACCEPT_SERVER)) {
+    if (!spawnee.isMutable || (conflictManager == ConflictManager.AcceptServer)) {
       entryProxies = existingEntity._scan._proxies;
       
-      i = entryProxies.length;
+      final int len=entryProxies.length;
       
-      while (i > 0) {
-        entry = entryProxies.elementAt(--i);
+      for (int i=0; i<len; i++) {
+        entry = entryProxies.elementAt(i);
         
         entryMatch = spawnee._scan._proxies.firstWhere(
           (_DormProxyPropertyInfo E) => (entry.info.property == E.info.property),
@@ -268,13 +265,11 @@ class EntityAssembler {
           } else if (entry.proxy._value is Iterable) _pendingProxies.add(entry.proxy);
         }
       }
-    } else if (conflictManager == ConflictManager.ACCEPT_SERVER_DIRTY) {
+    } else if (conflictManager == ConflictManager.AcceptServerDirty) {
       entryProxies = existingEntity._scan._proxies;
       
-      i = entryProxies.length;
-      
-      while (i > 0) {
-        entry = entryProxies.elementAt(--i);
+      for (int i=0, len=entryProxies.length; i<len; i++) {
+        entry = entryProxies.elementAt(i);
         
         entryMatch = spawnee._scan._proxies.firstWhere(
           (_DormProxyPropertyInfo E) => (entry.info.property == E.info.property),
@@ -295,15 +290,13 @@ class EntityAssembler {
   }
   
   void _updateCollectionsWith(Entity actualEntity) {
-    List<dynamic> collectionEntry;
+    final int len = _pendingProxies.length;
     DormProxy proxy;
     Entity entity;
     dynamic listEntry;
-    bool collectionEntryHasPointers;
-    int i = _pendingProxies.length, j;
     
-    while (i > 0) {
-      proxy = _pendingProxies[--i];
+    for (int i=0; i<len; i++) {
+      proxy = _pendingProxies[i];
       
       if (proxy._value is Entity) {
         entity = proxy._value as Entity;
@@ -314,14 +307,11 @@ class EntityAssembler {
           _pendingProxies.remove(proxy);
         }
       } else if (proxy._value is List) {
-        final int len = proxy._value.length;
-        
-        j = len;
-        
+        final int len=proxy._value.length;
         bool hasPointers = false, containsEntities = false;
         
-        while (j > 0) {
-          listEntry = proxy._value[--j];
+        for (int j=0; j<len; j++) {
+          listEntry = proxy._value[j];
           
           if (!containsEntities) containsEntities = (listEntry is Entity);
           

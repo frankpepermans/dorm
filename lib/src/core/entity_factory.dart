@@ -48,19 +48,19 @@ class EntityFactory<T extends Entity> {
     (EntityLazyHandler tmpLazyHandler) => (tmpLazyHandler == lazyHandler)
   );
   
-  ObservableList<T> spawn(Iterable<Map<String, dynamic>> rawData, Serializer serializer, OnConflictFunction onConflict, {DormProxy proxy}) {
+  ObservableList<T> spawn(Iterable<Map<String, dynamic>> rawData, Serializer serializer, OnConflictFunction onConflict, {DormProxy proxy, String forType}) {
     final ObservableList<T> results = new ObservableList<T>();
     final int len = rawData.length;
     
     if (proxy != null) proxy._resultLen = len;
     
-    for (int i=0; i<len; results.add(spawnSingle(rawData.elementAt(i++), serializer, onConflict, proxy: proxy)));
+    for (int i=0; i<len; results.add(spawnSingle(rawData.elementAt(i++), serializer, onConflict, proxy: proxy, forType: forType)));
     
     return results;
   }
   
-  T spawnSingle(Map<String, dynamic> rawData, Serializer serializer, OnConflictFunction onConflict, {DormProxy proxy}) {
-    final T entity = _assembler._assemble(rawData, proxy, serializer, onConflict);
+  T spawnSingle(Map<String, dynamic> rawData, Serializer serializer, OnConflictFunction onConflict, {DormProxy proxy, String forType}) {
+    final T entity = _assembler._assemble(rawData, proxy, serializer, onConflict, forType);
     final int len = _postProcessors.length;
     
     if (entity != null && !entity._isPointer) for (int i=0; i<len; _postProcessors.elementAt(i++).handler(entity));
