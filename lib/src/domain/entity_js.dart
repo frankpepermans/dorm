@@ -39,7 +39,7 @@ abstract class EntityJs extends Entity {
     final List<dynamic> L = <dynamic>[_uid];
     final int len = _scan._proxies.length;
     
-    for (int i=0; i<len; L.add(_writeExternalJsProxy(_scan._proxies[i++], data)));
+    for (int i=0; i<len; i++) L.add(_writeExternalJsProxy(_scan._proxies[i], data));
     
     data.callMethod('_readExternal', L);
     
