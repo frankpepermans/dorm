@@ -107,8 +107,10 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:core';
 import 'dart:js';
+import 'dart:typed_data';
 
 import 'package:observe/observe.dart';
+import 'package:amf_codec/amf_codec.dart';
 
 part 'src/core/conflict_manager.dart';
 part 'src/core/dorm_error.dart';
@@ -131,6 +133,7 @@ part 'src/serialization/serialization_type.dart';
 part 'src/serialization/serializer.dart';
 part 'src/serialization/serializer_json.dart';
 part 'src/serialization/serializer_js.dart';
+part 'src/serialization/serializer_amf.dart';
 
 bool evictEntity(Entity entity) => entity._scan._evictEntity(entity);
 
