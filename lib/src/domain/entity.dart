@@ -354,6 +354,7 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
   }
   
   static final Map<String, HashSet<Symbol>> _propertyList = <String, HashSet<Symbol>>{};
+  static final Map<String, HashSet<String>> _propertyListAsString = <String, HashSet<String>>{};
   
   /**
    * Returns a [List] containing [Symbol]s of all properties belonging to this [Entity].
@@ -373,6 +374,8 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
     
     return properties;
   }
+  
+  List<Symbol> getAmfEncodingSequence() => _scan._root._amfSeq;
   
   /**
    * Returns the metadata attached to a specific property.

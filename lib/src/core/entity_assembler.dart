@@ -62,11 +62,8 @@ class EntityAssembler {
   EntityRootScan scan(String refClassName, Function constructorMethod, List<Map<String, dynamic>> meta, bool isMutable) {
     EntityRootScan scan = _entityScans[refClassName];
     
-    if(scan == null) {
-      scan = new EntityRootScan(refClassName, constructorMethod)..isMutableEntity = isMutable;
-      
-      _entityScans[refClassName] = scan;
-    }
+    if(scan == null)
+      scan = _entityScans[refClassName] = new EntityRootScan(refClassName, constructorMethod)..isMutableEntity = isMutable;
     
     meta.forEach(
       (Map<String, dynamic> M) => scan.registerMetadataUsing(M)
@@ -95,6 +92,8 @@ class EntityAssembler {
         
         scan._root._propertyToSymbol[proxy._property] = proxy._propertySymbol;
         scan._root._symbolToProperty[proxy._propertySymbol] = proxy._property;
+        
+        if (!scan._root._amfSeq.contains(proxy._propertySymbol)) scan._root._amfSeq.add(proxy._propertySymbol);
       }
       
       if (I != null) proxy._updateWithMetadata(
@@ -106,6 +105,12 @@ class EntityAssembler {
     }
     
     scan._root._hasMapping = !hasUnknownMapping;
+  }
+  
+  Entity registerNewEntity(Entity spawnee, OnConflictFunction onConflict) {
+    spawnee._scan.buildKey();
+    
+    return _handleExistingEntity(spawnee, onConflict);
   }
   
   HashSet<Symbol> getPropertyFieldsForType(String refClassName) {
@@ -167,22 +172,27 @@ class EntityAssembler {
     return refClassName;
   }
   
-  Entity _assemble(Map<String, dynamic> rawData, DormProxy owningProxy, Serializer serializer, OnConflictFunction onConflict, String forType) {
-    final String refClassName = _fetchRefClassName(rawData, forType);
-    final bool isDetached = (rawData[SerializationType.DETACHED] != null);
-    EntityRootScan entityScan;
-    Entity spawnee, localNonPointerEntity;
-    
-    if (onConflict == null) onConflict = (Entity serverEntity, Entity clientEntity) => ConflictManager.AcceptClient;
-    
-    entityScan = _entityScans[refClassName];
+  Entity spawn(String refClassName) {
+    final EntityRootScan entityScan = _entityScans[refClassName];
     
     if (entityScan == null) throw new DormError('Scan for entity not found: $refClassName');
     
-    spawnee = entityScan._unusedInstance;
+    Entity spawnee = entityScan._unusedInstance;
     
     if (spawnee == null) spawnee = entityScan._entityCtor();
     else entityScan._unusedInstance = null;
+    
+    return spawnee;
+  }
+  
+  Entity _assemble(Map<String, dynamic> rawData, DormProxy owningProxy, Serializer serializer, OnConflictFunction onConflict, String forType) {
+    final String refClassName = _fetchRefClassName(rawData, forType);
+    final bool isDetached = (rawData[SerializationType.DETACHED] != null);
+    Entity spawnee, existingEntity;
+    
+    if (onConflict == null) onConflict = (Entity serverEntity, Entity clientEntity) => ConflictManager.AcceptClient;
+    
+    spawnee = spawn(refClassName);
     
     spawnee.readExternal(rawData, serializer, onConflict);
     
@@ -195,25 +205,12 @@ class EntityAssembler {
       else return spawnee;
     }
     
-    spawnee._scan.buildKey();
+    existingEntity = registerNewEntity(spawnee, onConflict);
     
-    localNonPointerEntity = EntityKeyChain.getFirstSibling(spawnee._scan, allowPointers: false);
-    
-    final bool hasLocal = (localNonPointerEntity != null);
-    
-    if (
-        !spawnee._isPointer &&
-        hasLocal
-    ) _solveConflictsIfAny(
-        spawnee,
-        localNonPointerEntity, 
-        onConflict
-    );
-    
-    if (hasLocal) {
-      entityScan._unusedInstance = spawnee;
+    if (existingEntity != spawnee) {
+      _entityScans[refClassName]._unusedInstance = spawnee;
       
-      return localNonPointerEntity;
+      return existingEntity;
     }
     
     if (spawnee._isPointer) {
@@ -222,6 +219,25 @@ class EntityAssembler {
       spawnee._scan._keyChain.entityScans.add(spawnee._scan);
       
       _updateCollectionsWith(spawnee);
+    }
+    
+    return spawnee;
+  }
+  
+  Entity _handleExistingEntity(Entity spawnee, OnConflictFunction onConflict) {
+    final Entity localNonPointerEntity = EntityKeyChain.getFirstSibling(spawnee._scan, allowPointers: false);
+    
+    if (
+        !spawnee._isPointer &&
+        (localNonPointerEntity != null)
+    ) {
+      _solveConflictsIfAny(
+          spawnee,
+          localNonPointerEntity, 
+          onConflict
+      );
+      
+      return localNonPointerEntity;
     }
     
     return spawnee;
