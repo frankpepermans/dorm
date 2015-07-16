@@ -93,7 +93,7 @@ class EntityAssembler {
         scan._root._propertyToSymbol[proxy._property] = proxy._propertySymbol;
         scan._root._symbolToProperty[proxy._propertySymbol] = proxy._property;
         
-        if (!scan._root._amfSeq.contains(proxy._propertySymbol)) scan._root._amfSeq.add(proxy._propertySymbol);
+        if (!scan._root._amfSeq.contains(proxy._property)) scan._root._amfSeq.add(proxy._property);
       }
       
       if (I != null) proxy._updateWithMetadata(
@@ -107,10 +107,20 @@ class EntityAssembler {
     scan._root._hasMapping = !hasUnknownMapping;
   }
   
-  Entity registerNewEntity(Entity spawnee, OnConflictFunction onConflict) {
+  Entity registerNewEntity(Entity spawnee, OnConflictFunction onConflict, {bool registerKeyInChain: true, bool solveConflicts: true}) {
     spawnee._scan.buildKey();
     
-    return _handleExistingEntity(spawnee, onConflict);
+    if (registerKeyInChain) spawnee._scan._keyChain.entityScans.add(spawnee._scan);
+    
+    final Entity actualEntity = _handleExistingEntity(spawnee, onConflict, solveConflicts: solveConflicts);
+    
+    if (registerKeyInChain && spawnee != actualEntity) {
+      spawnee._scan._keyChain.entityScans.remove(spawnee._scan);
+      
+      _updateCollectionsWith(actualEntity);
+    }
+    
+    return actualEntity;
   }
   
   HashSet<Symbol> getPropertyFieldsForType(String refClassName) {
@@ -205,7 +215,7 @@ class EntityAssembler {
       else return spawnee;
     }
     
-    existingEntity = registerNewEntity(spawnee, onConflict);
+    existingEntity = registerNewEntity(spawnee, onConflict, registerKeyInChain: false);
     
     if (existingEntity != spawnee) {
       _entityScans[refClassName]._unusedInstance = spawnee;
@@ -224,14 +234,14 @@ class EntityAssembler {
     return spawnee;
   }
   
-  Entity _handleExistingEntity(Entity spawnee, OnConflictFunction onConflict) {
+  Entity _handleExistingEntity(Entity spawnee, OnConflictFunction onConflict, {bool solveConflicts: true}) {
     final Entity localNonPointerEntity = EntityKeyChain.getFirstSibling(spawnee._scan, allowPointers: false);
     
     if (
         !spawnee._isPointer &&
         (localNonPointerEntity != null)
     ) {
-      _solveConflictsIfAny(
+      if (solveConflicts) _solveConflictsIfAny(
           spawnee,
           localNonPointerEntity, 
           onConflict

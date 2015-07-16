@@ -7,7 +7,7 @@ class EntityRootScan {
   final EntityCtor _entityCtor;
   final Map<String, Symbol> _propertyToSymbol = <String, Symbol>{};
   final Map<Symbol, String> _symbolToProperty = <Symbol, String>{};
-  final List<Symbol> _amfSeq = <Symbol>[];
+  final List<String> _amfSeq = <String>[];
   final List<_DormPropertyInfo> _rootProxies = <_DormPropertyInfo>[];
   MetadataCache _metadataCache;
   Entity _unusedInstance;

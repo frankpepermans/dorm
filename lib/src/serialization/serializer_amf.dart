@@ -1,6 +1,16 @@
 part of dorm;
 
-class SerializerAmf<T extends Entity, U extends Map<String, dynamic>> extends SerializerBase {
+class SerializerAmf<T extends Entity, U extends ByteData> extends SerializerBase {
+  
+  //-----------------------------------
+  //
+  // Public properties
+  //
+  //-----------------------------------
+  
+  final ReadExternalHandler _parseHandler;
+  final EntitySpawnMethod _spawnHandler;
+  final Transformer _transformer;
   
   //-----------------------------------
   //
@@ -8,7 +18,7 @@ class SerializerAmf<T extends Entity, U extends Map<String, dynamic>> extends Se
   //
   //-----------------------------------
   
-  SerializerAmf._contruct();
+  SerializerAmf._contruct(this._spawnHandler, this._parseHandler, this._transformer);
   
   //-----------------------------------
   //
@@ -16,7 +26,8 @@ class SerializerAmf<T extends Entity, U extends Map<String, dynamic>> extends Se
   //
   //-----------------------------------
   
-  factory SerializerAmf() => new SerializerAmf._contruct();
+  factory SerializerAmf(EntitySpawnMethod spawnHandler, ReadExternalHandler parseHandler, Transformer transformer) => 
+      new SerializerAmf._contruct(spawnHandler, parseHandler, transformer);
   
   //-----------------------------------
   //
@@ -24,22 +35,10 @@ class SerializerAmf<T extends Entity, U extends Map<String, dynamic>> extends Se
   //
   //-----------------------------------
   
-  Iterable<Map<String, dynamic>> incoming(ByteData data) => new AMF3Input(data).readObject();
+  Iterable<T> incoming(U data) => new AMF3Input(data, _spawnHandler, _parseHandler, _transformer).readObject().first['body']['viewItems'].values;
   
-  String outgoing(dynamic data) {
-    Entity._serializerWorkaround = this;
-    
-    convertedEntities = new HashMap<T, U>.identity();
-    
-    //if (data is Map) _convertMap(data);
-    //else if (data is Iterable) _convertList(data);
-    
-    if (
-        (data is List) ||
-        (data is Map)
-    ) return JSON.encode(data);
-    
-    return data.toString();
+  U outgoing(dynamic data) {
+    return null;
   }
   
   dynamic convertIn(Type forType, dynamic inValue) {

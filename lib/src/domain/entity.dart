@@ -53,6 +53,8 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
   //-----------------------------------
   
   dynamic operator [](Symbol propertyField) {
+    if (propertyField == #hashCodeInternal) return _uid;
+    
     final _DormProxyPropertyInfo result = _scan._proxies.firstWhere(
       (_DormProxyPropertyInfo entry) => (entry.info.propertySymbol == propertyField),
       orElse: () => null
@@ -375,7 +377,7 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
     return properties;
   }
   
-  List<Symbol> getAmfEncodingSequence() => _scan._root._amfSeq;
+  List<String> getAmfEncodingSequence() => _scan._root._amfSeq;
   
   /**
    * Returns the metadata attached to a specific property.
@@ -522,6 +524,9 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
       );
     }
   }
+  
+  void fastSetPropertyValue(String property, dynamic entryValue, Serializer serializer) => 
+      _scan._proxyMap[property]._proxy._fromRaw(serializer.convertIn(entryValue.runtimeType, entryValue));
   
   /**
    * Converts the [Entity] into raw [Map] data, including the full cyclic chain.
