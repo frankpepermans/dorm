@@ -27,6 +27,8 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
   // Public properties
   //
   //-----------------------------------
+
+  bool lastDeserializationWasUpdate = false;
   
   //-----------------------------------
   // uid
