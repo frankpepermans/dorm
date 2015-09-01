@@ -35,7 +35,7 @@ class SerializerAmf<T extends Entity, U extends ByteData> extends SerializerBase
   //
   //-----------------------------------
   
-  Iterable<T> incoming(U data) => new AMF3Input(data, _spawnHandler, _parseHandler, _transformer).readObject().first['body']['viewItems'].values;
+  Iterable<T> incoming(U data) => new AMF3Input(data, _spawnHandler, _parseHandler, _transformer).readObject().first['body']['viewItems'].arguments;
   
   U outgoing(dynamic data) {
     return null;
