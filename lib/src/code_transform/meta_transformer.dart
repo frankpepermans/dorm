@@ -14,7 +14,7 @@ class MetaTransformer extends Transformer {
   Future<dynamic> apply(Transform transform) {
     return transform.primaryInput.readAsString().then(
       (String codeBody) {
-        final RegExp classNameExp = new RegExp(r"class ([^]+) extends ([^{]+)");
+        final RegExp classNameExp = new RegExp(r"class ([^<]+)[^]* extends ([^ {]+)[^{]+");
         final List<_PropertyDefinition> definitions = _extractAllMetatags(codeBody);
         
         final List<String> refMeta = _scanMeta('Ref', codeBody);
@@ -47,10 +47,11 @@ class MetaTransformer extends Transformer {
           
           proxydef.sort((String P1, String P2) => P1.compareTo(P2));
           
-          final String scanLine = "Entity.ASSEMBLER.scan(R, C, <Map<String, dynamic>>[]\r${metadef.join('\r')}, ${isImmutable ? 'false' : 'true'});";
+          final String scanLine = "Entity.ASSEMBLER.scan(R, C, <Map<String, dynamic>>[]${metadef.join('')}, ${isImmutable ? 'false' : 'true'});";
           final String proxyLine = 'Entity.ASSEMBLER.registerProxies(this, <DormProxy>[${proxydef.join(',')}]);';
-          final String newBody = codeBody.replaceFirst('${className}() : super();', 'static void DO_SCAN([String R, Function C]) { if (R == null) R = ${ref}; if (C == null) C = () => new ${className}(); ${superClassName}.DO_SCAN(R, C); ${scanLine} }\r\r${className}() : super() { $proxyLine }');
-          
+          final String repl = 'static void DO_SCAN([String R, Function C]) { if (R == null) R = ${ref}; if (C == null) C = () => new ${className}(); ${superClassName}.DO_SCAN(R, C); ${scanLine} } ${className}() : super() { $proxyLine }';
+          final String newBody = codeBody.replaceFirst('${className}() : super();', repl);
+
           transform.addOutput(
             new Asset.fromString(
                 transform.primaryInput.id, 
