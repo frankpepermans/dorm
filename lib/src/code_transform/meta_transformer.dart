@@ -36,12 +36,12 @@ class MetaTransformer extends Transformer {
               proxydef.add('_${D.nameStr.substring(2, D.nameStr.length - 1)}');
               
               final String T = D.typeStr.trim(), N = D.nameStr.replaceAll("'", '').trim(), S = D.symbolStr.trim(), UN = S.substring(0, S.length - 7);
-              final String R = '${T}[^\\s]*\\s${N};';
-              
+              final String R = '([^\\s]+)[^\\s]*\\s${N};';
+
               if (D._tags['Lazy'] != null)  
-                codeBody = codeBody.replaceFirst(new RegExp(R), 'final DormProxy<${T}> _${N} = new DormProxy<${T}>(${UN}, ${S}); $T get $N => _${N}.getLazyValue(this); set ${N}($T value) => _${N}.value = notifyPropertyChange(${D.symbolStr}, _${N}.value, value);');
+                codeBody = codeBody.replaceFirstMapped(new RegExp(R), (Match M) => 'final DormProxy<${M.group(1)}> _${N} = new DormProxy<${M.group(1)}>(${UN}, ${S}); ${M.group(1)} get $N => _${N}.getLazyValue(this); set ${N}(${M.group(1)} value) => _${N}.value = notifyPropertyChange(${D.symbolStr}, _${N}.value, value);');
               else
-                codeBody = codeBody.replaceFirst(new RegExp(R), 'final DormProxy<${T}> _${N} = new DormProxy<${T}>(${UN}, ${S}); $T get $N => _${N}.value; set ${N}($T value) => _${N}.value = notifyPropertyChange(${D.symbolStr}, _${N}.value, value);');
+                codeBody = codeBody.replaceFirstMapped(new RegExp(R), (Match M) => 'final DormProxy<${M.group(1)}> _${N} = new DormProxy<${M.group(1)}>(${UN}, ${S}); ${M.group(1)} get $N => _${N}.value; set ${N}(${M.group(1)} value) => _${N}.value = notifyPropertyChange(${D.symbolStr}, _${N}.value, value);');
             }
           );
           
