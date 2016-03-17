@@ -673,53 +673,58 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
     Entity S;
           
     if (entry.proxy._value is Entity) {
-      S = entry.proxy._value;
-      
-      if (serializer.convertedEntities[S] != null) {
-        pointerMap = <String, dynamic>{
-          SerializationType.POINTER: S._uid,
-          SerializationType.ENTITY_TYPE: S._scan._root.refClassName
-        };
-        
-        S._scan._identityProxies.forEach(
-          (_DormProxyPropertyInfo I) => pointerMap[I.info.property] = I.proxy._value
-        );
-        
-        data[entry.info.property] = pointerMap;
-      } else {
-        data[entry.info.property] = <String, dynamic>{};
-        
-        S._writeExternalImpl(data[entry.info.property], serializer);
+      if (!entry.info.metadataCache.isTransient) {
+        S = entry.proxy._value;
+
+        if (serializer.convertedEntities[S] != null) {
+          pointerMap = <String, dynamic>{
+            SerializationType.POINTER: S._uid,
+            SerializationType.ENTITY_TYPE: S._scan._root.refClassName
+          };
+
+          S._scan._identityProxies.forEach(
+              (_DormProxyPropertyInfo I) =>
+          pointerMap[I.info.property] = I.proxy._value
+          );
+
+          data[entry.info.property] = pointerMap;
+        } else {
+          data[entry.info.property] = <String, dynamic>{};
+
+          S._writeExternalImpl(data[entry.info.property], serializer);
+        }
       }
     } else if (entry.proxy._value is List) {
-      subList = serializer.convertOut(entry.info.type, entry.proxy._value);
-      dataList = <dynamic>[];
-      
-      subList.forEach(
-          (dynamic listEntry) {
-            if (listEntry is Entity) {
-              if (serializer.convertedEntities[listEntry] != null) {
-                pointerMap = <String, dynamic>{
-                  SerializationType.POINTER: listEntry._uid,
-                  SerializationType.ENTITY_TYPE: listEntry._scan._root.refClassName
-                };
-                
-                listEntry._scan._identityProxies.forEach(
-                    (_DormProxyPropertyInfo I) => pointerMap[I.info.property] = I.proxy._value
-                );
-                
-                dataList.add(pointerMap);
-              } else {
-                dataList.add(<String, dynamic>{});
-                
-                listEntry._writeExternalImpl(dataList.last, serializer);
-              }
-            } else dataList.add(serializer.convertOut(entry.info.type, entry.proxy._value));
-          }
+      if (!entry.info.metadataCache.isTransient) {
+        subList = serializer.convertOut(entry.info.type, entry.proxy._value);
+        dataList = <dynamic>[];
+
+        subList.forEach(
+            (dynamic listEntry) {
+          if (listEntry is Entity) {
+            if (serializer.convertedEntities[listEntry] != null) {
+              pointerMap = <String, dynamic>{
+                SerializationType.POINTER: listEntry._uid,
+                SerializationType.ENTITY_TYPE: listEntry._scan._root.refClassName
+              };
+
+              listEntry._scan._identityProxies.forEach(
+                  (_DormProxyPropertyInfo I) => pointerMap[I.info.property] = I.proxy._value
+              );
+
+              dataList.add(pointerMap);
+            } else {
+              dataList.add(<String, dynamic>{});
+
+              listEntry._writeExternalImpl(dataList.last, serializer);
+            }
+          } else dataList.add(serializer.convertOut(entry.info.type, entry.proxy._value));
+        }
         );
-        
+
         data[entry.info.property] = dataList;
-      } else data[entry.info.property] = serializer.convertOut(entry.info.type, entry.proxy._value);
+      }
+    } else if (!entry.info.metadataCache.isTransient) data[entry.info.property] = serializer.convertOut(entry.info.type, entry.proxy._value);
    }
 }
 
