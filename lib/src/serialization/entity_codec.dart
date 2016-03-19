@@ -18,7 +18,7 @@ class EntityCodec<S extends List<Entity>, T extends String> extends Codec {
   T encode(S input) {
     _convertedEntities = <String, Map<String, dynamic>>{};
     
-    return encoder.convert(input);
+    return encoder.convert(input) as T;
   }
   
   S decode(T encoded) {
@@ -55,10 +55,10 @@ class EntityDecoder extends Converter<String, List<Entity>> {
   EntityDecoder(this._convertedEntities, this._onConflict, this._serializer);
   
   List<Entity> convert(String rawData) {
-    final List<Map<String, dynamic>> result = _serializer.incoming(rawData);
+    final Iterable<Map<String, dynamic>> result = _serializer.incoming(rawData);
     final EntityFactory factory = new EntityFactory();
     
-    return factory.spawn(result, _serializer, _onConflict);
+    return factory.spawn(result, _serializer, _onConflict) as List<Entity>;
   }
   
 }

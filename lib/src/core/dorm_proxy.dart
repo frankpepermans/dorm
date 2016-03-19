@@ -38,7 +38,7 @@ class DormProxy<T> {
       
       _lazyFuture = LH.handler(forEntity, _propertySymbol).then(
         (T V) {
-          _value = Entity._serializerWorkaround.convertIn(T, V);
+          _value = Entity._serializerWorkaround.convertIn(T, V) as T;
           
           _isLazyLoadingCompleted = true;
         },
@@ -152,7 +152,7 @@ class DormProxy<T> {
     
     genericAnnotations = cache.genericAnnotations;
     
-    setInsertValue(cache.insertValue);
-    setInitialValue(cache.initialValue);
+    setInsertValue(cache.insertValue as T);
+    setInitialValue(cache.initialValue as T);
   }
 }

@@ -206,7 +206,7 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
             subList.forEach(
               (dynamic subListEntry) {
                 if (subListEntry is Entity) {
-                  final Entity subListEntity = subListEntry as Entity;
+                  final Entity subListEntity = subListEntry;
                   
                   if (!tree.contains(subListEntity)) subListEntity.getEntityTree(traversedEntities: tree);
                 }
@@ -519,8 +519,8 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
        
       proxy._fromRaw(
          (proxy.isLazy) ? null :
-         (entryValue is Map) ? serializer.convertIn(Entity, FACTORY.spawnSingle(entryValue, serializer, onConflict, proxy:proxy, forType: E.info.typeStatic)) :
-         (entryValue is Iterable) ? serializer.convertIn(E.info.type, FACTORY.spawn(entryValue, serializer, onConflict, proxy:proxy, forType: E.info.typeStatic)) :
+         (entryValue is Map) ? serializer.convertIn(Entity, FACTORY.spawnSingle(entryValue as Map<String, dynamic>, serializer, onConflict, proxy:proxy, forType: E.info.typeStatic)) :
+         (entryValue is Iterable) ? serializer.convertIn(E.info.type, FACTORY.spawn(entryValue as Iterable<Map<String, dynamic>>, serializer, onConflict, proxy:proxy, forType: E.info.typeStatic)) :
          (entryValue != null) ? serializer.convertIn(E.info.type, entryValue) : null
       );
     }
@@ -606,13 +606,13 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
                 dynamic value = this[entry.proxy._propertySymbol];
                 
                 if (value is ObservableList) {
-                  final ObservableList listCast = value as ObservableList;
+                  final ObservableList listCast = value;
                   final ObservableList listClone = new ObservableList();
                   
                   listCast.forEach(
                     (dynamic listEntry) {
                       if (listEntry is Entity) {
-                        final Entity listEntryCast = listEntry as Entity;
+                        final Entity listEntryCast = listEntry;
                         
                         listClone.add(listEntryCast._duplicateImpl(clonedEntities, ignoredSymbols));
                       } else listClone.add(listEntry);
@@ -621,7 +621,7 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
                   
                   entry.proxy.setInitialValue(_serializerWorkaround.convertIn(entry.info.type, listClone));
                 } else if (value is Entity) {
-                  final Entity entryCast = value as Entity;
+                  final Entity entryCast = value;
                   
                   entry.proxy.setInitialValue(entryCast._duplicateImpl(clonedEntities, ignoredSymbols));
                 } else entry.proxy.setInitialValue(value);
@@ -691,7 +691,7 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
         } else {
           data[entry.info.property] = <String, dynamic>{};
 
-          S._writeExternalImpl(data[entry.info.property], serializer);
+          S._writeExternalImpl(data[entry.info.property] as Map<String, dynamic>, serializer);
         }
       }
     } else if (entry.proxy._value is List) {
@@ -716,7 +716,7 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
             } else {
               dataList.add(<String, dynamic>{});
 
-              listEntry._writeExternalImpl(dataList.last, serializer);
+              listEntry._writeExternalImpl(dataList.last as Map<String, dynamic>, serializer);
             }
           } else dataList.add(serializer.convertOut(entry.info.type, entry.proxy._value));
         }

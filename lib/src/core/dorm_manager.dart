@@ -304,7 +304,7 @@ class DormManager extends ChangeNotifier {
             _scanRecursively(tmpEntity, list, ignoreMutable, ignoreDirty, isDelete);
           }
         } else if (entry.proxy.value is Iterable) {
-          Iterable<Entity> entityList = entry.proxy.value;
+          final Iterable<Entity> entityList = entry.proxy.value as Iterable<Entity>;
           
           entityList.forEach(
             (Entity listEntity) {

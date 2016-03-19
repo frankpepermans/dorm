@@ -59,7 +59,7 @@ class EntityAssembler {
   //
   //---------------------------------
   
-  EntityRootScan scan(String refClassName, Function constructorMethod, List<Map<String, dynamic>> meta, bool isMutable) {
+  EntityRootScan scan(String refClassName, Entity constructorMethod(), List<Map<String, dynamic>> meta, bool isMutable) {
     EntityRootScan scan = _entityScans[refClassName];
     
     if(scan == null)
