@@ -52,7 +52,7 @@ void run() {
     entity.cyclicReference = entityShouldNotBePointer;
     
     String outgoing = serializer.outgoing(<Entity>[entity, entityShouldNotBePointer]);
-    List<String> outgoingToComplexData = JSON.decode(outgoing);
+    List<Map<String, dynamic>> outgoingToComplexData = JSON.decode(outgoing) as List<Map<String, dynamic>>;
     
     expect(entity.id, 2);
     expect(entity.name, 'Test A');
@@ -66,9 +66,7 @@ void run() {
     expect((outgoing.length > 0), true);
     
     outgoingToComplexData.forEach(
-      (String entry) {
-        Map<String, dynamic> map = JSON.decode(entry);
-        
+      (Map<String, dynamic> map) {
         expect(map.containsKey('id'), true);
         expect(map.containsKey(SerializationType.UID), true);
         

@@ -540,12 +540,12 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
   /**
    * Converts the [Entity] into a JSON representation.
    */
-  String toJson({Map<String, Map<String, dynamic>> convertedEntities}) {
+  Map<String, dynamic> toJson({Map<String, Map<String, dynamic>> convertedEntities}) {
     final Map<String, dynamic> jsonMap = <String, dynamic>{};
     
     writeExternal(jsonMap, _serializerWorkaround);
     
-    return JSON.encode(jsonMap);
+    return jsonMap;
   }
   
   /**

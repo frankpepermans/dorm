@@ -24,7 +24,7 @@ class SerializerJson<T extends Entity, U extends Map<String, dynamic>> extends S
   //
   //-----------------------------------
   
-  Iterable<Map<String, dynamic>> incoming(String data) => JSON.decode(data);
+  Iterable<Map<String, dynamic>> incoming(String data) => JSON.decode(data) as Iterable<Map<String, dynamic>>;
   
   String outgoing(dynamic data) {
     Entity._serializerWorkaround = this;
