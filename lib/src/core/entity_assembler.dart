@@ -321,7 +321,7 @@ class EntityAssembler {
     Entity entity;
     dynamic listEntry;
     
-    for (int i=0; i<len; i++) {
+    for (int i=len-1; i>=0; i--) {
       proxy = _pendingProxies[i];
       
       if (proxy._value is Entity) {
