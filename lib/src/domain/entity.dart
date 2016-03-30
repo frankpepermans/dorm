@@ -676,7 +676,7 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
       if (!entry.info.metadataCache.isTransient) {
         S = entry.proxy._value;
 
-        if (serializer.convertedEntities[S] != null) {
+        if (ASSEMBLER.usePointers && serializer.convertedEntities[S] != null) {
           pointerMap = <String, dynamic>{
             SerializationType.POINTER: S._uid,
             SerializationType.ENTITY_TYPE: S._scan._root.refClassName
@@ -702,7 +702,7 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
         subList.forEach(
             (dynamic listEntry) {
           if (listEntry is Entity) {
-            if (serializer.convertedEntities[listEntry] != null) {
+            if (ASSEMBLER.usePointers && serializer.convertedEntities[listEntry] != null) {
               pointerMap = <String, dynamic>{
                 SerializationType.POINTER: listEntry._uid,
                 SerializationType.ENTITY_TYPE: listEntry._scan._root.refClassName

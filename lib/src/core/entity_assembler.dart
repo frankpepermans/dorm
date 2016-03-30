@@ -34,6 +34,8 @@ class EntityAssembler {
   // Public properties
   //
   //---------------------------------
+
+  bool usePointers = true;
   
   //---------------------------------
   //
