@@ -601,7 +601,7 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
               (ignoredSymbols == null) ||
               !ignoredSymbols.contains(entry.info.propertySymbol)
             ) {
-              if (entry.info.metadataCache.isId) entry.proxy.setInitialValue(entry.proxy._insertValue);
+              if (entry.info.metadataCache.isId) entry.proxy.setInitialValue(entry.proxy.value);
               else {
                 dynamic value = this[entry.proxy._propertySymbol];
                 
