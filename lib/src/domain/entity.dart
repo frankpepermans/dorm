@@ -601,7 +601,7 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
               (ignoredSymbols == null) ||
               !ignoredSymbols.contains(entry.info.propertySymbol)
             ) {
-              if (entry.info.metadataCache.isId) entry.proxy.setInitialValue(entry.proxy.value);
+              if (entry.info.metadataCache.isId) entry.proxy.setInitialValue(this[entry.proxy._propertySymbol]);
               else {
                 dynamic value = this[entry.proxy._propertySymbol];
                 
@@ -659,6 +659,7 @@ abstract class Entity extends ChangeNotifier implements Externalizable {
   void _writeExternalImpl(Map<String, dynamic> data, Serializer serializer) {
     data[SerializationType.ENTITY_TYPE] = _scan._root.refClassName;
     data[SerializationType.UID] = _uid;
+    if (serializer.asDetached) data[SerializationType.DETACHED] = true;
     
     serializer.convertedEntities[this] = data;
     

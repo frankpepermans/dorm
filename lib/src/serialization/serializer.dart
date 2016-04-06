@@ -1,6 +1,8 @@
 part of dorm;
 
 abstract class Serializer<T extends Entity, U> {
+
+  bool asDetached;
   
   //-----------------------------------
   //

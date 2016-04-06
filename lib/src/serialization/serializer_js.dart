@@ -1,6 +1,8 @@
 part of dorm;
 
 class SerializerJs<T extends EntityJs, U extends JsObject> extends SerializerBase {
+
+  bool asDetached = false;
   
   //-----------------------------------
   //

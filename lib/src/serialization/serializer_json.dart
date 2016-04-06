@@ -1,6 +1,8 @@
 part of dorm;
 
 class SerializerJson<T extends Entity, U extends Map<String, dynamic>> extends SerializerBase {
+
+  bool asDetached = false;
   
   //-----------------------------------
   //
@@ -8,7 +10,9 @@ class SerializerJson<T extends Entity, U extends Map<String, dynamic>> extends S
   //
   //-----------------------------------
   
-  SerializerJson._contruct();
+  SerializerJson._contruct(bool asDetached) {
+    this.asDetached = asDetached;
+  }
   
   //-----------------------------------
   //
@@ -16,7 +20,7 @@ class SerializerJson<T extends Entity, U extends Map<String, dynamic>> extends S
   //
   //-----------------------------------
   
-  factory SerializerJson() => new SerializerJson._contruct();
+  factory SerializerJson({bool asDetached: false}) => new SerializerJson._contruct(asDetached);
   
   //-----------------------------------
   //
