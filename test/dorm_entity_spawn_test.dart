@@ -115,11 +115,12 @@ void run() {
   
   test('Post processing', ()  {
     String rawDataE = generateJSONData('Test E', now, 'TestEntity');
+
     EntityFactory<TestEntity> factory = new EntityFactory()
     ..addPostProcessor(
-      new EntityPostProcessor(
-        (TestEntity entity) => entity.id = 1000 
-      )    
+      new EntityPostProcessor((Entity entity) {
+        if (entity is TestEntity) entity.id = 1000;
+      })
     );
     TestEntity entity = factory.spawnSingle(serializer.incoming(rawDataE).first, serializer, handleConflictAcceptServer);
     

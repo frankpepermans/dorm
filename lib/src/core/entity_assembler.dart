@@ -1,22 +1,22 @@
 part of dorm;
 
-/**
- * This class is a singleton, you may obtain the instance at any time in the following manner :
- * 
- *     main() {
- *       EntityAssembler assemblerSingletonInstance = new EntityAssembler();
- *     }
- * 
- * While it is possible to create an [Entity] directly with the assembler, you should use [EntityFactory]
- * with your services to facilitate this.
- * 
- * The assembler is responsible for the creation of an [Entity] and also continues to maintain it afterwards. 
- * As soon as an [Entity] is created, it will be stored in the [EntityKeyChain] chain,
- * should the same [Entity] then at a later time be reloaded in any way,
- * then the assembler will choose to update it in the case of [ConflictManager.ACCEPT_SERVER]
- * or keep the client [Entity] unchanged in case of [ConflictManager.ACCEPT_CLIENT].
- * This [ConflictManager] should be passed with the main spawn function of the [EntityFactory]
- */
+///
+/// This class is a singleton, you may obtain the instance at any time in the following manner :
+///
+///     main() {
+///       EntityAssembler assemblerSingletonInstance = new EntityAssembler();
+///     }
+///
+/// While it is possible to create an [Entity] directly with the assembler, you should use [EntityFactory]
+/// with your services to facilitate this.
+///
+/// The assembler is responsible for the creation of an [Entity] and also continues to maintain it afterwards.
+/// As soon as an [Entity] is created, it will be stored in the [EntityKeyChain] chain,
+/// should the same [Entity] then at a later time be reloaded in any way,
+/// then the assembler will choose to update it in the case of ConflictManager.ACCEPT_SERVER
+/// or keep the client [Entity] unchanged in case of ConflictManager.ACCEPT_CLIENT.
+/// This [ConflictManager] should be passed with the main spawn function of the [EntityFactory]
+///
 class EntityAssembler {
   
   //---------------------------------
@@ -27,7 +27,7 @@ class EntityAssembler {
   
   final Map<String, EntityRootScan> _entityScans = <String, EntityRootScan>{};
   
-  List<DormProxy> _pendingProxies = <DormProxy>[];
+  List<DormProxy<dynamic>> _pendingProxies = <DormProxy<dynamic>>[];
   
   //---------------------------------
   //
@@ -74,14 +74,14 @@ class EntityAssembler {
     return scan;
   }
   
-  void registerProxies(Entity entity, List<DormProxy> proxies) {
+  void registerProxies(Entity entity, List<DormProxy<dynamic>> proxies) {
     if (entity._scan == null) entity._scan = _createEntityScan(entity);
     
     if (entity._scan == null) return;
     
     final EntityScan scan = entity._scan;
-    DormProxy proxy;
-    _DormProxyPropertyInfo I;
+    DormProxy<dynamic> proxy;
+    _DormProxyPropertyInfo<_DormPropertyInfo> I;
     bool hasUnknownMapping = false;
     
     for (int i=0, len=proxies.length; i<len; i++) {
@@ -197,7 +197,7 @@ class EntityAssembler {
     return spawnee;
   }
   
-  Entity _assemble(Map<String, dynamic> rawData, DormProxy owningProxy, Serializer serializer, OnConflictFunction onConflict, String forType) {
+  Entity _assemble(Map<String, dynamic> rawData, DormProxy<dynamic> owningProxy, Serializer<dynamic, Map<String, dynamic>> serializer, OnConflictFunction onConflict, String forType) {
     final String refClassName = _fetchRefClassName(rawData, forType);
     final bool isDetached = (rawData[SerializationType.DETACHED] != null);
     Entity spawnee, existingEntity;
@@ -213,7 +213,7 @@ class EntityAssembler {
     final bool isSpawneeUnsaved = spawnee.isUnsaved();
     
     if (isSpawneeUnsaved) {
-      if (spawnee._isPointer) throw new DormError('Ambiguous reference, entity is unsaved and is also a pointer [${rawData}]');
+      if (spawnee._isPointer) throw new DormError('Ambiguous reference, entity is unsaved and is also a pointer [$rawData]');
       else return spawnee;
     }
     
@@ -257,8 +257,8 @@ class EntityAssembler {
   
   void _solveConflictsIfAny(Entity spawnee, Entity existingEntity, OnConflictFunction onConflict) {
     ConflictManager conflictManager;
-    Iterable<_DormProxyPropertyInfo> entryProxies;
-    _DormProxyPropertyInfo entry, entryMatch;
+    Iterable<_DormProxyPropertyInfo<_DormPropertyInfo>> entryProxies;
+    _DormProxyPropertyInfo<_DormPropertyInfo> entry, entryMatch;
     Entity entityCast;
     
     if (onConflict == null) throw new DormError('Conflict was detected, but no onConflict method is available');
@@ -279,12 +279,12 @@ class EntityAssembler {
         entry = entryProxies.elementAt(i);
         
         entryMatch = spawnee._scan._proxies.firstWhere(
-          (_DormProxyPropertyInfo E) => (entry.info.property == E.info.property),
+          (_DormProxyPropertyInfo<_DormPropertyInfo> E) => (entry.info.property == E.info.property),
           orElse: () => null
         );
         
         if (entryMatch != null) {
-          entry.proxy.setInitialValue(existingEntity.notifyPropertyChange(entry.proxy._propertySymbol, entry.proxy._value, entryMatch.proxy._value));
+          entry.proxy.setInitialValue(entryMatch.proxy._value);
           
           if (entry.proxy._value is Entity) {
             entityCast = entry.proxy._value as Entity;
@@ -300,12 +300,12 @@ class EntityAssembler {
         entry = entryProxies.elementAt(i);
         
         entryMatch = spawnee._scan._proxies.firstWhere(
-          (_DormProxyPropertyInfo E) => (entry.info.property == E.info.property),
+          (_DormProxyPropertyInfo<_DormPropertyInfo> E) => (entry.info.property == E.info.property),
           orElse: () => null
         );
         
         if (entryMatch != null) {
-          entry.proxy.value = existingEntity.notifyPropertyChange(entry.proxy._propertySymbol, entry.proxy._value, entryMatch.proxy._value);
+          entry.proxy.value = entryMatch.proxy._value;
           
           if (entry.proxy._value is Entity) {
             entityCast = entry.proxy._value as Entity;
@@ -319,7 +319,7 @@ class EntityAssembler {
   
   void _updateCollectionsWith(Entity actualEntity) {
     final int len = _pendingProxies.length;
-    DormProxy proxy;
+    DormProxy<dynamic> proxy;
     Entity entity;
     dynamic listEntry;
     

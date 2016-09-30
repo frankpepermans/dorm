@@ -137,7 +137,7 @@ class DormProxy<T> {
     return (valueA != valueB);
   }
   
-  void _updateWithMetadata(_DormProxyPropertyInfo entry, EntityScan scan) {
+  void _updateWithMetadata(_DormProxyPropertyInfo<_DormPropertyInfo> entry, EntityScan scan) {
     final _PropertyMetadataCache cache = entry.info.metadataCache;
     
     isId = cache.isId;
@@ -151,8 +151,13 @@ class DormProxy<T> {
     transformTo = cache.transformTo;
     
     genericAnnotations = cache.genericAnnotations;
-    
-    setInsertValue(cache.insertValue as T);
-    setInitialValue(cache.initialValue as T);
+
+    try {
+      setInsertValue(cache.insertValue as T);
+      setInitialValue(cache.initialValue as T);
+    } catch (error) {
+      print(error.message);
+      print(cache.insertValue);
+    }
   }
 }

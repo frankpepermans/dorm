@@ -13,7 +13,7 @@ class TestEntity extends TestEntitySuperClass {
   // refClassName
   //---------------------------------
 
-  String get refClassName => 'entities.TestEntity';
+  @override String get refClassName => 'entities.TestEntity';
 
   //---------------------------------
   // name

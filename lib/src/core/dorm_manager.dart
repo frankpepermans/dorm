@@ -13,7 +13,7 @@ class DormManager extends ChangeNotifier {
   List<Entity> _queue = <Entity>[];
   List<Entity> _deleteQueue = <Entity>[];
   List<String> _ignoredProperties = <String>[];
-  HashMap<Entity, StreamSubscription> _dirtyListeners = new HashMap<Entity, StreamSubscription>.identity();
+  HashMap<Entity, StreamSubscription<dynamic>> _dirtyListeners = new HashMap<Entity, StreamSubscription<dynamic>>.identity();
   bool _forcedDirtyStatus = false;
   
   //-----------------------------------
@@ -40,7 +40,7 @@ class DormManager extends ChangeNotifier {
   
   IsDirtyHandler get dirtyHandler => _dirtyHandler;
   
-  void set dirtyHandler(IsDirtyHandler value) {
+  set dirtyHandler(IsDirtyHandler value) {
     if (value != _dirtyHandler) {
       _dirtyHandler = value;
     }
@@ -57,11 +57,11 @@ class DormManager extends ChangeNotifier {
   bool _isCommitRequired = false;
   
   bool get isCommitRequired => _isCommitRequired;
-  void set isCommitRequired(bool value) {
+  set isCommitRequired(bool value) {
     if (value != _isCommitRequired) _isCommitRequired = value;
     
     notifyChange(
-        new PropertyChangeRecord(
+        new PropertyChangeRecord<bool>(
             this,
             value ? IS_COMMIT_REQUIRED : IS_COMMIT_NOT_REQUIRED,
             false, true
@@ -162,7 +162,7 @@ class DormManager extends ChangeNotifier {
       
       invalidateCommitStatus();
       
-      StreamSubscription subscription = _dirtyListeners[entity];
+      StreamSubscription<dynamic> subscription = _dirtyListeners[entity];
       
       if (subscription != null) {
         subscription.cancel();
@@ -170,9 +170,9 @@ class DormManager extends ChangeNotifier {
         _dirtyListeners.remove(subscription);
       }
       
-      _dirtyListeners[entity] = entity.changes.listen(
+      /*_dirtyListeners[entity] = entity.changes.listen(
         (_) => invalidateCommitStatus()
-      );
+      );*/
     }
   }
   
@@ -183,7 +183,7 @@ class DormManager extends ChangeNotifier {
       
       invalidateCommitStatus();
       
-      StreamSubscription subscription = _dirtyListeners[entity];
+      StreamSubscription<dynamic> subscription = _dirtyListeners[entity];
       
       if (subscription != null) {
         subscription.cancel();
@@ -207,10 +207,10 @@ class DormManager extends ChangeNotifier {
   
   void revertAllChanges() {
     _dirtyListeners.forEach(
-      (_, StreamSubscription subscription) => subscription.cancel() 
+      (_, StreamSubscription<dynamic> subscription) => subscription.cancel()
     );
     
-    _dirtyListeners = new HashMap<Entity, StreamSubscription>.identity();
+    _dirtyListeners = new HashMap<Entity, StreamSubscription<dynamic>>.identity();
     
     _queue.forEach(
       (Entity entity) => entity.revertChanges()
@@ -289,7 +289,7 @@ class DormManager extends ChangeNotifier {
   
   void _scanRecursively(Entity entity, List<Entity> list, bool ignoreMutable, bool ignoreDirty, bool isDelete) {
     entity._scan._proxies.forEach(
-      (_DormProxyPropertyInfo entry) {
+      (_DormProxyPropertyInfo<_DormPropertyInfo> entry) {
         if (entry.proxy.value is Entity) {
           final Entity tmpEntity = entry.proxy.value as Entity;
           

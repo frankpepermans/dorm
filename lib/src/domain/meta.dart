@@ -9,8 +9,8 @@ class Ref {
   final String path;
   
   const Ref(this.path);
-  
-  String toString() => path;
+
+  @override String toString() => path;
   
 }
 
@@ -27,7 +27,7 @@ class Property {
   
   const Property(this.propertySymbol, this.property, this.type, this.expectedTypeAsString);
   
-  String toString() => 'property $property';
+  @override String toString() => 'property $property';
   
 }
 
@@ -38,8 +38,8 @@ class Property {
 class NotNullable {
   
   const NotNullable();
-  
-  String toString() => 'not nullable';
+
+  @override String toString() => 'not nullable';
   
 }
 
@@ -52,8 +52,8 @@ class DefaultValue {
   final dynamic value;
   
   const DefaultValue(this.value);
-  
-  String toString() => 'default $value';
+
+  @override String toString() => 'default $value';
   
 }
 
@@ -64,8 +64,8 @@ class DefaultValue {
 class Transient {
   
   const Transient();
-  
-  String toString() => 'transient';
+
+  @override String toString() => 'transient';
   
 }
 
@@ -78,8 +78,8 @@ class Id {
   final dynamic insertValue;
   
   const Id(this.insertValue);
-  
-  String toString() => 'id $insertValue';
+
+  @override String toString() => 'id $insertValue';
   
 }
 
@@ -90,8 +90,8 @@ class Id {
 class Immutable {
   
   const Immutable();
-  
-  String toString() => 'immutable';
+
+  @override String toString() => 'immutable';
   
 }
 
@@ -102,8 +102,8 @@ class Immutable {
 class Lazy {
   
   const Lazy();
-  
-  String toString() => 'lazy';
+
+  @override String toString() => 'lazy';
   
 }
 
@@ -114,8 +114,8 @@ class Lazy {
 class LabelField {
   
   const LabelField();
-  
-  String toString() => 'label field';
+
+  @override String toString() => 'label field';
 }
 
 //-----------------------------------
@@ -125,8 +125,8 @@ class LabelField {
 class Silent {
   
   const Silent();
-  
-  String toString() => 'silent';
+
+  @override String toString() => 'silent';
 }
 
 //-----------------------------------
@@ -138,8 +138,8 @@ class Transform {
   final String from, to;
   
   const Transform(this.from, this.to);
-  
-  String toString() => 'transform $from to $to';
+
+  @override String toString() => 'transform $from to $to';
 
 }
 
@@ -152,6 +152,6 @@ class Annotation {
   final Map<String, dynamic> params;
   
   const Annotation(this.params);
-  
-  String toString() => 'generic annotation';
+
+  @override String toString() => 'generic annotation';
 }

@@ -27,7 +27,7 @@ class EntityRootScan {
         
     if (_rootProxies.firstWhere((_DormPropertyInfo I) => (I.propertySymbol == S), orElse: () => null) != null) return;
     
-    final List allMeta = M['metatags'] as List;
+    final List<dynamic> allMeta = M['metatags'] as List<dynamic>;
     final String N = M['name'] as String;
     final Type T = M['type'] as Type;
     final String typeStr = M['typeStaticStr'] as String;
@@ -38,7 +38,7 @@ class EntityRootScan {
     _metadataCache = new MetadataCache();
     
     allMeta.forEach(
-      (Object meta) => _metadataCache.registerTagForProperty(entry, meta)
+      (dynamic meta) => _metadataCache.registerTagForProperty(entry, meta)
     );
     
     _rootProxies.add(entry);
@@ -58,8 +58,8 @@ class EntityScan {
   final EntityRootScan _root;
   EntityKeyChain _keyChain;
   
-  List<_DormProxyPropertyInfo> _identityProxies, _proxies;
-  HashMap<String, _DormProxyPropertyInfo> _proxyMap;
+  List<_DormProxyPropertyInfo<_DormPropertyInfo>> _identityProxies, _proxies;
+  HashMap<String, _DormProxyPropertyInfo<_DormPropertyInfo>> _proxyMap;
   
   //---------------------------------
   //
@@ -76,12 +76,12 @@ class EntityScan {
   void buildKey() {
     final int len = _identityProxies.length;
     EntityKeyChain nextKey = _root._rootKeyChain;
-    _DormProxyPropertyInfo entry;
+    _DormProxyPropertyInfo<_DormPropertyInfo> entry;
     
     for (int i=0; i<len; 
         entry = _identityProxies[i++], 
         nextKey = nextKey._setKeyValue(entry.info.propertySymbol, entry.proxy._value)
-    );
+    )
     
     if (_keyChain != nextKey) {
       if (_keyChain != null) _keyChain.entityScans.remove(this);
@@ -101,10 +101,10 @@ class EntityScan {
   factory EntityScan.fromRootScan(EntityRootScan root, Entity forEntity) {
     final EntityScan newScan = new EntityScan(root, forEntity).._initialize();
     final int len = root._rootProxies.length;
-    _DormProxyPropertyInfo clonedEntry;
+    _DormProxyPropertyInfo<_DormPropertyInfo> clonedEntry;
     
     for (int i=0; i<len; i++) {
-      clonedEntry = new _DormProxyPropertyInfo.from(root._rootProxies.elementAt(i));
+      clonedEntry = new _DormProxyPropertyInfo<_DormPropertyInfo>.from(root._rootProxies.elementAt(i));
       
       newScan._proxies.add(clonedEntry);
       newScan._proxyMap[clonedEntry.info.property] = clonedEntry;
@@ -141,9 +141,9 @@ class EntityScan {
   
   void _initialize() {
     if (_identityProxies == null) {
-      _identityProxies = <_DormProxyPropertyInfo>[];
-      _proxies = <_DormProxyPropertyInfo>[];
-      _proxyMap = new HashMap<String, _DormProxyPropertyInfo>.identity();
+      _identityProxies = <_DormProxyPropertyInfo<_DormPropertyInfo>>[];
+      _proxies = <_DormProxyPropertyInfo<_DormPropertyInfo>>[];
+      _proxyMap = new HashMap<String, _DormProxyPropertyInfo<_DormPropertyInfo>>.identity();
     }
   }
 }
@@ -158,7 +158,7 @@ class EntityScan {
 // _DormRootProxyListEntry
 //---------------------------------
 
-class _DormPropertyInfo<T extends _DormPropertyInfo> extends Comparable {
+class _DormPropertyInfo {
   
   final String property, typeStatic;
   final Symbol propertySymbol;
@@ -166,23 +166,20 @@ class _DormPropertyInfo<T extends _DormPropertyInfo> extends Comparable {
   final _PropertyMetadataCache metadataCache;
   
   _DormPropertyInfo(this.property, this.propertySymbol, this.type, this.typeStatic, this.metadataCache);
-  
-  @override
-  int compareTo(T other) => (other == null) ? 1 : property.compareTo(other.property);
 }
 
 //---------------------------------
 // _DormProxyListEntry
 //---------------------------------
 
-class _DormProxyPropertyInfo<T extends _DormProxyPropertyInfo> extends Comparable {
+class _DormProxyPropertyInfo<T extends _DormPropertyInfo> {
   
-  final _DormPropertyInfo info;
+  final T info;
   
-  DormProxy _proxy;
+  DormProxy<dynamic> _proxy;
   
-  DormProxy get proxy => _proxy;
-  void set proxy(DormProxy value) {
+  DormProxy<dynamic> get proxy => _proxy;
+  set proxy(DormProxy<dynamic> value) {
     _proxy = value.._changeHandler = _changeHandler;
   }
   
@@ -190,8 +187,5 @@ class _DormProxyPropertyInfo<T extends _DormProxyPropertyInfo> extends Comparabl
   
   _DormProxyPropertyInfo(this.info);
   
-  factory _DormProxyPropertyInfo.from(_DormPropertyInfo value) => new _DormProxyPropertyInfo(value);
-  
-  @override
-  int compareTo(T other) => (other == null) ? 1 : info.property.compareTo(other.info.property);
+  factory _DormProxyPropertyInfo.from(T value) => new _DormProxyPropertyInfo<T>(value);
 }

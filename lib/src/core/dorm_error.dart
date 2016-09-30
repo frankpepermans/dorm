@@ -8,5 +8,5 @@ class DormError extends Error {
     print(message);
   }
 
-  String toString() => message;
+  @override String toString() => message;
 }

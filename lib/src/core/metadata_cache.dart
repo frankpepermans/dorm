@@ -58,8 +58,8 @@ class _PropertyMetadataCache {
   String transformFrom, transformTo;
   Map<String, dynamic> genericAnnotations;
   
-  dynamic insertValue = null;
-  dynamic initialValue = null;
+  dynamic insertValue;
+  dynamic initialValue;
   
   _PropertyMetadataCache(this.property);
   

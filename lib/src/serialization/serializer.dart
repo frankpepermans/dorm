@@ -1,6 +1,6 @@
 part of dorm;
 
-abstract class Serializer<T extends Entity, U> {
+abstract class Serializer<T, U extends Map<String, dynamic>> {
 
   bool asDetached;
   
@@ -10,12 +10,12 @@ abstract class Serializer<T extends Entity, U> {
   //
   //-----------------------------------
   
-  Iterable<Map<String, dynamic>> incoming(T data);
+  Iterable<U> incoming(T data);
   T outgoing(dynamic data);
   
   Map<T, U> get convertedEntities;
   
-  Serializer addRule(Type forType, dynamic incoming(dynamic value), dynamic outgoing(dynamic value));
+  Serializer<dynamic, Map<String, dynamic>> addRule(Type forType, dynamic incoming(dynamic value), dynamic outgoing(dynamic value));
   _InternalConvertor removeRule(Type forType);
   
   dynamic convertIn(Type forType, dynamic inValue);
@@ -23,7 +23,7 @@ abstract class Serializer<T extends Entity, U> {
   
 }
 
-abstract class SerializerMixin<T extends Entity, U> implements Serializer {
+abstract class SerializerMixin<T, U extends Map<String, dynamic>> implements Serializer<T, U> {
   
   //-----------------------------------
   //
@@ -32,28 +32,25 @@ abstract class SerializerMixin<T extends Entity, U> implements Serializer {
   //-----------------------------------
   
   final Map<Type, _InternalConvertor> _convertors = <Type, _InternalConvertor>{};
-  
-  Map<T, U> convertedEntities;
+
+  @override Map<T, U> convertedEntities;
   
   //-----------------------------------
   //
   // Public methods
   //
   //-----------------------------------
-  
-  Iterable<Map<String, dynamic>> incoming(T data);
-  T outgoing(dynamic data);
-  
-  Serializer addRule(Type forType, dynamic incoming(dynamic value), dynamic outgoing(dynamic value)) {
+
+  @override Serializer<T, U> addRule(Type forType, dynamic incoming(dynamic value), dynamic outgoing(dynamic value)) {
     _convertors[forType] = new _InternalConvertor(forType, incoming, outgoing);
     
     return this;
-  } 
-  
-  _InternalConvertor removeRule(Type forType) => _convertors.remove(forType);
-  
-  dynamic convertIn(Type forType, dynamic inValue) => inValue;
-  dynamic convertOut(Type forType, dynamic outValue) => outValue;
+  }
+
+  @override _InternalConvertor removeRule(Type forType) => _convertors.remove(forType);
+
+  @override dynamic convertIn(Type forType, dynamic inValue) => inValue;
+  @override dynamic convertOut(Type forType, dynamic outValue) => outValue;
   
 }
 

@@ -1,8 +1,8 @@
 part of dorm;
 
-class SerializerJson<T extends Entity, U extends Map<String, dynamic>> extends SerializerBase {
+class SerializerJson<T, U extends Map<String, dynamic>> extends SerializerBase {
 
-  bool asDetached = false;
+  @override bool asDetached = false;
   
   //-----------------------------------
   //
@@ -20,7 +20,7 @@ class SerializerJson<T extends Entity, U extends Map<String, dynamic>> extends S
   //
   //-----------------------------------
   
-  factory SerializerJson({bool asDetached: false}) => new SerializerJson._contruct(asDetached);
+  factory SerializerJson({bool asDetached: false}) => new SerializerJson<T, U>._contruct(asDetached);
   
   //-----------------------------------
   //
@@ -28,12 +28,12 @@ class SerializerJson<T extends Entity, U extends Map<String, dynamic>> extends S
   //
   //-----------------------------------
   
-  Iterable<Map<String, dynamic>> incoming(String data) => JSON.decode(data) as Iterable<Map<String, dynamic>>;
-  
-  String outgoing(dynamic data) {
+  @override Iterable<U> incoming(T data) => JSON.decode(data as String) as Iterable<U>;
+
+  @override T outgoing(dynamic data) {
     Entity._serializerWorkaround = this;
     
-    convertedEntities = new HashMap<T, U>.identity();
+    convertedEntities = new HashMap<Entity, U>.identity();
     
     //if (data is Map) _convertMap(data);
     //else if (data is Iterable) _convertList(data);
@@ -41,18 +41,18 @@ class SerializerJson<T extends Entity, U extends Map<String, dynamic>> extends S
     if (
         (data is List) ||
         (data is Map)
-    ) return JSON.encode(data);
+    ) return JSON.encode(data) as T;
     
-    return data.toString();
+    return data.toString() as T;
   }
-  
-  dynamic convertIn(Type forType, dynamic inValue) {
+
+  @override dynamic convertIn(Type forType, dynamic inValue) {
     final _InternalConvertor convertor = _convertors[forType];
     
     return (convertor == null) ? inValue : convertor.incoming(inValue);
   }
-  
-  dynamic convertOut(Type forType, dynamic outValue) {
+
+  @override dynamic convertOut(Type forType, dynamic outValue) {
     final _InternalConvertor convertor = _convertors[forType];
     
     return (convertor == null) ? outValue : convertor.outgoing(outValue);
