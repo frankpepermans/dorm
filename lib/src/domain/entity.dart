@@ -14,10 +14,7 @@ abstract class Entity implements Externalizable {
   //-----------------------------------
   
   EntityScan _scan;
-  bool _isPointer = false;
   int _uid = _nextUid++;
-  
-  bool get isPointer => _isPointer;
   
   static void DO_SCAN([String R, Function C]) {}
   
@@ -61,7 +58,7 @@ abstract class Entity implements Externalizable {
       orElse: () => null
     );
     
-    return (result != null) ? (result.proxy.isLazy) ?  result.proxy.getLazyValue(this) : result.proxy._value : null;
+    return (result != null) ? result.proxy._value : null;
   }
   
   void operator []=(Symbol propertyField, dynamic propertyValue) {
@@ -101,12 +98,6 @@ abstract class Entity implements Externalizable {
     if (result != null) {
       result.proxy._defaultValue = propertyValue;
       result.proxy._value = propertyValue;
-      
-      if (!isUnsaved()) {
-        _scan.buildKey();
-        
-        if (!_scan._keyChain.entityScans.contains(_scan)) _scan._keyChain.entityScans.add(_scan);
-      }
       
       return true;
     }
@@ -349,8 +340,6 @@ abstract class Entity implements Externalizable {
     
     return properties;
   }
-  
-  List<String> getAmfEncodingSequence() => _scan._root._amfSeq;
 
   ///
   /// Returns the metadata attached to a specific property.
@@ -477,20 +466,16 @@ abstract class Entity implements Externalizable {
   /// already been loaded and/or modified prior to reloading it.
   ///
   @override void readExternal(Map<String, dynamic> data, Serializer<dynamic, Map<String, dynamic>> serializer, OnConflictFunction onConflict) {
-    _isPointer = (data[SerializationType.POINTER] != null);
-    
-    final Iterable<_DormProxyPropertyInfo<_DormPropertyInfo>> proxies = _isPointer ? _scan._identityProxies : _scan._proxies;
-    final int len = proxies.length;
+    final int len = _scan._proxies.length;
     _DormProxyPropertyInfo<_DormPropertyInfo> E;
     
     for (int i=0; i<len; i++) {
-      E = proxies.elementAt(i);
+      E = _scan._proxies.elementAt(i);
       
       final DormProxy<dynamic> proxy = E.proxy..hasDelta = true;
       final dynamic entryValue = data[E.info.property];
        
       proxy._fromRaw(
-         (proxy.isLazy) ? null :
          (entryValue is Map) ? serializer.convertIn(Entity, FACTORY.spawnSingle(entryValue as Map<String, dynamic>, serializer, onConflict, proxy:proxy, forType: E.info.typeStatic)) :
          (entryValue is Iterable) ? serializer.convertIn(E.info.type, FACTORY.spawn(entryValue as Iterable<Map<String, dynamic>>, serializer, onConflict, proxy:proxy, forType: E.info.typeStatic)) :
          (entryValue != null) ? serializer.convertIn(E.info.type, entryValue) : null
@@ -632,7 +617,6 @@ abstract class Entity implements Externalizable {
   }
   
   void _writeExternalProxy(_DormProxyPropertyInfo<_DormPropertyInfo> entry, Map<String, dynamic> data, Serializer<dynamic, Map<String, dynamic>> serializer) {
-    Map<String, dynamic> pointerMap;
     List<dynamic> subList, dataList;
     Entity S;
           
@@ -640,23 +624,9 @@ abstract class Entity implements Externalizable {
       if (!entry.info.metadataCache.isTransient) {
         S = entry.proxy._value;
 
-        if (ASSEMBLER.usePointers && serializer.convertedEntities[S] != null) {
-          pointerMap = <String, dynamic>{
-            SerializationType.POINTER: S._uid,
-            SerializationType.ENTITY_TYPE: S._scan._root.refClassName
-          };
+        data[entry.info.property] = <String, dynamic>{};
 
-          S._scan._identityProxies.forEach(
-              (_DormProxyPropertyInfo<_DormPropertyInfo> I) =>
-          pointerMap[I.info.property] = I.proxy._value
-          );
-
-          data[entry.info.property] = pointerMap;
-        } else {
-          data[entry.info.property] = <String, dynamic>{};
-
-          S._writeExternalImpl(data[entry.info.property] as Map<String, dynamic>, serializer);
-        }
+        S._writeExternalImpl(data[entry.info.property] as Map<String, dynamic>, serializer);
       }
     } else if (entry.proxy._value is List) {
       if (!entry.info.metadataCache.isTransient) {
@@ -666,24 +636,11 @@ abstract class Entity implements Externalizable {
         subList.forEach(
             (dynamic listEntry) {
           if (listEntry is Entity) {
-            if (ASSEMBLER.usePointers && serializer.convertedEntities[listEntry] != null) {
-              pointerMap = <String, dynamic>{
-                SerializationType.POINTER: listEntry._uid,
-                SerializationType.ENTITY_TYPE: listEntry._scan._root.refClassName
-              };
+            Map<String, dynamic> data = <String, dynamic>{};
 
-              listEntry._scan._identityProxies.forEach(
-                  (_DormProxyPropertyInfo<_DormPropertyInfo> I) => pointerMap[I.info.property] = I.proxy._value
-              );
+            listEntry._writeExternalImpl(data, serializer);
 
-              dataList.add(pointerMap);
-            } else {
-              Map<String, dynamic> data = <String, dynamic>{};
-
-              listEntry._writeExternalImpl(data, serializer);
-
-              dataList.add(data);
-            }
+            dataList.add(data);
           } else dataList.add(serializer.convertOut(entry.info.type, entry.proxy._value));
         }
         );

@@ -107,15 +107,11 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:core';
 
-import 'package:observe/observe.dart';
-
 part 'src/core/conflict_manager.dart';
 part 'src/core/dorm_error.dart';
 part 'src/core/entity_assembler.dart';
 part 'src/core/entity_factory.dart';
-part 'src/core/dorm_manager.dart';
 part 'src/core/dorm_proxy.dart';
-part 'src/core/entity_key.dart';
 part 'src/core/entity_scan.dart';
 part 'src/core/metadata_cache.dart';
 part 'src/core/metadata_validation_result.dart';
@@ -128,8 +124,6 @@ part 'src/serialization/externalizable.dart';
 part 'src/serialization/serialization_type.dart';
 part 'src/serialization/serializer.dart';
 part 'src/serialization/serializer_json.dart';
-
-bool evictEntity(Entity entity) => entity._scan._evictEntity(entity);
 
 const Symbol IS_LAZILY_LOADED = const Symbol('dorm.core.IsLazyLoaded');
 

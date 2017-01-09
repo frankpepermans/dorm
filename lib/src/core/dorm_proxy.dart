@@ -10,8 +10,6 @@ class DormProxy<T> {
   
   T _insertValue, _defaultValue, _value;
   int _resultLen = -1;
-  bool _isLazyLoadingRequired = false, _isLazyLoadingCompleted = false;
-  Future<T> _lazyFuture;
   
   Function _changeHandler;
   
@@ -27,37 +25,9 @@ class DormProxy<T> {
   
   T get value => _value;
   
-  Future<T> getLazyValue(Entity forEntity) {
-    if (_isLazyLoadingRequired) {
-      _isLazyLoadingRequired = false;
-      
-      final EntityLazyHandler LH = Entity.FACTORY._lazyHandlers.firstWhere(
-        (EntityLazyHandler lazyHandler) => (lazyHandler.propertySymbol == _propertySymbol),
-        orElse: () => null
-      );
-      
-      _lazyFuture = LH.handler(forEntity, _propertySymbol).then(
-        (T V) {
-          _value = Entity._serializerWorkaround.convertIn(T, V) as T;
-          
-          _isLazyLoadingCompleted = true;
-        },
-        onError: () => throw new DormError('could not fetch lazy value for $_propertySymbol')
-      );
-      
-      return _lazyFuture;
-    }
-    
-    if (!_isLazyLoadingCompleted) return _lazyFuture;
-    
-    return new Future<T>.value(_value);
-  }
-  
   set value(T newValue) {
     if (_isValueUpdateRequired(_value, newValue)) {
       _value = newValue;
-      
-      if (newValue != null) _isLazyLoadingRequired = false;
       
       if (_changeHandler != null) _changeHandler();
     }
@@ -72,7 +42,6 @@ class DormProxy<T> {
   bool isMutable = true;
   bool isNullable = true;
   bool isLabelField = false;
-  bool isLazy = false;
   bool isSilent = false;
   String transformFrom, transformTo;
   Map<String, dynamic> genericAnnotations;
@@ -145,7 +114,6 @@ class DormProxy<T> {
     isNullable = cache.isNullable;
     isLabelField = cache.isLabelField;
     isMutable = (scan._root.isMutableEntity && cache.isMutable);
-    isLazy = cache.isLazy;
     isSilent = cache.isSilent;
     transformFrom = cache.transformFrom;
     transformTo = cache.transformTo;

@@ -27,8 +27,6 @@ class EntityAssembler {
   
   final Map<String, EntityRootScan> _entityScans = <String, EntityRootScan>{};
   
-  List<DormProxy<dynamic>> _pendingProxies = <DormProxy<dynamic>>[];
-  
   //---------------------------------
   //
   // Public properties
@@ -94,68 +92,16 @@ class EntityAssembler {
         
         scan._root._propertyToSymbol[proxy._property] = proxy._propertySymbol;
         scan._root._symbolToProperty[proxy._propertySymbol] = proxy._property;
-        
-        if (!scan._root._amfSeq.contains(proxy._property)) scan._root._amfSeq.add(proxy._property);
       }
       
       if (I != null) proxy._updateWithMetadata(
         I..proxy = proxy, 
         scan
       );
-      
-      if (proxy.isLazy) proxy._isLazyLoadingRequired = true;
     }
     
     scan._root._hasMapping = !hasUnknownMapping;
   }
-  
-  Entity registerNewEntity(Entity spawnee, OnConflictFunction onConflict, {bool registerKeyInChain: true, bool solveConflicts: true}) {
-    spawnee._scan.buildKey();
-    
-    if (registerKeyInChain) spawnee._scan._keyChain.entityScans.add(spawnee._scan);
-    
-    final Entity actualEntity = _handleExistingEntity(spawnee, onConflict, solveConflicts: solveConflicts);
-    
-    if (registerKeyInChain && spawnee != actualEntity) {
-      spawnee._scan._keyChain.entityScans.remove(spawnee._scan);
-      
-      _updateCollectionsWith(actualEntity);
-    }
-    
-    return actualEntity;
-  }
-  
-  HashSet<Symbol> getPropertyFieldsForType(String refClassName) {
-    final EntityRootScan entityScan = _entityScans[refClassName];
-    final HashSet<Symbol> set = new HashSet<Symbol>.identity();
-        
-    if (entityScan == null) throw new DormError('Scan for entity not found: $refClassName');
-    
-    entityScan._rootProxies.forEach(
-      (_DormPropertyInfo I) => set.add(I.propertySymbol)
-    );
-    
-    return set;
-  }
-  
-  HashSet<String> getIdentityPropertyFieldsForType(String refClassName) {
-    final EntityRootScan entityScan = _entityScans[refClassName];
-    final HashSet<String> set = new HashSet<String>.identity();
-        
-    if (entityScan == null) throw new DormError('Scan for entity not found: $refClassName');
-    
-    entityScan._rootProxies.forEach(
-      (_DormPropertyInfo I) {
-        if (I.metadataCache.isId) set.add(I.property);
-      }
-    );
-    
-    return set;
-  }
-  
-  void clearAll() => _entityScans.forEach(
-    (_, EntityRootScan ERS) => ERS.clearKey()
-  );
   
   //---------------------------------
   //
@@ -200,7 +146,7 @@ class EntityAssembler {
   Entity _assemble(Map<String, dynamic> rawData, DormProxy<dynamic> owningProxy, Serializer<dynamic, Map<String, dynamic>> serializer, OnConflictFunction onConflict, String forType) {
     final String refClassName = _fetchRefClassName(rawData, forType);
     final bool isDetached = (rawData[SerializationType.DETACHED] != null);
-    Entity spawnee, existingEntity;
+    Entity spawnee;
     
     if (onConflict == null) onConflict = (Entity serverEntity, Entity clientEntity) => ConflictManager.AcceptClient;
     
@@ -212,152 +158,8 @@ class EntityAssembler {
     
     final bool isSpawneeUnsaved = spawnee.isUnsaved();
     
-    if (isSpawneeUnsaved) {
-      if (spawnee._isPointer) throw new DormError('Ambiguous reference, entity is unsaved and is also a pointer [$rawData]');
-      else return spawnee;
-    }
-    
-    existingEntity = registerNewEntity(spawnee, onConflict, registerKeyInChain: false);
-    
-    if (existingEntity != spawnee) {
-      _entityScans[refClassName]._unusedInstance = spawnee;
-      
-      return existingEntity;
-    }
-    
-    if (spawnee._isPointer) {
-      if (owningProxy != null) _pendingProxies.add(owningProxy);
-    } else {
-      spawnee._scan._keyChain.entityScans.add(spawnee._scan);
-      
-      _updateCollectionsWith(spawnee);
-    }
+    if (isSpawneeUnsaved) return spawnee;
     
     return spawnee;
-  }
-  
-  Entity _handleExistingEntity(Entity spawnee, OnConflictFunction onConflict, {bool solveConflicts: true}) {
-    final Entity localNonPointerEntity = EntityKeyChain.getFirstSibling(spawnee._scan, allowPointers: false);
-    
-    if (
-        !spawnee._isPointer &&
-        (localNonPointerEntity != null)
-    ) {
-      if (solveConflicts) _solveConflictsIfAny(
-          spawnee,
-          localNonPointerEntity, 
-          onConflict
-      );
-      
-      return localNonPointerEntity;
-    }
-    
-    return spawnee;
-  }
-  
-  void _solveConflictsIfAny(Entity spawnee, Entity existingEntity, OnConflictFunction onConflict) {
-    ConflictManager conflictManager;
-    Iterable<_DormProxyPropertyInfo<_DormPropertyInfo>> entryProxies;
-    _DormProxyPropertyInfo<_DormPropertyInfo> entry, entryMatch;
-    Entity entityCast;
-    
-    if (onConflict == null) throw new DormError('Conflict was detected, but no onConflict method is available');
-    
-    conflictManager = onConflict(
-        spawnee, 
-        existingEntity
-    );
-    
-    if (conflictManager == ConflictManager.Ignore) return;
-    
-    if (!spawnee.isMutable || (conflictManager == ConflictManager.AcceptServer)) {
-      entryProxies = existingEntity._scan._proxies;
-      
-      final int len=entryProxies.length;
-      
-      for (int i=0; i<len; i++) {
-        entry = entryProxies.elementAt(i);
-        
-        entryMatch = spawnee._scan._proxies.firstWhere(
-          (_DormProxyPropertyInfo<_DormPropertyInfo> E) => (entry.info.property == E.info.property),
-          orElse: () => null
-        );
-        
-        if (entryMatch != null) {
-          entry.proxy.setInitialValue(entryMatch.proxy._value);
-          
-          if (entry.proxy._value is Entity) {
-            entityCast = entry.proxy._value as Entity;
-            
-            if (entityCast._isPointer) _pendingProxies.add(entry.proxy);
-          } else if (entry.proxy._value is Iterable) _pendingProxies.add(entry.proxy);
-        }
-      }
-    } else if (conflictManager == ConflictManager.AcceptServerDirty) {
-      entryProxies = existingEntity._scan._proxies;
-      
-      for (int i=0, len=entryProxies.length; i<len; i++) {
-        entry = entryProxies.elementAt(i);
-        
-        entryMatch = spawnee._scan._proxies.firstWhere(
-          (_DormProxyPropertyInfo<_DormPropertyInfo> E) => (entry.info.property == E.info.property),
-          orElse: () => null
-        );
-        
-        if (entryMatch != null) {
-          entry.proxy.value = entryMatch.proxy._value;
-          
-          if (entry.proxy._value is Entity) {
-            entityCast = entry.proxy._value as Entity;
-            
-            if (entityCast._isPointer) _pendingProxies.add(entry.proxy);
-          } else if (entry.proxy._value is Iterable) _pendingProxies.add(entry.proxy);
-        }
-      }
-    }
-  }
-  
-  void _updateCollectionsWith(Entity actualEntity) {
-    final int len = _pendingProxies.length;
-    DormProxy<dynamic> proxy;
-    Entity entity;
-    dynamic listEntry;
-    
-    for (int i=len-1; i>=0; i--) {
-      proxy = _pendingProxies[i];
-      
-      if (proxy._value is Entity) {
-        entity = proxy._value as Entity;
-        
-        if (EntityKeyChain.areSameKeySignature(entity._scan, actualEntity._scan)) {
-          proxy.setInitialValue(actualEntity);
-          
-          _pendingProxies.remove(proxy);
-        }
-      } else if (proxy._value is List) {
-        final int len=proxy._value.length;
-        bool hasPointers = false, containsEntities = false;
-        
-        for (int j=0; j<len; j++) {
-          listEntry = proxy._value[j];
-          
-          if (!containsEntities) containsEntities = (listEntry is Entity);
-          
-          if (
-            containsEntities &&
-            EntityKeyChain.areSameKeySignature(listEntry._scan, actualEntity._scan)
-          ) proxy._value[j] = actualEntity;
-          
-          if (containsEntities && !hasPointers) hasPointers = listEntry._isPointer;
-        }
-        
-        if (
-            !hasPointers && 
-            (
-                (proxy._resultLen == -1) || (proxy._resultLen == len)
-            )
-        ) _pendingProxies.remove(proxy);
-      }
-    }
   }
 }

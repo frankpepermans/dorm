@@ -63,7 +63,7 @@ class EntityFactory<T extends Entity> {
     final T entity = _assembler._assemble(rawData, proxy, serializer, onConflict, forType) as T;
     final int len = _postProcessors.length;
     
-    if (entity != null && !entity._isPointer) for (int i=0; i<len; _postProcessors.elementAt(i++).handler(entity)) {}
+    if (entity != null) for (int i=0; i<len; _postProcessors.elementAt(i++).handler(entity)) {}
     
     return entity;
   }

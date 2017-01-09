@@ -10,7 +10,6 @@ homepage: https://github.com/frankpepermans/dorm
 documentation: http://igindo.com/dart/dorm/index.html
 dependencies:
   browser: any
-  observe: any
 dev_dependencies:
   benchmark_harness: '>=1.0.2'
   dart_flex: any

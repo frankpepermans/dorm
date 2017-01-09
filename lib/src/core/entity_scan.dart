@@ -3,11 +3,9 @@ part of dorm;
 class EntityRootScan {
   
   final String refClassName;
-  final EntityKeyChain _rootKeyChain = new EntityKeyChain();
   final EntityCtor _entityCtor;
   final Map<String, Symbol> _propertyToSymbol = <String, Symbol>{};
   final Map<Symbol, String> _symbolToProperty = <Symbol, String>{};
-  final List<String> _amfSeq = <String>[];
   final List<_DormPropertyInfo> _rootProxies = <_DormPropertyInfo>[];
   MetadataCache _metadataCache;
   Entity _unusedInstance;
@@ -43,8 +41,6 @@ class EntityRootScan {
     
     _rootProxies.add(entry);
   }
-  
-  void clearKey() => _rootKeyChain.entityScans.clear();
 }
 
 class EntityScan {
@@ -56,7 +52,6 @@ class EntityScan {
   //---------------------------------
   
   final EntityRootScan _root;
-  EntityKeyChain _keyChain;
   
   List<_DormProxyPropertyInfo<_DormPropertyInfo>> _identityProxies, _proxies;
   HashMap<String, _DormProxyPropertyInfo<_DormPropertyInfo>> _proxyMap;
@@ -68,27 +63,6 @@ class EntityScan {
   //---------------------------------
   
   final Entity entity;
-  
-  //---------------------------------
-  // key
-  //---------------------------------
-  
-  void buildKey() {
-    final int len = _identityProxies.length;
-    EntityKeyChain nextKey = _root._rootKeyChain;
-    _DormProxyPropertyInfo<_DormPropertyInfo> entry;
-    
-    for (int i=0; i<len; 
-        entry = _identityProxies[i++], 
-        nextKey = nextKey._setKeyValue(entry.info.propertySymbol, entry.proxy._value)
-    )
-    
-    if (_keyChain != nextKey) {
-      if (_keyChain != null) _keyChain.entityScans.remove(this);
-      
-      _keyChain = nextKey;
-    }
-  }
   
   //---------------------------------
   //
@@ -124,12 +98,6 @@ class EntityScan {
   // Private methods
   //
   //---------------------------------
-  
-  bool _evictEntity(Entity entity) {
-    if (_keyChain != null) return _keyChain.evictEntity(entity);
-    
-    return false;
-  }
   
   /*void _entity_identityChangeHandler() {
     if (!entity.isUnsaved()) {
