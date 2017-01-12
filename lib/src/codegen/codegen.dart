@@ -44,8 +44,11 @@ class CodeGenerator extends Generator {
         buffer.writeln();
         buffer.writeln('''import '${element.enclosingElement.displayName}' as sup;''');
 
-        if (element.supertype.element.librarySource.shortName.compareTo('dorm.dart') != 0)
-          buffer.writeln('''import '${element.supertype.element.librarySource.shortName.split('.dart').first}.g.dart';''');
+        final List<String> lA = new RegExp(r'abstract class ([^{]+)').firstMatch(element.source.contents.data).group(1).split('implements');
+        String superType = lA.last.split(',').first;
+
+        /*if (superType.compareTo('Entity') != 0)
+          buffer.writeln('''import '${element.supertype.element.librarySource.shortName.split('.dart').first}.g.dart';''');*/
 
 
         final List<String> hierarchyAsList = imports.first.toList(growable: false)..sort();
@@ -59,7 +62,6 @@ class CodeGenerator extends Generator {
             .where((PropertyAccessorElement property) => property.returnType.element?.kind?.displayName?.compareTo('type parameter') == 0)
             .map((PropertyAccessorElement property) => property.returnType.displayName);
 
-        final List<String> lA = new RegExp(r'abstract class ([^{]+)').firstMatch(element.source.contents.data).group(1).split('implements');
         final String dA = lA.first;
         final List<String> gA = dA.split('abstract class $className').last.split('>')..removeLast()..add('');
         final String genericTypesDecl = (gA.length > 1 ? gA.join('>') : '').split(className).last;
@@ -69,9 +71,12 @@ class CodeGenerator extends Generator {
         String exendsPart = '';
 
         if (genericClassTypes.isNotEmpty) genericTypes = '<${genericClassTypes.join(', ')}>';
-        if (element.supertype.displayName != 'Object') exendsPart = 'extends ${element.supertype.displayName} with sup.$className$genericTypes';
 
-        if (lA.length > 1) buffer.writeln('class $className$genericTypesDecl $exendsPart implements ${lA.last}{');
+        exendsPart = 'extends $superType with sup.$className$genericTypes';
+
+        String impl = (lA.length > 1) ? lA.last.replaceAll(className, 'sup.$className').replaceAll('$superType, ', '').replaceAll(', $superType', '').replaceAll('$superType', '') : '';
+
+        if (impl.trim().isNotEmpty) buffer.writeln('class $className$genericTypesDecl $exendsPart implements $impl{');
         else buffer.writeln('class $className$genericTypesDecl $exendsPart {');
 
         ///
@@ -87,7 +92,7 @@ class CodeGenerator extends Generator {
             buffer.writeln('''static const Symbol ${property.displayName.toUpperCase()}_SYMBOL = #${ident}_${property.displayName};''');
             buffer.writeln();
             buffer.writeln('final DormProxy<${property.returnType.displayName}> _${property.displayName} = new DormProxy<${property.returnType.displayName}>(${property.displayName.toUpperCase()}, ${property.displayName.toUpperCase()}_SYMBOL);');
-            buffer.writeln('${property.returnType.displayName} get ${property.displayName} => _${property.displayName}.value;');
+            buffer.writeln('@override ${property.returnType.displayName} get ${property.displayName} => _${property.displayName}.value;');
             buffer.writeln('set ${property.displayName}(${property.returnType.displayName} value) { _${property.displayName}.value = value; }');
           });
 
@@ -98,7 +103,7 @@ class CodeGenerator extends Generator {
         buffer.writeln('static void DO_SCAN/*$genericTypesDecl*/([String _R, Entity _C()]) {');
         buffer.writeln('''_R ??= '$ident';''');
         buffer.writeln('''_C ??= () => new $className$genericTypes();''');
-        if (element.supertype.name.compareTo('Entity') != 0) buffer.writeln('''${element.supertype.name}.DO_SCAN(_R, _C);''');
+        if (superType.compareTo('Entity') != 0) buffer.writeln('''$superType.DO_SCAN(_R, _C);''');
         buffer.writeln('''Entity.ASSEMBLER.scan(_R, _C, const <Map<String, dynamic>>[''');
 
 
@@ -134,7 +139,7 @@ class CodeGenerator extends Generator {
             .join(', ');
 
         buffer.writeln('$className() : super() {Entity.ASSEMBLER.registerProxies(this, <DormProxy<dynamic>>[$allProxies]);}');
-        buffer.writeln('static $className$genericTypes construct/*$genericTypesDecl*/() => new $className$genericTypes();');
+        buffer.writeln('static $className/*$genericTypes*/ construct/*$genericTypesDecl*/() => new $className$genericTypes();');
 
         buffer.write('}');
 
