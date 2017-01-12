@@ -1,5 +1,5 @@
 name: dorm
-version: 1.0.39
+version: 1.0.39+1
 author: Frank Pepermans <frank@igindo.com>
 description: "[Deprecated library] - please use other ORM libraries on pub"
 homepage: https://github.com/frankpepermans/dorm
