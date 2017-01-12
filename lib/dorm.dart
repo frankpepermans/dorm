@@ -136,3 +136,11 @@ typedef Future<dynamic> LazyLoaderMethod(Entity entity, Symbol symbol);
 typedef void PostProcessorMethod(Entity entity);
 
 typedef Entity EntityCtor();
+
+class DormCodeGen {
+
+  const DormCodeGen();
+
+}
+
+const Object dorm = const DormCodeGen();

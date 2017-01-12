@@ -30,7 +30,7 @@ class EntityRootScan {
     final Type T = M['type'] as Type;
     final String typeStr = M['typeStaticStr'] as String;
     final _DormPropertyInfo entry = new _DormPropertyInfo(N, S, T, typeStr, new _PropertyMetadataCache(N));
-    
+
     entry.metadataCache.expectedType = entry.typeStatic;
     
     _metadataCache = new MetadataCache();

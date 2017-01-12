@@ -45,7 +45,7 @@ class MetadataCache {
 class _PropertyMetadataCache {
   
   final String property;
-  
+
   String expectedType;
   bool isId = false;
   bool isTransient = false;

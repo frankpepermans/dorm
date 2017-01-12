@@ -58,7 +58,7 @@ class MetaTransformer extends Transformer {
             codeBody.replaceFirst('${className}() : super();', repl);
 
         transform.addOutput(
-            new Asset.fromString(transform.primaryInput.id, newBody));
+            new Asset.fromString(transform.primaryInput.id, newBody));if (newBody != codeBody) print(newBody);
       }
     });
   }
