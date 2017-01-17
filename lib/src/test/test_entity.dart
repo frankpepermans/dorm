@@ -1,56 +1,11 @@
-part of dorm_test;
+import 'package:dorm/dorm.dart';
 
-@Ref('entities.TestEntity')
-class TestEntity extends TestEntitySuperClass {
+import 'package:dorm/src/test/test_entity_super.dart';
 
-  //---------------------------------
-  //
-  // Public properties
-  //
-  //---------------------------------
-  
-  //---------------------------------
-  // refClassName
-  //---------------------------------
-
-  @override String get refClassName => 'entities.TestEntity';
-
-  //---------------------------------
-  // name
-  //---------------------------------
-
-  @Property(NAME_SYMBOL, 'name', String, 'String')
+@dorm
+abstract class TestEntity implements TestEntitySuperClass {
   @LabelField()
-  static const String NAME = 'name';
-  static const Symbol NAME_SYMBOL = const Symbol('orm_domain.TestEntity.name');
-
-  String name;
-  
-  //---------------------------------
-  // date
-  //---------------------------------
-
-  @Property(DATE_SYMBOL, 'date', DateTime, 'DateTime')
-  static const String DATE = 'date';
-  static const Symbol DATE_SYMBOL = const Symbol('orm_domain.TestEntity.date');
-
-  DateTime date;
-  
-  //---------------------------------
-  // cyclicReference
-  //---------------------------------
-
-  @Property(CYCLIC_REFERENCE_SYMBOL, 'cyclicReference', TestEntity, 'TestEntity')
-  static const String CYCLIC_REFERENCE = 'cyclicReference';
-  static const Symbol CYCLIC_REFERENCE_SYMBOL = const Symbol('orm_domain.TestEntity.cyclicReference');
-
-  TestEntity cyclicReference;
-
-  //---------------------------------
-  //
-  // Constructor
-  //
-  //---------------------------------
-
-  TestEntity() : super();
+  String get name;
+  DateTime get date;
+  TestEntity get cyclicReference;
 }

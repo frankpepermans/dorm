@@ -6,10 +6,12 @@ import 'package:benchmark_harness/benchmark_harness.dart';
 
 String jsonData;
 
-final EntityCodec<List<TestEntity>, String> codec = new EntityCodec((Entity serverEntity, Entity clientEntity) => ConflictManager.AcceptClient, new SerializerJson());
+final EntityCodec<List<TestEntity>, String> codec = new EntityCodec(new SerializerJson());
 
 void main() {
-  ormInitialize();
+  TestEntitySuperClass.DO_SCAN();
+  TestEntity.DO_SCAN();
+  AnotherTestEntity.DO_SCAN();
   
   TemplateBenchmark.main();
 }
@@ -27,7 +29,7 @@ class TemplateBenchmark extends BenchmarkBase {
     List<String> jsonRaw = <String>[];
     int i = loopCount;
     
-    while (i > 0) jsonRaw.add('{"id":${--i},"name":"Speed test","type":"type_${i}","?t":"entities.TestEntity"}');
+    while (i > 0) jsonRaw.add('{"id":${--i},"name":"Speed test","type":"type_${i}","?t":"i112dorm_lib_src_test_test_entity"}');
   
     jsonData = '[' + jsonRaw.join(',') + ']';
   }

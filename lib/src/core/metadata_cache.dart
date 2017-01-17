@@ -26,7 +26,6 @@ class MetadataCache {
       else if (type == NotNullable)   entry.metadataCache.isNullable = false;
       else if (type == DefaultValue)  entry.metadataCache.initialValue = (reflectee as DefaultValue).value;
       else if (type == LabelField)    entry.metadataCache.isLabelField = true;
-      else if (type == Immutable)     entry.metadataCache.isMutable = false;
       else if (type == Silent)        entry.metadataCache.isSilent = true;
       else if (type == Transform)     {
         entry.metadataCache.transformFrom = (reflectee as Transform).from;
@@ -46,12 +45,10 @@ class _PropertyMetadataCache {
   
   final String property;
 
-  String expectedType;
   bool isId = false;
   bool isTransient = false;
   bool isNullable = true;
   bool isLabelField = false;
-  bool isMutable = true;
   bool isSilent = false;
   String transformFrom, transformTo;
   Map<String, dynamic> genericAnnotations;
@@ -60,21 +57,6 @@ class _PropertyMetadataCache {
   dynamic initialValue;
   
   _PropertyMetadataCache(this.property);
-  
-  MetadataExternalized _getMetadataExternal() {
-    return new MetadataExternalized(
-        expectedType,
-        isId, 
-        isTransient, 
-        isNullable, 
-        isLabelField, 
-        isMutable,
-        isSilent,
-        transformFrom,
-        transformTo,
-        genericAnnotations
-    );
-  }
 }
 
 class MetadataExternalized {

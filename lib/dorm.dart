@@ -107,11 +107,11 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:core';
 
-part 'src/core/conflict_manager.dart';
 part 'src/core/dorm_error.dart';
 part 'src/core/entity_assembler.dart';
 part 'src/core/entity_factory.dart';
 part 'src/core/dorm_proxy.dart';
+part 'src/core/property_data.dart';
 part 'src/core/entity_scan.dart';
 part 'src/core/metadata_cache.dart';
 part 'src/core/metadata_validation_result.dart';
@@ -128,8 +128,6 @@ part 'src/serialization/serializer_json.dart';
 const Symbol IS_LAZILY_LOADED = const Symbol('dorm.core.IsLazyLoaded');
 
 abstract class SerializerBase = Object with SerializerMixin<dynamic, Map<String, dynamic>>;
-
-typedef ConflictManager OnConflictFunction(Entity serverEntity, Entity clientEntity);
 
 typedef Future<dynamic> LazyLoaderMethod(Entity entity, Symbol symbol);
 

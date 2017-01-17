@@ -23,20 +23,6 @@ abstract class Entity implements Externalizable {
   // Public properties
   //
   //-----------------------------------
-
-  bool lastDeserializationWasUpdate = false;
-  
-  //-----------------------------------
-  // uid
-  //-----------------------------------
-  
-  int get uid => _uid;
-  
-  //-----------------------------------
-  // isMutable
-  //-----------------------------------
-  
-  bool get isMutable => _scan._root.isMutableEntity;
   
   //-----------------------------------
   // refClassName
@@ -53,17 +39,17 @@ abstract class Entity implements Externalizable {
   dynamic operator [](Symbol propertyField) {
     if (propertyField == #hashCodeInternal) return _uid;
     
-    final _DormProxyPropertyInfo<_DormPropertyInfo> result = _scan._proxies.firstWhere(
-      (_DormProxyPropertyInfo<_DormPropertyInfo> entry) => (entry.info.propertySymbol == propertyField),
+    final _DormProxyPropertyInfo<dynamic> result = _scan._proxies.firstWhere(
+      (_DormProxyPropertyInfo<dynamic> entry) => (entry.info.propertySymbol == propertyField),
       orElse: () => null
     );
     
-    return (result != null) ? result.proxy._value : null;
+    return (result != null) ? result.proxy.value : null;
   }
   
   void operator []=(Symbol propertyField, dynamic propertyValue) {
-    final _DormProxyPropertyInfo<_DormPropertyInfo> result = _scan._proxies.firstWhere(
-        (_DormProxyPropertyInfo<_DormPropertyInfo> entry) => (entry.info.propertySymbol == propertyField),
+    final _DormProxyPropertyInfo<dynamic> result = _scan._proxies.firstWhere(
+        (_DormProxyPropertyInfo<dynamic> entry) => (entry.info.propertySymbol == propertyField),
         orElse: () => null
     );
     
@@ -75,118 +61,6 @@ abstract class Entity implements Externalizable {
   // Public methods
   //
   //-----------------------------------
-  
-  ///
-  /// Updates the default value for the field [propertyField] to [propertyValue] on the [Entity].
-  ///
-  /// Use this feature to clear the [Entity]'s dirty state, typically after the [Entity]
-  /// was persisted.
-  ///
-  /// Example:
-  ///  - Entity entity = new Entity();
-  ///  - entity.foo = bar;
-  ///  - print(entity.isDirty()); //true
-  ///  - entity.setDefaultPropertyValue('foo', bar);
-  ///  - print(entity.isDirty()); //false
-  ///
-  bool setDefaultPropertyValue(Symbol propertyField, dynamic propertyValue) {
-    final _DormProxyPropertyInfo<_DormPropertyInfo> result = _scan._proxies.firstWhere(
-        (_DormProxyPropertyInfo<_DormPropertyInfo> entry) => (entry.info.propertySymbol == propertyField),
-        orElse: () => null
-    );
-    
-    if (result != null) {
-      result.proxy._defaultValue = propertyValue;
-      result.proxy._value = propertyValue;
-      
-      return true;
-    }
-    
-    return false;
-  }
-
-  ///
-  /// Updates all [Entity] properties' default values to the current values.
-  ///
-  /// Similar to [setDefaultPropertyValue], except this method will run on all fields.
-  ///
-  void setCurrentStatusIsDefaultStatus({bool recursively: false}) => _setCurrentStatusIsDefaultStatusImpl(recursively, <Entity>[]);
-  
-  void _setCurrentStatusIsDefaultStatusImpl(bool recursively, List<Entity> list) {
-    if (!list.contains(this)) list.add(this);
-    else return;
-    
-    if (recursively) {
-      _scan._proxies.forEach(
-            (_DormProxyPropertyInfo<_DormPropertyInfo> entry) {
-              entry.proxy._defaultValue = entry.proxy._value;
-              
-              if (entry.proxy.value is Entity) entry.proxy.value._setCurrentStatusIsDefaultStatusImpl(true, list);
-              else if (entry.proxy.value is Iterable) {
-                entry.proxy.value.forEach(
-                   (dynamic listItem) {
-                     if (listItem is Entity) listItem._setCurrentStatusIsDefaultStatusImpl(true, list);
-                   }
-                );
-              }
-            }
-          );
-    }
-    else _scan._proxies.forEach(
-        (_DormProxyPropertyInfo<_DormPropertyInfo> entry) => entry.proxy._defaultValue = entry.proxy._value
-    );
-  }
-
-  ///
-  /// Resets all [Entity] properties so that all fields are again equal to the default values.
-  ///
-  /// Use this feature to revert any changes to the [Entity]'s fields.
-  ///
-  void revertChanges() => _scan._proxies.forEach(
-      (_DormProxyPropertyInfo<_DormPropertyInfo> entry) => this[entry.proxy._propertySymbol] = entry.proxy._defaultValue
-  );
-
-  ///
-  /// Unrolls all [Entity] properties and collections to a one-dimensional [List].
-  ///
-  /// This feature is very handy when preparing an [Entity] and all its related [Entity] instances
-  /// for data persistance.
-  ///
-  /// Example:
-  ///  - Entity foo = new Entity();
-  ///  - foo.bar = new Bar();
-  ///  - foo.bar.bazList = <Baz>[new Baz(), new Baz()];
-  ///  - foo.getEntityTree(); // List containing [foo, bar, bazA, bazB]
-  ///
-  List<Entity> getEntityTree({List<Entity> traversedEntities}) {
-    final List<Entity> tree = (traversedEntities != null) ? traversedEntities : <Entity>[];
-    
-    tree.add(this);
-    
-    _scan._proxies.forEach(
-        (_DormProxyPropertyInfo<_DormPropertyInfo> entry) {
-          if (entry.proxy._value is Entity) {
-            final Entity entity = entry.proxy._value as Entity;
-            
-            if (!tree.contains(entity)) entity.getEntityTree(traversedEntities: tree);
-          } else if (entry.proxy._value is List) {
-            final List<dynamic> subList = entry.proxy._value as List<dynamic>;
-          
-            subList.forEach(
-              (dynamic subListEntry) {
-                if (subListEntry is Entity) {
-                  final Entity subListEntity = subListEntry;
-                  
-                  if (!tree.contains(subListEntity)) subListEntity.getEntityTree(traversedEntities: tree);
-                }
-              }
-            );
-          }
-        }
-    );
-    
-    return tree;
-  }
   
   static final Map<String, HashSet<Symbol>> _identityFieldsMap = <String, HashSet<Symbol>>{};
 
@@ -201,39 +75,12 @@ abstract class Entity implements Externalizable {
     fields = new HashSet<Symbol>.identity();
     
     _scan._identityProxies.forEach(
-      (_DormProxyPropertyInfo<_DormPropertyInfo> entry) => fields.add(entry.info.propertySymbol)
+      (_DormProxyPropertyInfo<dynamic> entry) => fields.add(entry.info.propertySymbol)
     );
     
     _identityFieldsMap[refClassName] = fields;
     
     return fields;
-  }
-  
-  HashMap<Symbol, dynamic> _insertValuesMap;
-  bool _hasInsertValuesMap = false;
-
-  ///
-  /// Returns a [Map] of all identity fields where the key is the field's name
-  /// and the value is the corresponding insert value.
-  ///
-  /// Example:
-  ///  - entity Foo has an identity field fooId
-  ///  - Hibernate will create an insert statement when the value of fooId = 0
-  ///  - Hibernate will create an update statement when the value of fooId != 0
-  ///  - foo.getInsertValues() // key: 'fooId', value: 0
-  ///
-  Map<Symbol, dynamic> getInsertValues() {
-    if (_hasInsertValuesMap) return _insertValuesMap;
-    
-    _insertValuesMap = new HashMap<Symbol, dynamic>.identity();
-    
-    _scan._identityProxies.forEach(
-      (_DormProxyPropertyInfo<_DormPropertyInfo> entry) => _insertValuesMap[entry.info.propertySymbol] = entry.proxy._insertValue
-    );
-    
-    _hasInsertValuesMap = true;
-    
-    return _insertValuesMap;
   }
 
   ///
@@ -245,80 +92,6 @@ abstract class Entity implements Externalizable {
   /// Returns the Symbol representation of a property using the property name as String
   ///
   Symbol getFieldByProperty(String property) => _scan._root._propertyToSymbol[property];
-
-  ///
-  /// Returns generic annotation attached to a property field, if any exists
-  ///
-  Map<String, dynamic> getGenericAnnotations(Symbol propertyField) {
-    final Map<String, dynamic> defaultReturn = const <String, dynamic>{};
-    final _DormProxyPropertyInfo<_DormPropertyInfo> matchingInfo = _scan._proxies.firstWhere(
-      (_DormProxyPropertyInfo<_DormPropertyInfo> proxyInfo) => (proxyInfo.info.propertySymbol == propertyField)
-    );
-    
-    final Map<String, dynamic> result = (matchingInfo != null) ? matchingInfo.proxy.genericAnnotations : defaultReturn;
-    
-    return (result == null) ? defaultReturn : result;
-  }
-
-  ///
-  /// Will return [true] when all identity fields are equal to the corresponding insert values.
-  ///
-  /// Will return [false] when at least one identity field does not match its insert value.
-  ///
-  /// Example:
-  ///  - Entity entity = new Entity()..entityId = 0; // inserts when entityId = 0
-  ///  - print(entity.isUnsaved()); // true
-  ///  - entity.entityId = 1;
-  ///  - print(entity.isUnsaved()); // false
-  ///
-  bool isUnsaved() {
-    final int len = _scan._identityProxies.length;
-    
-    for (int i=0; i<len; i++) {
-      _DormProxyPropertyInfo<_DormPropertyInfo> entry = _scan._identityProxies[i];
-      
-      if (entry.proxy._value != entry.proxy._insertValue) return false;
-    }
-    
-    return true;
-  }
-
-  ///
-  /// Resets all identity fields to their corresponding insert values so that this [Entity]
-  ///
-  /// will be treated as a new [Entity] with an insert statement rather than an update statement.
-  ///
-  /// Use this to quickly create a duplicate of one [Entity].
-  ///
-  void setUnsaved({bool recursively: false, bool asNewDefaultValue: false}) => _setUnsavedImpl(recursively, asNewDefaultValue, <Entity>[]);
-  
-  void _setUnsavedImpl(bool recursively, bool asNewDefaultValue, List<Entity> list) {
-    if (!list.contains(this)) list.add(this);
-    else return;
-    
-    if (!isMutable) return;
-    
-    if (recursively) {
-      _setUnsavedImpl(false, asNewDefaultValue, list);
-      
-      _scan._proxies.forEach(
-         (_DormProxyPropertyInfo<_DormPropertyInfo> entry) {
-           if (entry.proxy.value is Entity) entry.proxy.value._setUnsavedImpl(true, asNewDefaultValue, list);
-           else if (entry.proxy.value is Iterable) {
-             entry.proxy.value.forEach(
-                (dynamic listItem) {
-                  if (listItem is Entity) listItem._setUnsavedImpl(true, asNewDefaultValue, list);
-                }
-             );
-           }
-         }
-      );
-    }
-    
-    _scan._identityProxies.forEach((_DormProxyPropertyInfo<_DormPropertyInfo> entry) => entry.proxy._value = entry.proxy._insertValue);
-    
-    if (asNewDefaultValue) setCurrentStatusIsDefaultStatus();
-  }
   
   static final Map<String, HashSet<Symbol>> _propertyList = <String, HashSet<Symbol>>{};
 
@@ -333,27 +106,12 @@ abstract class Entity implements Externalizable {
     properties = new HashSet<Symbol>.identity();
     
     _scan._proxies.forEach(
-      (_DormProxyPropertyInfo<_DormPropertyInfo> entry) => properties.add(entry.info.propertySymbol)
+      (_DormProxyPropertyInfo<dynamic> entry) => properties.add(entry.info.propertySymbol)
     );
     
     _propertyList[refClassName] = properties;
     
     return properties;
-  }
-
-  ///
-  /// Returns the metadata attached to a specific property.
-  ///
-  /// The metadata can be combination of the following :
-  /// [Id], [Lazy], [NotNullable], [DefaultValue], [Transient], [Immutable], [LabelField] or [Annotation]
-  ///
-  MetadataExternalized getMetadata(Symbol propertyField) {
-    final _DormProxyPropertyInfo<_DormPropertyInfo> result = _scan._proxies.firstWhere(
-        (_DormProxyPropertyInfo<_DormPropertyInfo> entry) => (entry.info.propertySymbol == propertyField),
-        orElse: () => null
-    );
-    
-    return (result != null) ? result.info.metadataCache._getMetadataExternal() : null;
   }
 
   ///
@@ -368,7 +126,7 @@ abstract class Entity implements Externalizable {
     Entity clone = otherEntity.duplicate(ignoredSymbols: ignoredSymbols);
     
     _scan._proxies.forEach(
-      (_DormProxyPropertyInfo<_DormPropertyInfo> proxyInfo) {
+      (_DormProxyPropertyInfo<dynamic> proxyInfo) {
         if (
           (ignoredSymbols == null) ||
           !ignoredSymbols.contains(proxyInfo.info.propertySymbol)
@@ -378,113 +136,23 @@ abstract class Entity implements Externalizable {
   }
 
   ///
-  /// Validates the values of this [Entity] using the associated metadata.
-  ///
-  /// Returns a [List] of [MetadataValidationResult].
-  ///
-  List<MetadataValidationResult> validate() {
-    MetadataValidationResult validationResult;
-    List<MetadataValidationResult> validationResultList = <MetadataValidationResult>[];
-    
-    _scan._proxies.forEach(
-        (_DormProxyPropertyInfo<_DormPropertyInfo> entry) {
-          validationResult = entry.proxy.validate(this);
-          
-          if (validationResult != null) validationResultList.add(validationResult);
-        }
-    );
-    
-    return validationResultList;
-  }
-
-  ///
-  /// Scans the [Entity]'s properties for any changes, returns [true] if the [Entity] has changes,
-  /// or returns [false] if it is untouched.
-  ///
-  bool isDirty({bool ignoresUnsavedStatus: false, Iterable<String> ignoredProperties}) {
-    if (!isMutable) return false;
-    
-    final bool isNew = ignoresUnsavedStatus ? false : isUnsaved();
-    
-    bool hasDirtyProperty = false;
-    
-    if (!isNew) {
-      final _DormProxyPropertyInfo<_DormPropertyInfo> dirtyProperty = _scan._proxies.firstWhere(
-          (_DormProxyPropertyInfo<_DormPropertyInfo> entry) => (
-              !entry.proxy.isSilent &&
-              !entry.proxy.isTransient &&
-              (entry.proxy._value != entry.proxy._defaultValue) &&
-              ((ignoredProperties == null) || !ignoredProperties.contains(entry.info.property)) &&
-              (
-                !(entry.proxy._value is Iterable) &&
-                !(entry.proxy._defaultValue is Iterable)  
-              )
-          ),
-          orElse: () => null
-      );
-      
-      hasDirtyProperty = (dirtyProperty != null);
-    }
-    
-    return (isNew || hasDirtyProperty);
-  }
-  
-  Map<String, dynamic> getDirtyStates({bool ignoresUnsavedStatus: false, Iterable<String> ignoredProperties}) {
-    final Map<String, dynamic> DS = <String, dynamic>{};
-    
-    if (!isMutable) return DS;
-    
-    final bool isNew = ignoresUnsavedStatus ? false : isUnsaved();
-    
-    if (!isNew) {
-      _scan._proxies.where(
-          (_DormProxyPropertyInfo<_DormPropertyInfo> entry) => (
-              !entry.proxy.isSilent &&
-              !entry.proxy.isTransient &&
-              (entry.proxy._value != entry.proxy._defaultValue) &&
-              ((ignoredProperties == null) || !ignoredProperties.contains(entry.info.property)) &&
-              (
-                !(entry.proxy._value is Iterable) &&
-                !(entry.proxy._defaultValue is Iterable)  
-              )
-          )
-      ).forEach(
-        (_DormProxyPropertyInfo<_DormPropertyInfo> entry) => DS[entry.info.property] = Entity._serializerWorkaround.outgoing(entry.proxy.value)
-      );
-    }
-    
-    return DS;
-  }
-
-  ///
   /// Converts raw [Map] data into an [Entity], including the full cyclic chain.
   ///
   /// The [Serializer] is used to perform special conversions if needed, i.e. to create a [DateTime] from an [int]
   /// value which contains the millisecondsSinceEpoch value.
   ///
-  /// The [OnConflictFunction] will take care of discrepantions (if any exist) should the [Entity] have
-  /// already been loaded and/or modified prior to reloading it.
-  ///
-  @override void readExternal(Map<String, dynamic> data, Serializer<dynamic, Map<String, dynamic>> serializer, OnConflictFunction onConflict) {
-    final int len = _scan._proxies.length;
-    _DormProxyPropertyInfo<_DormPropertyInfo> E;
-    
-    for (int i=0; i<len; i++) {
-      E = _scan._proxies.elementAt(i);
+  @override void readExternal(Map<String, dynamic> data, Serializer<dynamic, Map<String, dynamic>> serializer) {
+    for (int i=0, len = _scan._proxies.length; i<len; i++) {
+      _DormProxyPropertyInfo<dynamic> E = _scan._proxies.elementAt(i);
       
       final DormProxy<dynamic> proxy = E.proxy..hasDelta = true;
       final dynamic entryValue = data[E.info.property];
-       
-      proxy._fromRaw(
-         (entryValue is Map) ? serializer.convertIn(Entity, FACTORY.spawnSingle(entryValue as Map<String, dynamic>, serializer, onConflict, proxy:proxy, forType: E.info.typeStatic)) :
-         (entryValue is Iterable) ? serializer.convertIn(E.info.type, FACTORY.spawn(entryValue as Iterable<Map<String, dynamic>>, serializer, onConflict, proxy:proxy, forType: E.info.typeStatic)) :
-         (entryValue != null) ? serializer.convertIn(E.info.type, entryValue) : null
-      );
+
+      if (entryValue is Map<String, dynamic>) proxy.setInitialValue(serializer.convertIn(Entity, FACTORY.spawnSingle(entryValue, serializer, proxy:proxy)));
+      else if (entryValue is Iterable<Map<String, dynamic>>) proxy.setInitialValue(serializer.convertIn(E.info.type, FACTORY.spawn(entryValue, serializer, proxy:proxy)));
+      else proxy.setInitialValue(serializer.convertIn(E.info.type, entryValue));
     }
   }
-  
-  void fastSetPropertyValue(String property, dynamic entryValue, Serializer<dynamic, Map<String, dynamic>> serializer) =>
-      _scan._proxyMap[property]._proxy._fromRaw(serializer.convertIn(entryValue.runtimeType, entryValue));
 
   ///
   /// Converts the [Entity] into raw [Map] data, including the full cyclic chain.
@@ -516,8 +184,8 @@ abstract class Entity implements Externalizable {
     final List<String> result = <String>[];
     
     _scan._proxies.forEach(
-      (_DormProxyPropertyInfo<_DormPropertyInfo> entry) {
-        if (entry.proxy.isLabelField) result.add(entry.proxy._value.toString());
+      (_DormProxyPropertyInfo<dynamic> entry) {
+        if (entry.proxy.isLabelField) result.add(entry.proxy.value.toString());
       }
     );
     
@@ -531,78 +199,54 @@ abstract class Entity implements Externalizable {
   //---------------------------------
   
   Entity _duplicateImpl(List<_ClonedEntityEntry> clonedEntities, List<Symbol> ignoredSymbols) {
-    if (_scan._root.isMutableEntity) {
-      final _ClonedEntityEntry clonedEntity = clonedEntities.firstWhere(
-         (_ClonedEntityEntry cloneEntry) => (cloneEntry.original == this),
-         orElse: () => null
-      );
-      
-      if (clonedEntity != null) return clonedEntity.clone;
-      
-      final Entity clone = _scan._root._entityCtor();
-      
-      clonedEntities.add(new _ClonedEntityEntry(this, clone));
-      
-      clone._scan._proxies.forEach(
-          (_DormProxyPropertyInfo<_DormPropertyInfo> entry) {
-            if (
-              (ignoredSymbols == null) ||
+    final _ClonedEntityEntry clonedEntity = clonedEntities.firstWhere(
+            (_ClonedEntityEntry cloneEntry) => (cloneEntry.original == this),
+        orElse: () => null
+    );
+
+    if (clonedEntity != null) return clonedEntity.clone;
+
+    final Entity clone = _scan._root._entityCtor();
+
+    clonedEntities.add(new _ClonedEntityEntry(this, clone));
+
+    clone._scan._proxies.forEach(
+            (_DormProxyPropertyInfo<dynamic> entry) {
+          if (
+          (ignoredSymbols == null) ||
               !ignoredSymbols.contains(entry.info.propertySymbol)
-            ) {
-              if (entry.info.metadataCache.isId) entry.proxy.setInitialValue(this[entry.proxy._propertySymbol]);
-              else {
-                dynamic value = this[entry.proxy._propertySymbol];
-                
-                if (value is List) {
-                  final List<dynamic> listCast = value;
-                  final List<dynamic> listClone = <dynamic>[];
-                  
-                  listCast.forEach(
-                    (dynamic listEntry) {
+          ) {
+            if (entry.info.metadataCache.isId) entry.proxy.setInitialValue(this[entry.proxy._propertySymbol]);
+            else {
+              dynamic value = this[entry.proxy._propertySymbol];
+
+              if (value is List) {
+                final List<dynamic> listCast = value;
+                final List<dynamic> listClone = <dynamic>[];
+
+                listCast.forEach(
+                        (dynamic listEntry) {
                       if (listEntry is Entity) {
                         final Entity listEntryCast = listEntry;
-                        
+
                         listClone.add(listEntryCast._duplicateImpl(clonedEntities, ignoredSymbols));
                       } else listClone.add(listEntry);
                     }
-                  );
-                  
-                  entry.proxy.setInitialValue(_serializerWorkaround.convertIn(entry.info.type, listClone));
-                } else if (value is Entity) {
-                  final Entity entryCast = value;
-                  
-                  entry.proxy.setInitialValue(entryCast._duplicateImpl(clonedEntities, ignoredSymbols));
-                } else entry.proxy.setInitialValue(value);
-              }
+                );
+
+                entry.proxy.setInitialValue(_serializerWorkaround.convertIn(entry.info.type, listClone));
+              } else if (value is Entity) {
+                final Entity entryCast = value;
+
+                entry.proxy.setInitialValue(entryCast._duplicateImpl(clonedEntities, ignoredSymbols));
+              } else entry.proxy.setInitialValue(value);
             }
           }
-      );
-      
-      return clone;
-    }
-    
-    return this;
+        }
+    );
+
+    return clone;
   }
-  
-  int compare(Entity otherEntity) {
-    if (this == otherEntity) return 0;
-    
-    final int len = _scan._identityProxies.length;
-    _DormProxyPropertyInfo<_DormPropertyInfo> entryA, entryB;
-    int i;
-    
-    for (i=0; i<len; i++) {
-      entryA = _scan._identityProxies[i];
-      entryB = otherEntity._scan._identityProxies[i];
-      
-      if (entryA.proxy.value < entryB.proxy.value) return -1;
-      else if (entryA.proxy.value > entryB.proxy.value) return 1;
-    }
-    
-    return 0;
-  }
-  
-  bool identical(Entity E) => (E._scan == _scan);
   
   void _writeExternalImpl(Map<String, dynamic> data, Serializer<dynamic, Map<String, dynamic>> serializer) {
     data[SerializationType.ENTITY_TYPE] = _scan._root.refClassName;
@@ -616,21 +260,21 @@ abstract class Entity implements Externalizable {
     for (int i=0; i<len; i++) _writeExternalProxy(_scan._proxies[i], data, serializer);
   }
   
-  void _writeExternalProxy(_DormProxyPropertyInfo<_DormPropertyInfo> entry, Map<String, dynamic> data, Serializer<dynamic, Map<String, dynamic>> serializer) {
+  void _writeExternalProxy(_DormProxyPropertyInfo<dynamic> entry, Map<String, dynamic> data, Serializer<dynamic, Map<String, dynamic>> serializer) {
     List<dynamic> subList, dataList;
     Entity S;
           
-    if (entry.proxy._value is Entity) {
+    if (entry.proxy.value is Entity) {
       if (!entry.info.metadataCache.isTransient) {
-        S = entry.proxy._value;
+        S = entry.proxy.value;
 
         data[entry.info.property] = <String, dynamic>{};
 
         S._writeExternalImpl(data[entry.info.property] as Map<String, dynamic>, serializer);
       }
-    } else if (entry.proxy._value is List) {
+    } else if (entry.proxy.value is List) {
       if (!entry.info.metadataCache.isTransient) {
-        subList = serializer.convertOut(entry.info.type, entry.proxy._value);
+        subList = serializer.convertOut(entry.info.type, entry.proxy.value);
         dataList = <dynamic>[];
 
         subList.forEach(
@@ -641,13 +285,13 @@ abstract class Entity implements Externalizable {
             listEntry._writeExternalImpl(data, serializer);
 
             dataList.add(data);
-          } else dataList.add(serializer.convertOut(entry.info.type, entry.proxy._value));
+          } else dataList.add(serializer.convertOut(entry.info.type, entry.proxy.value));
         }
         );
 
         data[entry.info.property] = dataList;
       }
-    } else if (!entry.info.metadataCache.isTransient) data[entry.info.property] = serializer.convertOut(entry.info.type, entry.proxy._value);
+    } else if (!entry.info.metadataCache.isTransient) data[entry.info.property] = serializer.convertOut(entry.info.type, entry.proxy.value);
    }
 }
 

@@ -1,19 +1,18 @@
 part of dorm;
 
 class EntityCodec<S extends List<Entity>, T extends String> extends Codec<S, T> {
-  
-  final OnConflictFunction _onConflict;
+
   final Serializer<T, Map<String, dynamic>> _serializer;
   
   Map<String, Map<String, dynamic>> _convertedEntities;
   
-  EntityCodec(this._onConflict, this._serializer);
+  EntityCodec(this._serializer);
   
   String get name => "json-cyclic";
 
   @override Converter<S, T> get encoder => new EntityEncoder<S, T>(_convertedEntities, _serializer);
 
-  @override Converter<T, S> get decoder => new EntityDecoder<S, T>(_convertedEntities, _onConflict, _serializer);
+  @override Converter<T, S> get decoder => new EntityDecoder<S, T>(_convertedEntities, _serializer);
 
   @override T encode(S input) {
     _convertedEntities = <String, Map<String, dynamic>>{};
@@ -49,16 +48,15 @@ class EntityEncoder<S extends List<Entity>, T extends String> extends Converter<
 class EntityDecoder<S extends List<Entity>, T extends String> extends Converter<T, S> {
   
   final Map<String, Map<String, dynamic>> _convertedEntities;
-  final OnConflictFunction _onConflict;
   final Serializer<dynamic, Map<String, dynamic>> _serializer;
   
-  EntityDecoder(this._convertedEntities, this._onConflict, this._serializer);
+  EntityDecoder(this._convertedEntities, this._serializer);
 
   @override S convert(T rawData) {
     final Iterable<Map<String, dynamic>> result = _serializer.incoming(rawData);
     final EntityFactory<Entity> factory = new EntityFactory<Entity>();
     
-    return factory.spawn(result, _serializer, _onConflict) as S;
+    return factory.spawn(result, _serializer) as S;
   }
   
 }

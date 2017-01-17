@@ -59,48 +59,40 @@ class EntityAssembler {
   //
   //---------------------------------
   
-  EntityRootScan scan(String refClassName, Entity constructorMethod(), List<Map<String, dynamic>> meta, bool isMutable) {
+  EntityRootScan scan(String refClassName, Entity constructorMethod(), List<PropertyData> meta) {
     EntityRootScan scan = _entityScans[refClassName];
     
-    if(scan == null)
-      scan = _entityScans[refClassName] = new EntityRootScan(refClassName, constructorMethod)..isMutableEntity = isMutable;
-    
-    meta.forEach(
-      (Map<String, dynamic> M) => scan.registerMetadataUsing(M)
-    );
+    scan ??= _entityScans[refClassName] = new EntityRootScan(refClassName, constructorMethod);
+
+    for (int i=0, len=meta.length; i<len; i++) scan.registerMetadataUsing(meta[i]);
     
     return scan;
   }
   
   void registerProxies(Entity entity, List<DormProxy<dynamic>> proxies) {
-    if (entity._scan == null) entity._scan = _createEntityScan(entity);
-    
-    if (entity._scan == null) return;
-    
-    final EntityScan scan = entity._scan;
-    DormProxy<dynamic> proxy;
-    _DormProxyPropertyInfo<_DormPropertyInfo> I;
+    entity._scan ??= _createEntityScan(entity);
+
     bool hasUnknownMapping = false;
     
     for (int i=0, len=proxies.length; i<len; i++) {
-      proxy = proxies[i];
+      DormProxy<dynamic> proxy = proxies[i];
+      _DormProxyPropertyInfo<dynamic> I = entity._scan._proxyMap[proxy._property];
       
-      I = scan._proxyMap[proxy._property];
-      
-      if (!scan._root._hasMapping) {
-        if (!hasUnknownMapping) hasUnknownMapping = (scan._root._propertyToSymbol[proxy._property] == null);
-        
-        scan._root._propertyToSymbol[proxy._property] = proxy._propertySymbol;
-        scan._root._symbolToProperty[proxy._propertySymbol] = proxy._property;
+      if (!entity._scan._root._hasMapping) {
+        if (!hasUnknownMapping) hasUnknownMapping = (entity._scan._root._propertyToSymbol[proxy._property] == null);
+
+        entity._scan._root._propertyToSymbol[proxy._property] = proxy._propertySymbol;
+        entity._scan._root._symbolToProperty[proxy._propertySymbol] = proxy._property;
       }
       
-      if (I != null) proxy._updateWithMetadata(
-        I..proxy = proxy, 
-        scan
-      );
+      if (I != null) {
+        I.proxy = proxy;
+
+        proxy._updateWithMetadata(I.info.metadataCache);
+      }
     }
-    
-    scan._root._hasMapping = !hasUnknownMapping;
+
+    entity._scan._root._hasMapping = !hasUnknownMapping;
   }
   
   //---------------------------------
@@ -117,49 +109,14 @@ class EntityAssembler {
     return null;
   }
   
-  String _fetchRefClassName(Map<String, dynamic> rawData, String forType) {
-    String refClassName = rawData[SerializationType.ENTITY_TYPE];
-    
-    if (refClassName == null) {
-      final List<String> S = forType.split('<');
-      
-      if (S.length > 1) refClassName = S.last.split('>').first;
-      else refClassName = forType;
-    }
-    
-    return refClassName;
-  }
-  
   Entity spawn(String refClassName) {
     final EntityRootScan entityScan = _entityScans[refClassName];
     
     if (entityScan == null) throw new DormError('Scan for entity not found: $refClassName');
     
-    Entity spawnee = entityScan._unusedInstance;
-    
-    if (spawnee == null) spawnee = entityScan._entityCtor();
-    else entityScan._unusedInstance = null;
-    
-    return spawnee;
+    return entityScan._entityCtor();
   }
-  
-  Entity _assemble(Map<String, dynamic> rawData, DormProxy<dynamic> owningProxy, Serializer<dynamic, Map<String, dynamic>> serializer, OnConflictFunction onConflict, String forType) {
-    final String refClassName = _fetchRefClassName(rawData, forType);
-    final bool isDetached = (rawData[SerializationType.DETACHED] != null);
-    Entity spawnee;
-    
-    if (onConflict == null) onConflict = (Entity serverEntity, Entity clientEntity) => ConflictManager.AcceptClient;
-    
-    spawnee = spawn(refClassName);
-    
-    spawnee.readExternal(rawData, serializer, onConflict);
-    
-    if (isDetached) return spawnee;
-    
-    final bool isSpawneeUnsaved = spawnee.isUnsaved();
-    
-    if (isSpawneeUnsaved) return spawnee;
-    
-    return spawnee;
-  }
+
+  Entity _assemble(Map<String, dynamic> rawData, DormProxy<dynamic> owningProxy, Serializer<dynamic, Map<String, dynamic>> serializer)
+    => spawn(rawData[SerializationType.ENTITY_TYPE])..readExternal(rawData, serializer);
 }

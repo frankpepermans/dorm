@@ -104,20 +104,19 @@ class CodeGenerator extends Generator {
         buffer.writeln('''_R ??= '$ident';''');
         buffer.writeln('''_C ??= () => new $className$genericTypes();''');
         if (superType.compareTo('Entity') != 0) buffer.writeln('''$superType.DO_SCAN(_R, _C);''');
-        buffer.writeln('''Entity.ASSEMBLER.scan(_R, _C, const <Map<String, dynamic>>[''');
+        buffer.writeln('''Entity.ASSEMBLER.scan(_R, _C, const <PropertyData>[''');
 
 
         utils.getAlphabetizedProperties(element)
             .forEach((PropertyAccessorElement property) {
-              buffer.writeln('''const <String, dynamic>{''');
-              buffer.writeln(''''symbol': $className.${property.displayName.toUpperCase()}_SYMBOL,''');
-              buffer.writeln(''''name': '${property.displayName}',''');
+              buffer.writeln('''const PropertyData(''');
+              buffer.writeln('''symbol: $className.${property.displayName.toUpperCase()}_SYMBOL,''');
+              buffer.writeln('''name: '${property.displayName}',''');
 
-              if (genericClassTypes.contains(property.returnType.name)) buffer.writeln(''''type': dynamic,''');
-              else buffer.writeln(''''type': ${property.returnType.name},''');
+              if (genericClassTypes.contains(property.returnType.name)) buffer.writeln('''type: dynamic,''');
+              else buffer.writeln('''type: ${property.returnType.name},''');
 
-              buffer.writeln(''''typeStaticStr': '${property.returnType.displayName}',''');
-              buffer.writeln(''''metatags': const <dynamic>[''');
+              buffer.writeln('''metatags: const <dynamic>[''');
 
               property.metadata.forEach((ElementAnnotation annotation) {
                 final String metaName = annotation.element.enclosingElement.displayName;
@@ -127,10 +126,10 @@ class CodeGenerator extends Generator {
                 else buffer.writeln('''const $metaName(),''');
               });
 
-              buffer.writeln(''']},''');
+              buffer.writeln(''']),''');
             });
 
-        buffer.writeln('''], true);}''');
+        buffer.writeln(''']);}''');
 
         buffer.writeln('/// Ctr');
 

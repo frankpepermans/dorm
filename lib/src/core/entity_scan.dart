@@ -8,8 +8,6 @@ class EntityRootScan {
   final Map<Symbol, String> _symbolToProperty = <Symbol, String>{};
   final List<_DormPropertyInfo> _rootProxies = <_DormPropertyInfo>[];
   MetadataCache _metadataCache;
-  Entity _unusedInstance;
-  bool isMutableEntity = true;
   bool _hasMapping = false;
   
   EntityRootScan(this.refClassName, this._entityCtor);
@@ -20,22 +18,14 @@ class EntityRootScan {
   //
   //---------------------------------
   
-  void registerMetadataUsing(Map<String, dynamic> M) {
-    final Symbol S = M['symbol'] as Symbol;
-        
-    if (_rootProxies.firstWhere((_DormPropertyInfo I) => (I.propertySymbol == S), orElse: () => null) != null) return;
-    
-    final List<dynamic> allMeta = M['metatags'] as List<dynamic>;
-    final String N = M['name'] as String;
-    final Type T = M['type'] as Type;
-    final String typeStr = M['typeStaticStr'] as String;
-    final _DormPropertyInfo entry = new _DormPropertyInfo(N, S, T, typeStr, new _PropertyMetadataCache(N));
+  void registerMetadataUsing(PropertyData propertyData) {
+    if (_rootProxies.firstWhere((_DormPropertyInfo I) => (I.propertySymbol == propertyData.symbol), orElse: () => null) != null) return;
 
-    entry.metadataCache.expectedType = entry.typeStatic;
+    final _DormPropertyInfo entry = new _DormPropertyInfo(propertyData.name, propertyData.symbol, propertyData.type, new _PropertyMetadataCache(propertyData.name));
     
     _metadataCache = new MetadataCache();
-    
-    allMeta.forEach(
+
+    propertyData.metatags.forEach(
       (dynamic meta) => _metadataCache.registerTagForProperty(entry, meta)
     );
     
@@ -53,8 +43,8 @@ class EntityScan {
   
   final EntityRootScan _root;
   
-  List<_DormProxyPropertyInfo<_DormPropertyInfo>> _identityProxies, _proxies;
-  HashMap<String, _DormProxyPropertyInfo<_DormPropertyInfo>> _proxyMap;
+  List<_DormProxyPropertyInfo<dynamic>> _identityProxies, _proxies;
+  HashMap<String, _DormProxyPropertyInfo<dynamic>> _proxyMap;
   
   //---------------------------------
   //
@@ -74,11 +64,9 @@ class EntityScan {
   
   factory EntityScan.fromRootScan(EntityRootScan root, Entity forEntity) {
     final EntityScan newScan = new EntityScan(root, forEntity).._initialize();
-    final int len = root._rootProxies.length;
-    _DormProxyPropertyInfo<_DormPropertyInfo> clonedEntry;
     
-    for (int i=0; i<len; i++) {
-      clonedEntry = new _DormProxyPropertyInfo<_DormPropertyInfo>.from(root._rootProxies.elementAt(i));
+    for (int i=0, len = root._rootProxies.length; i<len; i++) {
+      _DormProxyPropertyInfo<dynamic> clonedEntry = new _DormProxyPropertyInfo<dynamic>.from(root._rootProxies.elementAt(i));
       
       newScan._proxies.add(clonedEntry);
       newScan._proxyMap[clonedEntry.info.property] = clonedEntry;
@@ -109,9 +97,9 @@ class EntityScan {
   
   void _initialize() {
     if (_identityProxies == null) {
-      _identityProxies = <_DormProxyPropertyInfo<_DormPropertyInfo>>[];
-      _proxies = <_DormProxyPropertyInfo<_DormPropertyInfo>>[];
-      _proxyMap = new HashMap<String, _DormProxyPropertyInfo<_DormPropertyInfo>>.identity();
+      _identityProxies = <_DormProxyPropertyInfo<dynamic>>[];
+      _proxies = <_DormProxyPropertyInfo<dynamic>>[];
+      _proxyMap = new HashMap<String, _DormProxyPropertyInfo<dynamic>>.identity();
     }
   }
 }
@@ -128,32 +116,25 @@ class EntityScan {
 
 class _DormPropertyInfo {
   
-  final String property, typeStatic;
+  final String property;
   final Symbol propertySymbol;
   final Type type;
   final _PropertyMetadataCache metadataCache;
   
-  _DormPropertyInfo(this.property, this.propertySymbol, this.type, this.typeStatic, this.metadataCache);
+  _DormPropertyInfo(this.property, this.propertySymbol, this.type, this.metadataCache);
 }
 
 //---------------------------------
 // _DormProxyListEntry
 //---------------------------------
 
-class _DormProxyPropertyInfo<T extends _DormPropertyInfo> {
+class _DormProxyPropertyInfo<T> {
   
-  final T info;
+  final _DormPropertyInfo info;
   
-  DormProxy<dynamic> _proxy;
-  
-  DormProxy<dynamic> get proxy => _proxy;
-  set proxy(DormProxy<dynamic> value) {
-    _proxy = value.._changeHandler = _changeHandler;
-  }
-  
-  Function _changeHandler;
+  DormProxy<T> proxy;
   
   _DormProxyPropertyInfo(this.info);
   
-  factory _DormProxyPropertyInfo.from(T value) => new _DormProxyPropertyInfo<T>(value);
+  factory _DormProxyPropertyInfo.from(_DormPropertyInfo value) => new _DormProxyPropertyInfo<T>(value);
 }
