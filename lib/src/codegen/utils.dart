@@ -25,7 +25,7 @@ List<PropertyAccessorElement> getRecursiveAlphabetizedProperties(ClassElement el
     ..sort((PropertyAccessorElement pA, PropertyAccessorElement pB) => pA.displayName.compareTo(pB.displayName)));
 
   element.allSupertypes
-      .where((InterfaceType interfaceType) => interfaceType.displayName.compareTo('Object') != 0)
+      .where((InterfaceType interfaceType) => interfaceType.displayName.compareTo('Object') != 0 && interfaceType.displayName.compareTo('Entity') != 0 && interfaceType.displayName.compareTo('Externalizable') != 0)
       .forEach((InterfaceType interfaceType) => getRecursiveAlphabetizedProperties(interfaceType.element, properties: properties));
 
   return properties.toSet().toList();

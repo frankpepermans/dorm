@@ -100,7 +100,7 @@ class CodeGenerator extends Generator {
 
         ///
         buffer.writeln('/// DO_SCAN');
-        buffer.writeln('static void DO_SCAN/*$genericTypesDecl*/([String _R, Entity _C()]) {');
+        buffer.writeln('static void DO_SCAN$genericTypesDecl([String _R, Entity _C()]) {');
         buffer.writeln('''_R ??= '$ident';''');
         buffer.writeln('''_C ??= () => new $className$genericTypes();''');
         if (superType.compareTo('Entity') != 0) buffer.writeln('''$superType.DO_SCAN(_R, _C);''');
@@ -131,14 +131,42 @@ class CodeGenerator extends Generator {
 
         buffer.writeln(''']);}''');
 
-        buffer.writeln('/// Ctr');
+        buffer.writeln('/// Constructor');
 
         final String allProxies = utils.getAlphabetizedProperties(element)
             .map((PropertyAccessorElement property) => '_${property.displayName}')
             .join(', ');
 
-        buffer.writeln('$className() : super() {Entity.ASSEMBLER.registerProxies(this, <DormProxy<dynamic>>[$allProxies]);}');
-        buffer.writeln('static $className/*$genericTypes*/ construct/*$genericTypesDecl*/() => new $className$genericTypes();');
+        buffer.writeln('$className() {Entity.ASSEMBLER.registerProxies(this, <DormProxy<dynamic>>[$allProxies]);}');
+        buffer.writeln('/// Internal constructor');
+        buffer.writeln('static $className$genericTypes construct$genericTypesDecl() => new $className$genericTypes();');
+        buffer.writeln('/// Duplicates the [$className] and any recusrive entities to a new [$className]');
+        buffer.writeln('@override $className$genericTypes duplicate({List<Symbol> ignoredSymbols: null}) => super.duplicate(ignoredSymbols: ignoredSymbols);');
+        buffer.writeln('/// toString implementation for debugging purposes');
+        buffer.writeln('@override String toString() {');
+
+        List<PropertyAccessorElement> allIds = <PropertyAccessorElement>[];
+        List<PropertyAccessorElement> allLabels = <PropertyAccessorElement>[];
+
+        utils.getRecursiveAlphabetizedProperties(element)
+            .forEach((PropertyAccessorElement property) {
+              property.metadata.forEach((ElementAnnotation annotation) {
+                final String metaName = annotation.element.enclosingElement.displayName;
+
+                if (metaName.compareTo('Id') == 0) allIds.add(property);
+                else if (metaName.compareTo('Label') == 0) allLabels.add(property);
+              });
+            });
+
+        if (allLabels.isNotEmpty) {
+          buffer.writeln('''return '${allLabels.map((PropertyAccessorElement P) => '\$${P.displayName}').join(', ')}';''');
+        } else if (allIds.isNotEmpty) {
+          buffer.writeln('''return '$className: {${allIds.map((PropertyAccessorElement P) => '${P.displayName}: \$${P.displayName}').join(', ')}}';''');
+        } else {
+          buffer.writeln('''return '$ident';''');
+        }
+
+        buffer.writeln('}');
 
         buffer.write('}');
 

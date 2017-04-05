@@ -115,9 +115,9 @@ abstract class Entity implements Externalizable {
   }
 
   ///
-  /// Duplicates the [Entity] and any recusrive entities to a new [Entity].
+  /// Duplicates the [Entity] and any recursive entities to a new [Entity].
   ///
-  Entity duplicate({List<Symbol> ignoredSymbols: null}) => _duplicateImpl(<_ClonedEntityEntry>[], ignoredSymbols);
+  dynamic duplicate({List<Symbol> ignoredSymbols: null}) => _duplicateImpl(<_ClonedEntityEntry>[], ignoredSymbols);
 
   ///
   /// Duplicates the [Entity] and any recusrive entities to a new [Entity].
@@ -175,21 +175,6 @@ abstract class Entity implements Externalizable {
     }
     
     return jsonMap;
-  }
-
-  ///
-  /// Converts the [Entity] into a String representation.
-  ///
-  @override String toString() {
-    final List<String> result = <String>[];
-    
-    _scan._proxies.forEach(
-      (_DormProxyPropertyInfo<dynamic> entry) {
-        if (entry.proxy.isLabelField) result.add(entry.proxy.value.toString());
-      }
-    );
-    
-    return result.join(', ');
   }
   
   //---------------------------------
@@ -252,7 +237,7 @@ abstract class Entity implements Externalizable {
     data[SerializationType.ENTITY_TYPE] = _scan._root.refClassName;
     data[SerializationType.UID] = _uid;
     if (serializer.asDetached) data[SerializationType.DETACHED] = true;
-    
+
     if (ASSEMBLER.usePointers) serializer.convertedEntities[this] = data;
     
     final int len = _scan._proxies.length;
