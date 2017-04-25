@@ -140,6 +140,14 @@ class CodeGenerator extends Generator {
         buffer.writeln('$className() {Entity.ASSEMBLER.registerProxies(this, <DormProxy<dynamic>>[$allProxies]);}');
         buffer.writeln('/// Internal constructor');
         buffer.writeln('static $className$genericTypes construct$genericTypesDecl() => new $className$genericTypes();');
+
+        utils.getAlphabetizedProperties(element)
+            .forEach((PropertyAccessorElement property) {
+          String uCased = '${property.displayName.substring(0, 1).toUpperCase()}${property.displayName.substring(1)}';
+          buffer.writeln('/// with$uCased');
+          buffer.writeln('$className$genericTypes with$uCased(${property.returnType.displayName} value) => duplicate(ignoredSymbols: const <Symbol>[$className.${property.displayName.toUpperCase()}_SYMBOL])..${property.displayName}=value;');
+        });
+
         buffer.writeln('/// Duplicates the [$className] and any recusrive entities to a new [$className]');
         buffer.writeln('@override $className$genericTypes duplicate({List<Symbol> ignoredSymbols: null}) => super.duplicate(ignoredSymbols: ignoredSymbols);');
         buffer.writeln('/// toString implementation for debugging purposes');
