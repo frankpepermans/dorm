@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/type.dart';
 import 'package:source_gen/source_gen.dart';
 
 import 'utils.dart' as  utils;
@@ -149,7 +148,7 @@ class CodeGenerator extends Generator {
         });
 
         buffer.writeln('/// Duplicates the [$className] and any recusrive entities to a new [$className]');
-        buffer.writeln('@override $className$genericTypes duplicate({List<Symbol> ignoredSymbols: null}) => super.duplicate(ignoredSymbols: ignoredSymbols);');
+        buffer.writeln('@override $className$genericTypes duplicate({List<Symbol> ignoredSymbols: null}) => super.duplicate(ignoredSymbols: ignoredSymbols) as $className$genericTypes;');
         buffer.writeln('/// toString implementation for debugging purposes');
         buffer.writeln('@override String toString() {');
 
