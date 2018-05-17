@@ -127,7 +127,7 @@ part 'src/serialization/serializer_json.dart';
 
 const Symbol IS_LAZILY_LOADED = const Symbol('dorm.core.IsLazyLoaded');
 
-abstract class SerializerBase = Object with SerializerMixin<dynamic, Map<String, dynamic>>;
+abstract class SerializerBase<T> = Object with SerializerMixin<T>;
 
 typedef Future<dynamic> LazyLoaderMethod(Entity entity, Symbol symbol);
 

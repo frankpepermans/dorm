@@ -1,6 +1,6 @@
 part of dorm;
 
-class SerializerJson<T, U extends Map<String, dynamic>> extends SerializerBase {
+class SerializerJson<T> extends SerializerBase<T> {
 
   @override bool asDetached = false;
   
@@ -20,7 +20,7 @@ class SerializerJson<T, U extends Map<String, dynamic>> extends SerializerBase {
   //
   //-----------------------------------
   
-  factory SerializerJson({bool asDetached: false}) => new SerializerJson<T, U>._contruct(asDetached);
+  factory SerializerJson({bool asDetached: false}) => new SerializerJson<T>._contruct(asDetached);
   
   //-----------------------------------
   //
@@ -28,12 +28,12 @@ class SerializerJson<T, U extends Map<String, dynamic>> extends SerializerBase {
   //
   //-----------------------------------
   
-  @override Iterable<U> incoming(T data) => JSON.decode(data as String) as Iterable<U>;
+  @override Iterable<Map<String, dynamic>> incoming(T data) => JSON.decode(data as String) as Iterable<Map<String, dynamic>>;
 
   @override T outgoing(dynamic data) {
     Entity._serializerWorkaround = this;
     
-    convertedEntities = new HashMap<Entity, U>.identity();
+    convertedEntities = new HashMap<T, Map<String, dynamic>>.identity();
     
     //if (data is Map) _convertMap(data);
     //else if (data is Iterable) _convertList(data);

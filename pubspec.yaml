@@ -1,13 +1,13 @@
 name: dorm
-version: 1.0.42
+version: 1.0.43
 author: Frank Pepermans <frank@igindo.com>
 description: "[Deprecated library] - please use other ORM libraries on pub"
 homepage: https://github.com/frankpepermans/dorm
 documentation: http://igindo.com/dart/dorm/index.html
 dependencies:
+  build: ^0.12.0
+  source_gen: ^0.8.0
+  build_runner: ^0.8.7
 dev_dependencies:
-  source_gen: '>=0.5.0 <0.6.0'
-  build_runner: 0.3.4+1
-  build: 0.9.3
-  test: any
-  benchmark_harness: any
+  test: ^0.12.0
+  benchmark_harness: ^1.0.0
