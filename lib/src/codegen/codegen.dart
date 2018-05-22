@@ -1,191 +1,262 @@
 import 'dart:async';
 
+import 'package:build/build.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:source_gen/source_gen.dart';
 
-import 'utils.dart' as  utils;
+import 'utils.dart' as utils;
 
 class CodeGenerator extends Generator {
-
   @override
-  FutureOr<String> generate(LibraryReader library, _) async {
-    library.allElements.forEach((Element element) {
-      if (element is ClassElement) {
-        final ElementAnnotation opticsAnnotation = element.metadata
-            .firstWhere((ElementAnnotation annotation) => annotation.element.name.compareTo('dorm') == 0, orElse: () => null);
+  FutureOr<String> generate(LibraryReader library, BuildStep buildStep) async {
+    final ClassElement element = library.allElements.firstWhere(
+        (Element element) =>
+            element.location.components.first.contains(buildStep.inputId.path),
+        orElse: () => null) as ClassElement;
 
-        if (opticsAnnotation != null) {
-          if (!element.isAbstract) throw new ArgumentError('The optics annotation can only be used on abstract classes');
+    if (element == null) return null;
 
-          final StringBuffer buffer = new StringBuffer();
+    final ElementAnnotation opticsAnnotation = element.metadata.firstWhere(
+        (ElementAnnotation annotation) =>
+            annotation.element.name.compareTo('dorm') == 0,
+        orElse: () => null);
 
-          final List<Set<String>> imports = utils.getImports(element);
+    if (opticsAnnotation != null) {
+      if (!element.isAbstract)
+        throw new ArgumentError(
+            'The optics annotation can only be used on abstract classes');
 
-          buffer.writeln();
+      final StringBuffer buffer = new StringBuffer();
 
-          List<String> packagesAsList = imports.last.toList(growable: true)..sort();
+      final List<Set<String>> imports = utils.getImports(element);
 
-          if (element.supertype.element.librarySource.shortName.compareTo('dorm.dart') != 0) packagesAsList.removeWhere((String entry) => entry.contains(element.supertype.element.librarySource.shortName));
+      buffer.writeln();
 
-          packagesAsList = packagesAsList.map((String entry) {
-            if (
-            entry.compareTo('''import 'package:dorm/dorm.dart';''') != 0 &&
-                entry.compareTo('''import 'package:taurus_shared/src/domain/modules/building_block.dart';''') != 0 &&
-                entry.compareTo('''import 'package:taurus_shared/taurus_shared.dart';''') != 0 &&
-                entry.compareTo('''import 'package:taurus_search/taurus_search.dart';''') != 0 &&
-                entry.compareTo('''import 'package:ng2_state/ng2_state.dart';''') != 0 &&
-                entry.compareTo('''import 'package:ng2_form_components/ng2_form_components.dart';''') != 0)
-              return entry.replaceFirst('.dart', '.g.dart');
+      List<String> packagesAsList = imports.last.toList(growable: true)..sort();
 
-            return entry;
-          }).toList(growable: false);
+      if (element.supertype.element.librarySource.shortName
+              .compareTo('dorm.dart') !=
+          0)
+        packagesAsList.removeWhere((String entry) =>
+            entry.contains(element.supertype.element.librarySource.shortName));
 
-          buffer.writeln(packagesAsList.join(''));
-          buffer.writeln();
-          buffer.writeln('''import '${element.enclosingElement.displayName}' as sup;''');
+      packagesAsList = packagesAsList.map((String entry) {
+        if (entry.compareTo('''import 'package:dorm/dorm.dart';''') != 0 &&
+            entry.compareTo(
+                    '''import 'package:taurus_shared/src/domain/modules/building_block.dart';''') !=
+                0 &&
+            entry.compareTo(
+                    '''import 'package:taurus_shared/taurus_shared.dart';''') !=
+                0 &&
+            entry.compareTo(
+                    '''import 'package:taurus_search/taurus_search.dart';''') !=
+                0 &&
+            entry.compareTo('''import 'package:ng2_state/ng2_state.dart';''') !=
+                0 &&
+            entry.compareTo(
+                    '''import 'package:ng2_form_components/ng2_form_components.dart';''') !=
+                0) return entry.replaceFirst('.dart', '.g.dart');
 
-          final List<String> lA = new RegExp(r'abstract class ([^{]+)').firstMatch(element.source.contents.data).group(1).split('implements');
-          String superType = lA.last.split(',').first;
+        return entry;
+      }).toList(growable: false);
 
-          /*if (superType.compareTo('Entity') != 0)
+      buffer.writeln(packagesAsList.join(''));
+      buffer.writeln();
+      buffer.writeln(
+          '''import '${element.enclosingElement.displayName}' as sup;''');
+
+      final List<String> lA = new RegExp(r'abstract class ([^{]+)')
+          .firstMatch(element.source.contents.data)
+          .group(1)
+          .split('implements');
+      String superType = lA.last.split(',').first;
+
+      /*if (superType.compareTo('Entity') != 0)
           buffer.writeln('''import '${element.supertype.element.librarySource.shortName.split('.dart').first}.g.dart';''');*/
 
+      final List<String> hierarchyAsList = imports.first.toList(growable: false)
+        ..sort();
 
-          final List<String> hierarchyAsList = imports.first.toList(growable: false)..sort();
+      buffer.writeln(hierarchyAsList.join(''));
 
-          buffer.writeln(hierarchyAsList.join(''));
+      ///
+      final String className = element.displayName;
+      final String ident = 'i' +
+          element.library.identifier
+              .split('.dart')
+              .first
+              .replaceAll(new RegExp(r'[^a-zA-Z\d]+'), '_');
+      final Iterable<String> genericClassTypes = utils
+          .getAlphabetizedProperties(element)
+          .where((PropertyAccessorElement property) =>
+              property.returnType.element?.kind?.displayName
+                  ?.compareTo('type parameter') ==
+              0)
+          .map((PropertyAccessorElement property) =>
+              property.returnType.displayName);
 
-          ///
-          final String className = element.displayName;
-          final String ident = 'i' + element.library.identifier.split('.dart').first.replaceAll(new RegExp(r'[^a-zA-Z\d]+'), '_');
-          final Iterable<String> genericClassTypes = utils.getAlphabetizedProperties(element)
-              .where((PropertyAccessorElement property) => property.returnType.element?.kind?.displayName?.compareTo('type parameter') == 0)
-              .map((PropertyAccessorElement property) => property.returnType.displayName);
+      final String dA = lA.first;
+      final List<String> gA =
+          dA.split('abstract class $className').last.split('>')
+            ..removeLast()
+            ..add('');
+      final String genericTypesDecl =
+          (gA.length > 1 ? gA.join('>') : '').split(className).last;
 
-          final String dA = lA.first;
-          final List<String> gA = dA.split('abstract class $className').last.split('>')..removeLast()..add('');
-          final String genericTypesDecl = (gA.length > 1 ? gA.join('>') : '').split(className).last;
+      String genericTypes = '';
+      String exendsPart = '';
 
+      if (genericClassTypes.isNotEmpty)
+        genericTypes = '<${genericClassTypes.join(', ')}>';
 
-          String genericTypes = '';
-          String exendsPart = '';
+      exendsPart = 'extends $superType with sup.$className$genericTypes';
 
-          if (genericClassTypes.isNotEmpty) genericTypes = '<${genericClassTypes.join(', ')}>';
+      String impl = (lA.length > 1)
+          ? lA.last
+              .replaceAll(className, 'sup.$className')
+              .replaceAll('$superType, ', '')
+              .replaceAll(', $superType', '')
+              .replaceAll('$superType', '')
+          : '';
 
-          exendsPart = 'extends $superType with sup.$className$genericTypes';
+      if (impl.trim().isNotEmpty)
+        buffer.writeln(
+            'class $className$genericTypesDecl $exendsPart implements $impl{');
+      else
+        buffer.writeln('class $className$genericTypesDecl $exendsPart {');
 
-          String impl = (lA.length > 1) ? lA.last.replaceAll(className, 'sup.$className').replaceAll('$superType, ', '').replaceAll(', $superType', '').replaceAll('$superType', '') : '';
+      ///
+      buffer.writeln('/// refClassName');
+      buffer.writeln('''@override String get refClassName => '$ident';''');
+      buffer.writeln('/// Public properties');
 
-          if (impl.trim().isNotEmpty) buffer.writeln('class $className$genericTypesDecl $exendsPart implements $impl{');
-          else buffer.writeln('class $className$genericTypesDecl $exendsPart {');
+      utils
+          .getAlphabetizedProperties(element)
+          .forEach((PropertyAccessorElement property) {
+        buffer.writeln('/// ${property.displayName}');
+        //buffer.writeln('''@Property(${property.displayName.toUpperCase()}_SYMBOL, '${property.displayName}', ${property.returnType.name}, '${property.displayName}')''');
+        buffer.writeln(
+            '''static const String ${property.displayName.toUpperCase()} = '${property.displayName}';''');
+        buffer.writeln(
+            '''static const Symbol ${property.displayName.toUpperCase()}_SYMBOL = #${ident}_${property.displayName};''');
+        buffer.writeln();
+        buffer.writeln(
+            'final DormProxy<${property.returnType.displayName}> _${property.displayName} = new DormProxy<${property.returnType.displayName}>(${property.displayName.toUpperCase()}, ${property.displayName.toUpperCase()}_SYMBOL);');
+        buffer.writeln(
+            '@override ${property.returnType.displayName} get ${property.displayName} => _${property.displayName}.value;');
+        buffer.writeln(
+            'set ${property.displayName}(${property.returnType.displayName} value) { _${property.displayName}.value = value; }');
+      });
 
-          ///
-          buffer.writeln('/// refClassName');
-          buffer.writeln('''@override String get refClassName => '$ident';''');
-          buffer.writeln('/// Public properties');
+      ///
 
-          utils.getAlphabetizedProperties(element)
-              .forEach((PropertyAccessorElement property) {
-            buffer.writeln('/// ${property.displayName}');
-            //buffer.writeln('''@Property(${property.displayName.toUpperCase()}_SYMBOL, '${property.displayName}', ${property.returnType.name}, '${property.displayName}')''');
-            buffer.writeln('''static const String ${property.displayName.toUpperCase()} = '${property.displayName}';''');
-            buffer.writeln('''static const Symbol ${property.displayName.toUpperCase()}_SYMBOL = #${ident}_${property.displayName};''');
-            buffer.writeln();
-            buffer.writeln('final DormProxy<${property.returnType.displayName}> _${property.displayName} = new DormProxy<${property.returnType.displayName}>(${property.displayName.toUpperCase()}, ${property.displayName.toUpperCase()}_SYMBOL);');
-            buffer.writeln('@override ${property.returnType.displayName} get ${property.displayName} => _${property.displayName}.value;');
-            buffer.writeln('set ${property.displayName}(${property.returnType.displayName} value) { _${property.displayName}.value = value; }');
-          });
+      ///
+      buffer.writeln('/// DO_SCAN');
+      buffer.writeln(
+          'static void DO_SCAN$genericTypesDecl([String _R, Entity _C()]) {');
+      buffer.writeln('''_R ??= '$ident';''');
+      buffer.writeln('''_C ??= () => new $className$genericTypes();''');
+      if (superType.compareTo('Entity') != 0)
+        buffer.writeln('''$superType.DO_SCAN(_R, _C);''');
+      buffer.writeln('''Entity.ASSEMBLER.scan(_R, _C, const <PropertyData>[''');
 
-          ///
+      utils
+          .getAlphabetizedProperties(element)
+          .forEach((PropertyAccessorElement property) {
+        buffer.writeln('''const PropertyData(''');
+        buffer.writeln(
+            '''symbol: $className.${property.displayName.toUpperCase()}_SYMBOL,''');
+        buffer.writeln('''name: '${property.displayName}',''');
 
-          ///
-          buffer.writeln('/// DO_SCAN');
-          buffer.writeln('static void DO_SCAN$genericTypesDecl([String _R, Entity _C()]) {');
-          buffer.writeln('''_R ??= '$ident';''');
-          buffer.writeln('''_C ??= () => new $className$genericTypes();''');
-          if (superType.compareTo('Entity') != 0) buffer.writeln('''$superType.DO_SCAN(_R, _C);''');
-          buffer.writeln('''Entity.ASSEMBLER.scan(_R, _C, const <PropertyData>[''');
+        if (genericClassTypes.contains(property.returnType.name))
+          buffer.writeln('''type: dynamic,''');
+        else
+          buffer.writeln('''type: ${property.returnType.name},''');
 
+        buffer.writeln('''metatags: const <dynamic>[''');
 
-          utils.getAlphabetizedProperties(element)
-              .forEach((PropertyAccessorElement property) {
-            buffer.writeln('''const PropertyData(''');
-            buffer.writeln('''symbol: $className.${property.displayName.toUpperCase()}_SYMBOL,''');
-            buffer.writeln('''name: '${property.displayName}',''');
+        property.metadata.forEach((ElementAnnotation annotation) {
+          final String metaName =
+              annotation.element.enclosingElement.displayName;
 
-            if (genericClassTypes.contains(property.returnType.name)) buffer.writeln('''type: dynamic,''');
-            else buffer.writeln('''type: ${property.returnType.name},''');
+          if (metaName.compareTo('Id') == 0)
+            buffer.writeln(
+                '''const $metaName(${annotation.constantValue.getField('insertValue').toString().split('(').last.split(')').first}),''');
+          else if (metaName.compareTo('DefaultValue') == 0)
+            buffer.writeln(
+                '''const $metaName(${annotation.constantValue.getField('value').toString().split('(').last.split(')').first}),''');
+          else
+            buffer.writeln('''const $metaName(),''');
+        });
 
-            buffer.writeln('''metatags: const <dynamic>[''');
+        buffer.writeln(''']),''');
+      });
 
-            property.metadata.forEach((ElementAnnotation annotation) {
-              final String metaName = annotation.element.enclosingElement.displayName;
+      buffer.writeln(''']);}''');
 
-              if (metaName.compareTo('Id') == 0) buffer.writeln('''const $metaName(${annotation.constantValue.getField('insertValue').toString().split('(').last.split(')').first}),''');
-              else if (metaName.compareTo('DefaultValue') == 0) buffer.writeln('''const $metaName(${annotation.constantValue.getField('value').toString().split('(').last.split(')').first}),''');
-              else buffer.writeln('''const $metaName(),''');
-            });
+      buffer.writeln('/// Constructor');
 
-            buffer.writeln(''']),''');
-          });
+      final String allProxies = utils
+          .getAlphabetizedProperties(element)
+          .map((PropertyAccessorElement property) => '_${property.displayName}')
+          .join(', ');
 
-          buffer.writeln(''']);}''');
+      buffer.writeln(
+          '$className() {Entity.ASSEMBLER.registerProxies(this, <DormProxy<dynamic>>[$allProxies]);}');
+      buffer.writeln('/// Internal constructor');
+      buffer.writeln(
+          'static $className$genericTypes construct$genericTypesDecl() => new $className$genericTypes();');
 
-          buffer.writeln('/// Constructor');
+      utils
+          .getAlphabetizedProperties(element)
+          .forEach((PropertyAccessorElement property) {
+        String uCased =
+            '${property.displayName.substring(0, 1).toUpperCase()}${property.displayName.substring(1)}';
+        buffer.writeln('/// with$uCased');
+        buffer.writeln(
+            '$className$genericTypes with$uCased(${property.returnType.displayName} value) => duplicate(ignoredSymbols: const <Symbol>[$className.${property.displayName.toUpperCase()}_SYMBOL])..${property.displayName}=value;');
+      });
 
-          final String allProxies = utils.getAlphabetizedProperties(element)
-              .map((PropertyAccessorElement property) => '_${property.displayName}')
-              .join(', ');
+      buffer.writeln(
+          '/// Duplicates the [$className] and any recusrive entities to a new [$className]');
+      buffer.writeln(
+          '@override $className$genericTypes duplicate({List<Symbol> ignoredSymbols: null}) => super.duplicate(ignoredSymbols: ignoredSymbols) as $className$genericTypes;');
+      buffer.writeln('/// toString implementation for debugging purposes');
+      buffer.writeln('@override String toString() {');
 
-          buffer.writeln('$className() {Entity.ASSEMBLER.registerProxies(this, <DormProxy<dynamic>>[$allProxies]);}');
-          buffer.writeln('/// Internal constructor');
-          buffer.writeln('static $className$genericTypes construct$genericTypesDecl() => new $className$genericTypes();');
+      List<PropertyAccessorElement> allIds = <PropertyAccessorElement>[];
+      List<PropertyAccessorElement> allLabels = <PropertyAccessorElement>[];
 
-          utils.getAlphabetizedProperties(element)
-              .forEach((PropertyAccessorElement property) {
-            String uCased = '${property.displayName.substring(0, 1).toUpperCase()}${property.displayName.substring(1)}';
-            buffer.writeln('/// with$uCased');
-            buffer.writeln('$className$genericTypes with$uCased(${property.returnType.displayName} value) => duplicate(ignoredSymbols: const <Symbol>[$className.${property.displayName.toUpperCase()}_SYMBOL])..${property.displayName}=value;');
-          });
+      utils
+          .getRecursiveAlphabetizedProperties(element)
+          .forEach((PropertyAccessorElement property) {
+        property.metadata.forEach((ElementAnnotation annotation) {
+          final String metaName =
+              annotation.element.enclosingElement.displayName;
 
-          buffer.writeln('/// Duplicates the [$className] and any recusrive entities to a new [$className]');
-          buffer.writeln('@override $className$genericTypes duplicate({List<Symbol> ignoredSymbols: null}) => super.duplicate(ignoredSymbols: ignoredSymbols) as $className$genericTypes;');
-          buffer.writeln('/// toString implementation for debugging purposes');
-          buffer.writeln('@override String toString() {');
+          if (metaName.compareTo('Id') == 0)
+            allIds.add(property);
+          else if (metaName.compareTo('Label') == 0) allLabels.add(property);
+        });
+      });
 
-          List<PropertyAccessorElement> allIds = <PropertyAccessorElement>[];
-          List<PropertyAccessorElement> allLabels = <PropertyAccessorElement>[];
-
-          utils.getRecursiveAlphabetizedProperties(element)
-              .forEach((PropertyAccessorElement property) {
-            property.metadata.forEach((ElementAnnotation annotation) {
-              final String metaName = annotation.element.enclosingElement.displayName;
-
-              if (metaName.compareTo('Id') == 0) allIds.add(property);
-              else if (metaName.compareTo('Label') == 0) allLabels.add(property);
-            });
-          });
-
-          if (allLabels.isNotEmpty) {
-            buffer.writeln('''return '${allLabels.map((PropertyAccessorElement P) => '\$${P.displayName}').join(', ')}';''');
-          } else if (allIds.isNotEmpty) {
-            buffer.writeln('''return '$className: {${allIds.map((PropertyAccessorElement P) => '${P.displayName}: \$${P.displayName}').join(', ')}}';''');
-          } else {
-            buffer.writeln('''return '$ident';''');
-          }
-
-          buffer.writeln('}');
-
-          buffer.write('}');
-
-          return buffer.toString();
-        }
+      if (allLabels.isNotEmpty) {
+        buffer.writeln(
+            '''return '${allLabels.map((PropertyAccessorElement P) => '\$${P.displayName}').join(', ')}';''');
+      } else if (allIds.isNotEmpty) {
+        buffer.writeln(
+            '''return '$className: {${allIds.map((PropertyAccessorElement P) => '${P.displayName}: \$${P.displayName}').join(', ')}}';''');
+      } else {
+        buffer.writeln('''return '$ident';''');
       }
-    });
 
-    return null;
+      buffer.writeln('}');
+
+      buffer.write('}');
+
+      return buffer.toString();
+    }
   }
 
   const CodeGenerator();
-
 }
