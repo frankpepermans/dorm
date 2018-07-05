@@ -43,11 +43,11 @@ abstract class SerializerMixin<T>
   //-----------------------------------
 
   @override
-  Serializer<T, Map<String, dynamic>> addRule<T, S>(
-      Type forType, S incoming(T value), T outgoing(S value)) {
+  Serializer<T, Map<String, dynamic>> addRule<A, B>(
+      Type forType, B incoming(A value), A outgoing(B value)) {
     _convertors[forType] = new _InternalConvertor(forType, incoming, outgoing);
 
-    return this as Serializer<T, Map<String, dynamic>>;
+    return this;
   }
 
   @override

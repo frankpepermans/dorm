@@ -117,12 +117,12 @@ abstract class Entity implements Externalizable {
   ///
   /// Duplicates the [Entity] and any recursive entities to a new [Entity].
   ///
-  dynamic duplicate({List<Symbol> ignoredSymbols: null}) => _duplicateImpl(<_ClonedEntityEntry>[], ignoredSymbols);
+  dynamic duplicate({List<Symbol> ignoredSymbols}) => _duplicateImpl(<_ClonedEntityEntry>[], ignoredSymbols);
 
   ///
   /// Duplicates the [Entity] and any recusrive entities to a new [Entity].
   ///
-  void duplicateFrom(Entity otherEntity, {List<Symbol> ignoredSymbols: null}) {
+  void duplicateFrom(Entity otherEntity, {List<Symbol> ignoredSymbols}) {
     Entity clone = otherEntity.duplicate(ignoredSymbols: ignoredSymbols);
     
     _scan._proxies.forEach(
