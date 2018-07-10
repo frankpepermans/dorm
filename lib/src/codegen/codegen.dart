@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:build/build.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
 import 'package:source_gen/source_gen.dart';
 
 import 'utils.dart' as utils;
@@ -218,11 +219,47 @@ class CodeGenerator extends Generator {
       });
 
       buffer.writeln(
-          '/// Duplicates the [$className] and any recusrive entities to a new [$className]');
+          '/// Duplicates the [$className] and any recursive entities to a new [$className]');
       buffer.writeln(
-          '@override $className$genericTypes duplicate({List<Symbol> ignoredSymbols: null}) => super.duplicate(ignoredSymbols: ignoredSymbols) as $className$genericTypes;');
+          '@override $className$genericTypes duplicate({List<Symbol> ignoredSymbols}) => super.duplicate(ignoredSymbols: ignoredSymbols) as $className$genericTypes;');
+
+      buffer.writeln('@override bool operator ==(Object other) => ');
+
+      buffer.writeln('other is $className$genericTypes && other.hashCode == this.hashCode;');
+
+      buffer.writeln('@override int get hashCode => ');
+
+      String stepper = '0';
+
+      utils
+          .getRecursiveAlphabetizedProperties(element).forEach((PropertyAccessorElement accessor) {
+        if (accessor.returnType.element is ClassElement) {
+          ClassElement elmCast = accessor.returnType.element;
+          String current;
+          /// _finish(_combine(_combine(0, a.hashCode), b.hashCode));
+          final InterfaceType iterableType = elmCast.allSupertypes.firstWhere(
+                  (InterfaceType type) =>
+              type.element.library.isDartCore && type.name == 'Iterable',
+              orElse: () => null);
+
+          if (iterableType != null) {
+            current = 'hash_combineAll(this.${accessor.displayName})';
+          } else {
+            current = 'this.${accessor.displayName}.hashCode';
+          }
+
+          stepper = 'hash_combine($stepper, $current)';
+        }
+      });
+
+      buffer.writeln('hash_finish($stepper);');
+
+
+
+
+
       buffer.writeln('/// toString implementation for debugging purposes');
-      buffer.writeln('@override String toString() {');
+      buffer.writeln('@override String toString() =>');
 
       List<PropertyAccessorElement> allIds = <PropertyAccessorElement>[];
       List<PropertyAccessorElement> allLabels = <PropertyAccessorElement>[];
@@ -242,15 +279,13 @@ class CodeGenerator extends Generator {
 
       if (allLabels.isNotEmpty) {
         buffer.writeln(
-            '''return '${allLabels.map((PropertyAccessorElement P) => '\$${P.displayName}').join(', ')}';''');
+            ''''${allLabels.map((PropertyAccessorElement P) => '\$${P.displayName}').join(', ')}';''');
       } else if (allIds.isNotEmpty) {
         buffer.writeln(
-            '''return '$className: {${allIds.map((PropertyAccessorElement P) => '${P.displayName}: \$${P.displayName}').join(', ')}}';''');
+            ''''$className: {${allIds.map((PropertyAccessorElement P) => '${P.displayName}: \$${P.displayName}').join(', ')}}';''');
       } else {
-        buffer.writeln('''return '$ident';''');
+        buffer.writeln(''''$ident';''');
       }
-
-      buffer.writeln('}');
 
       buffer.write('}');
 
