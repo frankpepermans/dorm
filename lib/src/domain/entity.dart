@@ -181,8 +181,8 @@ abstract class Entity implements Externalizable {
 
     try {
       writeExternal(jsonMap, _serializerWorkaround);
-    } catch (error) {
-      print(error.stackTrace);
+    } catch (e, s) {
+      print('$e: $s');
     }
 
     return jsonMap;

@@ -38,7 +38,7 @@ class SerializerJson<T> extends SerializerBase<T> {
   T outgoing(dynamic data) {
     Entity._serializerWorkaround = this;
 
-    convertedEntities = new HashMap<T, Map<String, dynamic>>.identity();
+    convertedEntities = new HashMap<Entity, Map<String, dynamic>>.identity();
 
     //if (data is Map) _convertMap(data);
     //else if (data is Iterable) _convertList(data);

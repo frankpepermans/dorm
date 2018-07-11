@@ -12,7 +12,7 @@ abstract class Serializer<T, U extends Map<String, dynamic>> {
   Iterable<U> incoming(T data);
   T outgoing(dynamic data);
 
-  Map<T, U> get convertedEntities;
+  Map<Entity, Map<String, dynamic>> get convertedEntities;
 
   Serializer<dynamic, Map<String, dynamic>> addRule<T, S>(
       Type forType, S incoming(T value), T outgoing(S value));
@@ -34,7 +34,7 @@ abstract class SerializerMixin<T>
       <Type, _InternalConvertor>{};
 
   @override
-  Map<T, Map<String, dynamic>> convertedEntities;
+  Map<Entity, Map<String, dynamic>> convertedEntities;
 
   //-----------------------------------
   //
