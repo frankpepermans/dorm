@@ -150,14 +150,21 @@ abstract class Entity implements Externalizable {
       final DormProxy<dynamic> proxy = E.proxy..hasDelta = true;
       final dynamic entryValue = data[E.info.property];
 
-      if (entryValue is Map<String, dynamic>)
+      if (entryValue is Map) {
         proxy.setInitialValue(serializer.convertIn(
-            Entity, FACTORY.spawnSingle(entryValue, serializer, proxy: proxy)));
-      else if (entryValue is Iterable<Map<String, dynamic>>)
+            Entity,
+            FACTORY.spawnSingle(
+                new Map<String, dynamic>.from(entryValue), serializer,
+                proxy: proxy)));
+      } else if (entryValue is Iterable) {
         proxy.setInitialValue(serializer.convertIn(
-            E.info.type, FACTORY.spawn(entryValue, serializer, proxy: proxy)));
-      else
+            E.info.type,
+            FACTORY.spawn(
+                new List<Map<String, dynamic>>.from(entryValue), serializer,
+                proxy: proxy)));
+      } else {
         proxy.setInitialValue(serializer.convertIn(E.info.type, entryValue));
+      }
     }
   }
 

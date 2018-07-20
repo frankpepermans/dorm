@@ -51,7 +51,10 @@ class DormProxy<T> {
       List valueCast = value as List;
 
       valueCast.clear();
-      valueCast.addAll(initialValue);
+
+      for (int i=0, len=initialValue.length; i<len; i++) {
+        valueCast.add(initialValue[i]);
+      }
     } else {
       value = initialValue as T;
     }
