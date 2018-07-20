@@ -201,9 +201,29 @@ class CodeGenerator extends Generator {
           .getAlphabetizedProperties(element)
           .map((PropertyAccessorElement property) => '_${property.displayName}')
           .join(', ');
+      final String listCtrs = utils
+          .getRecursiveAlphabetizedProperties(element)
+          .map((PropertyAccessorElement accessor) {
+        if (accessor.returnType.element is ClassElement) {
+          ClassElement elmCast = accessor.returnType.element;
+
+          /// _finish(_combine(_combine(0, a.hashCode), b.hashCode));
+          final InterfaceType iterableType = elmCast.allSupertypes.firstWhere(
+              (InterfaceType type) =>
+                  type.element.library.isDartCore && type.name == 'Iterable',
+              orElse: () => null);
+
+          if (iterableType != null) {
+            return 'this.${accessor.displayName} = new ${accessor.returnType.displayName}();';
+          }
+        }
+
+        return '';
+      }).join('');
 
       buffer.writeln(
-          '$className() {Entity.ASSEMBLER.registerProxies(this, <DormProxy<dynamic>>[$allProxies]);}');
+          '$className() {Entity.ASSEMBLER.registerProxies(this, <DormProxy<dynamic>>[$allProxies]);$listCtrs}');
+
       buffer.writeln('/// Internal constructor');
       buffer.writeln(
           'static $className$genericTypes construct$genericTypesDecl() => new $className$genericTypes();');
@@ -225,21 +245,24 @@ class CodeGenerator extends Generator {
 
       buffer.writeln('@override bool operator ==(Object other) => ');
 
-      buffer.writeln('other is $className$genericTypes && other.hashCode == this.hashCode;');
+      buffer.writeln(
+          'other is $className$genericTypes && other.hashCode == this.hashCode;');
 
       buffer.writeln('@override int get hashCode => ');
 
       String stepper = '0';
 
       utils
-          .getRecursiveAlphabetizedProperties(element).forEach((PropertyAccessorElement accessor) {
+          .getRecursiveAlphabetizedProperties(element)
+          .forEach((PropertyAccessorElement accessor) {
         if (accessor.returnType.element is ClassElement) {
           ClassElement elmCast = accessor.returnType.element;
           String current;
+
           /// _finish(_combine(_combine(0, a.hashCode), b.hashCode));
           final InterfaceType iterableType = elmCast.allSupertypes.firstWhere(
-                  (InterfaceType type) =>
-              type.element.library.isDartCore && type.name == 'Iterable',
+              (InterfaceType type) =>
+                  type.element.library.isDartCore && type.name == 'Iterable',
               orElse: () => null);
 
           if (iterableType != null) {
@@ -253,10 +276,6 @@ class CodeGenerator extends Generator {
       });
 
       buffer.writeln('hash_finish($stepper);');
-
-
-
-
 
       buffer.writeln('/// toString implementation for debugging purposes');
       buffer.writeln('@override String toString() =>');

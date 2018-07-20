@@ -46,8 +46,15 @@ class DormProxy<T> {
   //
   //-----------------------------------
   
-  void setInitialValue(T initialValue) {
-    value = initialValue;
+  void setInitialValue(dynamic initialValue) {
+    if (value is List && initialValue is List) {
+      List valueCast = value as List;
+
+      valueCast.clear();
+      valueCast.addAll(initialValue);
+    } else {
+      value = initialValue as T;
+    }
   }
   
   //-----------------------------------
